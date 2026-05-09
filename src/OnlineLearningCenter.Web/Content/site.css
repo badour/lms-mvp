@@ -1,0 +1,129 @@
+:root {
+    --bg-primary: #06142d;
+    --bg-secondary: #0b1f44;
+    --card-bg: #122b58;
+    --text-light: #e8ecf8;
+    --gold: #f2c94c;
+    --gold-strong: #ffde73;
+    --muted: #9fb3d9;
+}
+
+body {
+    background: linear-gradient(180deg, var(--bg-primary) 0%, #081a38 100%);
+    color: var(--text-light);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+.site-header,
+.site-footer {
+    background: rgba(4, 14, 35, 0.9);
+}
+
+.brand-gold,
+h1,
+h2,
+h3,
+h4,
+.text-gold {
+    color: var(--gold-strong) !important;
+}
+
+.nav-link {
+    color: #d5e0ff !important;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    color: var(--gold-strong) !important;
+}
+
+.btn-gold {
+    background-color: var(--gold);
+    border-color: var(--gold);
+    color: #0a1936;
+    font-weight: 600;
+}
+
+.btn-gold:hover {
+    background-color: var(--gold-strong);
+    border-color: var(--gold-strong);
+    color: #06142d;
+}
+
+.hero {
+    background: radial-gradient(circle at top right, #15376d 0%, #0d254f 45%, #0a1f43 100%);
+    border: 1px solid rgba(255, 222, 115, 0.25);
+    border-radius: 1rem;
+    padding: 2rem;
+}
+
+.dashboard-card,
+.table-card {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 222, 115, 0.2);
+    border-radius: 0.9rem;
+    box-shadow: 0 8px 20px rgba(2, 8, 20, 0.3);
+}
+
+.dashboard-card .metric {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold-strong);
+}
+
+.section-subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.table {
+    color: var(--text-light);
+}
+
+.table thead th {
+    color: var(--gold-strong);
+    border-bottom: 1px solid rgba(255, 222, 115, 0.3);
+}
+
+.table tbody tr td {
+    border-color: rgba(159, 179, 217, 0.2);
+}
+
+.form-control,
+.form-select {
+    background: #0b2148;
+    color: var(--text-light);
+    border: 1px solid #274981;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0.2rem rgba(242, 201, 76, 0.2);
+    background: #102a56;
+    color: #fff;
+}
+
+.badge-soft {
+    background: rgba(242, 201, 76, 0.18);
+    color: var(--gold-strong);
+    border: 1px solid rgba(242, 201, 76, 0.35);
+}
+
+.quick-links a {
+    text-decoration: none;
+    color: var(--text-light);
+    border: 1px solid rgba(242, 201, 76, 0.25);
+    background: #0f2a56;
+    border-radius: 0.75rem;
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quick-links a:hover {
+    color: var(--gold-strong);
+    border-color: var(--gold);
+}
