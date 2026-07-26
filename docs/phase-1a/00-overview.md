@@ -32,7 +32,7 @@ Functional and visual inspiration may reference public school portals (for examp
 
 ## Approval gate
 
-**Stop here.** No implementation code should be generated until Phase 1A is approved.
+**Status:** Phase 1A approved. Foundation implementation is in progress/completed on this branch.
 
 Please confirm or request changes to:
 
