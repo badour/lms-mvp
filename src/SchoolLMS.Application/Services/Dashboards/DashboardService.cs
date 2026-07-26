@@ -84,8 +84,9 @@ public class DashboardService : IDashboardService
             PresentToday = await attendanceQuery.CountAsync(x => x.Status == AttendanceStatus.Present, cancellationToken),
             AbsentToday = await attendanceQuery.CountAsync(x => x.Status == AttendanceStatus.Absent || x.Status == AttendanceStatus.ExcusedAbsence, cancellationToken),
             LateToday = await attendanceQuery.CountAsync(x => x.Status == AttendanceStatus.Late, cancellationToken),
-            CollectedFees = await paymentsQuery.SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0m,
-            OutstandingFees = await feesQuery.SumAsync(x => (decimal?)x.RemainingAmount, cancellationToken) ?? 0m,
+            // SQLite cannot Sum decimal server-side; cast to double for provider compatibility.
+            CollectedFees = (decimal)(await paymentsQuery.SumAsync(x => (double?)x.Amount, cancellationToken) ?? 0d),
+            OutstandingFees = (decimal)(await feesQuery.SumAsync(x => (double?)x.RemainingAmount, cancellationToken) ?? 0d),
             PendingHomework = await _db.Assignments.AsNoTracking()
                 .Where(x => !x.IsDeleted && x.Status == AssignmentStatus.Published)
                 .Where(x => schoolFilter == null || schoolFilter.Contains(x.SchoolId))
@@ -244,8 +245,8 @@ public class DashboardService : IDashboardService
         var selected = children.FirstOrDefault(x => x.StudentId == selectedStudentId) ?? children.FirstOrDefault();
         var feeBalance = selected is null
             ? 0m
-            : await _db.StudentFees.Where(x => x.StudentId == selected.StudentId && !x.IsDeleted)
-                .SumAsync(x => (decimal?)x.RemainingAmount, cancellationToken) ?? 0m;
+            : (decimal)(await _db.StudentFees.Where(x => x.StudentId == selected.StudentId && !x.IsDeleted)
+                .SumAsync(x => (double?)x.RemainingAmount, cancellationToken) ?? 0d);
 
         var announcements = await _db.Announcements.AsNoTracking()
             .Where(x => !x.IsDeleted && x.IsPublished && (x.SchoolId == null || x.SchoolId == guardian.SchoolId))
