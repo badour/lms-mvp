@@ -1,0 +1,88 @@
+﻿@using System.Globalization
+@{
+    var isRtl = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+    var dir = isRtl ? "rtl" : "ltr";
+}
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" dir="@dir">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - نظام إدارة المدارس</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="app-body">
+    <div class="d-flex" id="wrapper">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <aside class="sidebar border-end" id="sidebar">
+                <div class="sidebar-brand px-3 py-4">
+                    <div class="fw-bold fs-5 text-white">School LMS</div>
+                    <div class="small text-white-50">نظام إدارة المدارس</div>
+                </div>
+                <nav class="nav flex-column px-2 gap-1">
+                    <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>لوحة التحكم</a>
+                    <a class="nav-link" asp-area="Admin" asp-controller="Schools" asp-action="Index"><i class="bi bi-building me-2"></i>المدارس</a>
+                    <a class="nav-link" asp-area="Admin" asp-controller="Students" asp-action="Index"><i class="bi bi-people me-2"></i>الطلاب</a>
+                    <a class="nav-link" asp-area="Teacher" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-easel me-2"></i>المعلم</a>
+                    <a class="nav-link" asp-area="Student" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-mortarboard me-2"></i>الطالب</a>
+                    <a class="nav-link" asp-area="Parent" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-person-hearts me-2"></i>ولي الأمر</a>
+                </nav>
+            </aside>
+        }
+
+        <div class="flex-grow-1 main-panel">
+            <header class="topbar border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="sidebarToggle"><i class="bi bi-list"></i></button>
+                    }
+                    <strong>@ViewData["Title"]</strong>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a class="btn btn-sm btn-outline-primary" asp-controller="Account" asp-action="SetLanguage" asp-route-culture="ar" asp-route-returnUrl="@Context.Request.Path">عربي</a>
+                    <a class="btn btn-sm btn-outline-primary" asp-controller="Account" asp-action="SetLanguage" asp-route-culture="en" asp-route-returnUrl="@Context.Request.Path">EN</a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="small text-muted">@User.Identity.Name</span>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-danger" type="submit">خروج</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">دخول</a>
+                    }
+                </div>
+            </header>
+
+            <main class="container-fluid py-4">
+                @if (TempData["Success"] is string success)
+                {
+                    <div class="alert alert-success">@success</div>
+                }
+                @if (TempData["Error"] is string error)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

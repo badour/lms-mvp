@@ -1,0 +1,25 @@
+@model IReadOnlyList<SchoolLMS.Application.DTOs.Schools.SchoolListItemDto>
+<div class="d-flex justify-content-between mb-3">
+    <h1 class="h3 page-title">المدارس</h1>
+    <a class="btn btn-primary" asp-action="Create">إضافة مدرسة</a>
+</div>
+<div class="card stat-card p-3">
+<table class="table table-striped" id="schoolsTable">
+    <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>الفروع</th><th>الطلاب</th><th>الحالة</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.NameAr<br /><span class="small text-muted">@item.NameEn</span></td>
+            <td>@item.Phone</td>
+            <td>@item.SchoolType</td>
+            <td>@item.BranchCount</td>
+            <td>@item.StudentCount</td>
+            <td>@(item.IsActive ? "نشطة" : "موقوفة")</td>
+            <td><a asp-action="Edit" asp-route-id="@item.Id">تعديل</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+@section Scripts { <script>$('#schoolsTable').DataTable({ language: { url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/ar.json' } });</script> }

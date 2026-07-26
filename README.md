@@ -1,32 +1,83 @@
 # School LMS
 
-Multi-School Management and Learning Management System for a group of private schools.
+Multi-School Management and Learning Management System (SIS + LMS) for private schools.
 
-**Stack:** ASP.NET Core 8 MVC · EF Core · SQL Server · Identity · REST API · Razor · Bootstrap 5 · Arabic RTL first
+**Stack:** ASP.NET Core 8 MVC · EF Core · SQL Server/SQLite · Identity · JWT API · Razor · Bootstrap 5 RTL · Arabic-first
 
-## Current status
+## Solution
 
-**Phase 1A — Architecture and design (awaiting approval)**
+```text
+SchoolLMS.sln
+src/
+  SchoolLMS.Domain
+  SchoolLMS.Application
+  SchoolLMS.Infrastructure
+  SchoolLMS.Web
+  SchoolLMS.Api
+tests/
+  SchoolLMS.Tests
+docs/
+  phase-1a/          # architecture package
+  deployment/        # IIS guide
+```
 
-Implementation code has not started. Review the Phase 1A package, then approve before Phase 1B / coding begins.
+## Quick start (development)
 
-| Document | Description |
-|----------|-------------|
-| [docs/phase-1a/00-overview.md](docs/phase-1a/00-overview.md) | Executive overview and approval gate |
-| [docs/phase-1a/01-architecture.md](docs/phase-1a/01-architecture.md) | Solution architecture |
-| [docs/phase-1a/02-modules.md](docs/phase-1a/02-modules.md) | Complete module list |
-| [docs/phase-1a/03-roles-permissions.md](docs/phase-1a/03-roles-permissions.md) | Roles and permission matrix |
-| [docs/phase-1a/04-database-erd.md](docs/phase-1a/04-database-erd.md) | Database ERD (Mermaid) |
-| [docs/phase-1a/05-folder-structure.md](docs/phase-1a/05-folder-structure.md) | Project folder structure |
-| [docs/phase-1a/06-module-dependencies.md](docs/phase-1a/06-module-dependencies.md) | Module dependency graph |
-| [docs/phase-1a/07-development-phases.md](docs/phase-1a/07-development-phases.md) | Incremental delivery plan |
+Requirements: .NET 8 SDK
 
-## Scale target
+```bash
+dotnet restore SchoolLMS.sln
+dotnet build SchoolLMS.sln
+dotnet test SchoolLMS.sln
+dotnet run --project src/SchoolLMS.Web
+```
 
-- ~4 schools initially (multi-tenant by `SchoolId`)
-- ~3,000 users
-- Roles: students, parents, teachers, school admins, central admins, platform admins, supervisors, accountants, counsellors, and supporting staff
+Open the site URL from the console (typically `https://localhost:7xxx` or `http://localhost:5xxx`).
 
-## Next step
+Default database provider is **SQLite** for local/dev. Switch to SQL Server in config:
 
-Approve Phase 1A, then proceed to **Phase 1B**: solution scaffolding, base entities, Identity, multi-school infrastructure, and initial configuration.
+```json
+"Database": { "Provider": "SqlServer" },
+"ConnectionStrings": {
+  "DefaultConnection": "Server=.;Database=SchoolLMS;Trusted_Connection=True;TrustServerCertificate=True"
+}
+```
+
+### Demo accounts (seeded)
+
+| Role | Username | Password |
+|------|----------|----------|
+| Super Admin | `admin` | `Admin@12345` |
+| Teacher | `teacher1` | `Teacher@12345` |
+| Student | `student1` | `Student@12345` |
+| Parent | `parent1` | `Parent@12345` |
+
+## What is implemented
+
+- Clean layered architecture + multi-school `SchoolId` tenancy
+- ASP.NET Core Identity with 16 roles and permission catalog
+- Audit logging + login history
+- Seeded Arabic demo data (4 schools, academic structure, demo users)
+- Admin portal: dashboard (Chart.js), schools CRUD, students list/create
+- Student / Teacher / Parent dashboards (service-driven, not hard-coded)
+- Mobile API: `/api/v1/auth/login|refresh|logout`, `/api/v1/students/me/dashboard`
+- Hangfire dashboard at `/hangfire`
+- Arabic RTL layout, culture switch ar/en
+- Unit + integration tests
+
+## Design docs
+
+See [docs/phase-1a/00-overview.md](docs/phase-1a/00-overview.md) for full module list, ERD, roles, and phased plan.
+
+## Next implementation slices
+
+- Attendance entry UI + parent absence notifications
+- Lessons / homework / quiz full workflows
+- Grade approval workflow
+- Fees/payments cashier screens
+- Expand API surface for Flutter/MAUI
+- EF migrations checked in for SQL Server production
+
+## Deployment
+
+See [docs/deployment/iis-deployment.md](docs/deployment/iis-deployment.md).
