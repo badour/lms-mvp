@@ -1,5 +1,7 @@
 using SchoolLMS.Domain.Common;
 using SchoolLMS.Domain.Enums;
+using SchoolLMS.Domain.Entities.Academic;
+using SchoolLMS.Domain.Entities.People;
 
 namespace SchoolLMS.Domain.Entities.Lms;
 
@@ -17,14 +19,22 @@ public class Lesson : SchoolOwnedEntity
     public string? LearningObjectives { get; set; }
     public int SortOrder { get; set; }
     public PublicationStatus Status { get; set; } = PublicationStatus.Draft;
+    public bool IsPosted { get; set; }
     public DateTime? PublishDate { get; set; }
     public DateTime? ExpiryDate { get; set; }
+    public DateTime? LessonDateTime { get; set; }
     public int? EstimatedDurationMinutes { get; set; }
     public string? FeaturedImagePath { get; set; }
     public string? VideoUrl { get; set; }
+    public string? VideoPath { get; set; }
+    public string? VideoOriginalName { get; set; }
     public string? TeacherNotes { get; set; }
+    public string? Notes { get; set; }
     public string? StudentInstructions { get; set; }
 
+    public Subject? Subject { get; set; }
+    public Teacher? Teacher { get; set; }
     public CourseUnit? CourseUnit { get; set; }
     public ICollection<LessonResource> Resources { get; set; } = new List<LessonResource>();
+    public ICollection<LessonClassSection> IncludedClasses { get; set; } = new List<LessonClassSection>();
 }

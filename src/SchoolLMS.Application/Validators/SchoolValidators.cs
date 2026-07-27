@@ -1,4 +1,5 @@
 using FluentValidation;
+using SchoolLMS.Application.DTOs.Lessons;
 using SchoolLMS.Application.DTOs.Messages;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.DTOs.Students;
@@ -78,5 +79,20 @@ public class SendStudentInboxMessageRequestValidator : AbstractValidator<SendStu
             .NotNull()
             .WithMessage("اختر المعلم المستلم.")
             .When(x => x.TargetType == StudentMessageTargetType.Instructor);
+    }
+}
+
+public class CreateLessonRequestValidator : AbstractValidator<CreateLessonRequest>
+{
+    public CreateLessonRequestValidator()
+    {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
+        RuleFor(x => x.SubjectId).GreaterThan(0).WithMessage("اسم الدرس / المادة مطلوب.");
+        RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
+        RuleFor(x => x.ClassSectionIds).NotEmpty().WithMessage("اختر صفاً واحداً على الأقل.");
+        RuleFor(x => x.LessonDateTime).NotNull().WithMessage("تاريخ ووقت الدرس مطلوب.");
+        RuleFor(x => x.Status).IsInEnum().WithMessage("حالة الدرس غير صالحة.");
+        RuleFor(x => x.Description).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Description));
+        RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
     }
 }

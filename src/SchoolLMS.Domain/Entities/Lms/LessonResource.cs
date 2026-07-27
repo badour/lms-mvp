@@ -10,6 +10,9 @@ public class LessonResource : SchoolOwnedEntity
     public string Title { get; set; } = string.Empty;
     public string? Url { get; set; }
     public string? RelativePath { get; set; }
+    public string? OriginalFileName { get; set; }
+    public string? ContentType { get; set; }
+    public long? FileSizeBytes { get; set; }
     public int SortOrder { get; set; }
 
     public Lesson? Lesson { get; set; }

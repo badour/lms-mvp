@@ -57,6 +57,7 @@ public interface IApplicationDbContext
     DbSet<CourseUnit> CourseUnits { get; }
     DbSet<Lesson> Lessons { get; }
     DbSet<LessonResource> LessonResources { get; }
+    DbSet<LessonClassSection> LessonClassSections { get; }
     DbSet<LessonProgress> LessonProgresses { get; }
     DbSet<Assignment> Assignments { get; }
     DbSet<AssignmentSubmission> AssignmentSubmissions { get; }

@@ -70,6 +70,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CourseUnit> CourseUnits => Set<CourseUnit>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<LessonResource> LessonResources => Set<LessonResource>();
+    public DbSet<LessonClassSection> LessonClassSections => Set<LessonClassSection>();
     public DbSet<LessonProgress> LessonProgresses => Set<LessonProgress>();
     public DbSet<Assignment> Assignments => Set<Assignment>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
@@ -295,6 +296,52 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<Assignment>(e => e.Property(x => x.TotalMarks).HasPrecision(18, 2));
         builder.Entity<StudentGrade>(e => e.Property(x => x.Score).HasPrecision(18, 2));
         builder.Entity<LessonProgress>(e => e.Property(x => x.VideoCompletionPercent).HasPrecision(5, 2));
+
+        builder.Entity<Lesson>(e =>
+        {
+            e.Property(x => x.TitleAr).HasMaxLength(250).IsRequired();
+            e.Property(x => x.TitleEn).HasMaxLength(250);
+            e.Property(x => x.Description).HasMaxLength(4000);
+            e.Property(x => x.LearningObjectives).HasMaxLength(2000);
+            e.Property(x => x.VideoUrl).HasMaxLength(1000);
+            e.Property(x => x.VideoPath).HasMaxLength(500);
+            e.Property(x => x.VideoOriginalName).HasMaxLength(300);
+            e.Property(x => x.TeacherNotes).HasMaxLength(2000);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.Property(x => x.StudentInstructions).HasMaxLength(2000);
+            e.Property(x => x.FeaturedImagePath).HasMaxLength(500);
+            e.HasIndex(x => new { x.SchoolId, x.SubjectId, x.Status });
+            e.HasIndex(x => x.TeacherId);
+            e.HasOne(x => x.Subject).WithMany().HasForeignKey(x => x.SubjectId);
+            e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId);
+            e.HasOne(x => x.CourseUnit).WithMany(x => x.Lessons).HasForeignKey(x => x.CourseUnitId);
+            e.HasMany(x => x.Resources).WithOne(x => x.Lesson).HasForeignKey(x => x.LessonId);
+            e.HasMany(x => x.IncludedClasses).WithOne(x => x.Lesson).HasForeignKey(x => x.LessonId);
+        });
+
+        builder.Entity<LessonClassSection>(e =>
+        {
+            e.HasKey(x => new { x.LessonId, x.ClassSectionId });
+            e.HasOne(x => x.ClassSection).WithMany().HasForeignKey(x => x.ClassSectionId);
+        });
+
+        builder.Entity<LessonResource>(e =>
+        {
+            e.Property(x => x.ResourceType).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            e.Property(x => x.Url).HasMaxLength(1000);
+            e.Property(x => x.RelativePath).HasMaxLength(500);
+            e.Property(x => x.OriginalFileName).HasMaxLength(300);
+            e.Property(x => x.ContentType).HasMaxLength(150);
+            e.HasIndex(x => x.LessonId);
+        });
+
+        builder.Entity<CourseUnit>(e =>
+        {
+            e.Property(x => x.TitleAr).HasMaxLength(250).IsRequired();
+            e.Property(x => x.TitleEn).HasMaxLength(250);
+            e.HasIndex(x => new { x.SchoolId, x.SubjectId });
+        });
 
         var isSqlite = Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true;
         foreach (var entityType in builder.Model.GetEntityTypes())
