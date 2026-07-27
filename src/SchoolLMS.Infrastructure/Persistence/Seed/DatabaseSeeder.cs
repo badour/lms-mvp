@@ -95,6 +95,41 @@ public static class DatabaseSeeder
             }
         }
 
+        // Keep school-management demo accounts available even when schools were seeded earlier.
+        foreach (var school in await db.Schools.AsNoTracking().Where(x => !x.IsDeleted).ToListAsync())
+        {
+            var email = $"schooladmin{school.Id}@schoollms.local";
+            var schoolAdmin = await userManager.FindByEmailAsync(email);
+            if (schoolAdmin is null)
+            {
+                schoolAdmin = new ApplicationUser
+                {
+                    UserName = $"schooladmin{school.Id}",
+                    Email = email,
+                    EmailConfirmed = true,
+                    FullNameAr = $"إدارة المدرسة {school.Id}",
+                    IsActive = true,
+                    PreferredCulture = "ar"
+                };
+                var created = await userManager.CreateAsync(schoolAdmin, "SchoolAdmin@12345");
+                if (created.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(schoolAdmin, AppRoles.SchoolAdministrator);
+                    db.UserSchoolAssignments.Add(new UserSchoolAssignment
+                    {
+                        UserId = schoolAdmin.Id,
+                        SchoolId = school.Id,
+                        IsActive = true
+                    });
+                    await db.SaveChangesAsync();
+                }
+            }
+            else if (!await userManager.IsInRoleAsync(schoolAdmin, AppRoles.SchoolAdministrator))
+            {
+                await userManager.AddToRoleAsync(schoolAdmin, AppRoles.SchoolAdministrator);
+            }
+        }
+
         if (await db.Schools.AnyAsync())
         {
             return;
@@ -195,6 +230,36 @@ public static class DatabaseSeeder
 
             await db.SaveChangesAsync();
 
+            var schoolAdminUser = new ApplicationUser
+            {
+                UserName = $"schooladmin{school.Id}",
+                Email = $"schooladmin{school.Id}@schoollms.local",
+                EmailConfirmed = true,
+                FullNameAr = $"إدارة المدرسة {school.Id}",
+                IsActive = true,
+                PreferredCulture = "ar"
+            };
+            var existingSchoolAdmin = await userManager.FindByEmailAsync(schoolAdminUser.Email);
+            if (existingSchoolAdmin is null)
+            {
+                await userManager.CreateAsync(schoolAdminUser, "SchoolAdmin@12345");
+                await userManager.AddToRoleAsync(schoolAdminUser, AppRoles.SchoolAdministrator);
+                db.UserSchoolAssignments.Add(new UserSchoolAssignment
+                {
+                    UserId = schoolAdminUser.Id,
+                    SchoolId = school.Id,
+                    IsActive = true
+                });
+            }
+            else
+            {
+                schoolAdminUser = existingSchoolAdmin;
+                if (!await userManager.IsInRoleAsync(schoolAdminUser, AppRoles.SchoolAdministrator))
+                {
+                    await userManager.AddToRoleAsync(schoolAdminUser, AppRoles.SchoolAdministrator);
+                }
+            }
+
             var teacherUser = new ApplicationUser
             {
                 UserName = $"teacher{school.Id}",
@@ -204,7 +269,8 @@ public static class DatabaseSeeder
                 IsActive = true,
                 PreferredCulture = "ar"
             };
-            if (await userManager.FindByEmailAsync(teacherUser.Email) is null)
+            var existingTeacherUser = await userManager.FindByEmailAsync(teacherUser.Email);
+            if (existingTeacherUser is null)
             {
                 await userManager.CreateAsync(teacherUser, "Teacher@12345");
                 await userManager.AddToRoleAsync(teacherUser, AppRoles.Teacher);
@@ -214,6 +280,10 @@ public static class DatabaseSeeder
                     SchoolId = school.Id,
                     IsActive = true
                 });
+            }
+            else
+            {
+                teacherUser = existingTeacherUser;
             }
 
             var teacher = new Teacher

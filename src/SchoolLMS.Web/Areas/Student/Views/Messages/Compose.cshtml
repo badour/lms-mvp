@@ -1,0 +1,90 @@
+@model SchoolLMS.Application.DTOs.Messages.SendStudentInboxMessageRequest
+@{
+    ViewData["Title"] = "إرسال رسالة";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">صندوق الرسائل</div>
+    <h1 class="h3 page-title mb-1">إرسال رسالة جديدة</h1>
+    <p class="text-muted mb-0">اختر نوع المستلم: إدارة النظام، إدارة المدرسة، أو معلم</p>
+</div>
+
+<form method="post" class="student-create-form" id="composeInboxForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>بيانات الرسالة</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="TargetType" class="form-label"></label>
+                <select asp-for="TargetType" class="form-select" asp-items="ViewBag.TargetTypes" id="TargetType"></select>
+                <span asp-validation-for="TargetType" class="text-danger"></span>
+            </div>
+            <div class="col-md-6" id="teacherPicker">
+                <label asp-for="TeacherId" class="form-label"></label>
+                <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.Instructors">
+                    <option value="">اختر المعلم</option>
+                </select>
+                <span asp-validation-for="TeacherId" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Subject" class="form-label"></label>
+                <input asp-for="Subject" class="form-control" placeholder="موضوع الرسالة / الطلب / الشكوى" />
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Body" class="form-label"></label>
+                <textarea asp-for="Body" class="form-control" rows="6" placeholder="اكتب نص الرسالة هنا..."></textarea>
+                <span asp-validation-for="Body" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="inbox-target-help row g-2 mb-3">
+        <div class="col-md-4">
+            <div class="mini-card">
+                <div>
+                    <strong>إدارة النظام</strong>
+                    <div class="small text-muted">للمشرف العام والمشكلات التقنية العامة</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mini-card">
+                <div>
+                    <strong>إدارة المدرسة</strong>
+                    <div class="small text-muted">لمدير المدرسة والشؤون الإدارية</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mini-card">
+                <div>
+                    <strong>المعلم</strong>
+                    <div class="small text-muted">لاستفسارات المادة والواجبات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> إرسال</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع للصندوق</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const typeSelect = document.getElementById('TargetType');
+  const teacherPicker = document.getElementById('teacherPicker');
+  const instructorValue = '@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.Instructor)';
+  const sync = () => {
+    const isInstructor = typeSelect && String(typeSelect.value) === instructorValue;
+    if (teacherPicker) teacherPicker.style.display = isInstructor ? '' : 'none';
+  };
+  typeSelect?.addEventListener('change', sync);
+  sync();
+})();
+</script>
+}

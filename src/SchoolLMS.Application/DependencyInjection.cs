@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SchoolLMS.Application.Services.Dashboards;
+using SchoolLMS.Application.Services.Messages;
 using SchoolLMS.Application.Services.Schools;
 using SchoolLMS.Application.Services.Students;
 using SchoolLMS.Application.Validators;
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<ISchoolService, SchoolService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IQimamCertificateService, QimamCertificateService>();
+        services.AddScoped<IStudentInboxService, StudentInboxService>();
         services.AddScoped<IDashboardService, DashboardService>();
         return services;
     }

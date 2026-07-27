@@ -66,6 +66,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<IUserDirectory, UserDirectory>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<JwtTokenService>();

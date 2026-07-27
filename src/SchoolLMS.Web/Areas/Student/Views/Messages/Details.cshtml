@@ -1,0 +1,41 @@
+@model SchoolLMS.Application.DTOs.Messages.StudentInboxMessageDto
+@{
+    ViewData["Title"] = "تفاصيل الرسالة";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">صندوق الرسائل</div>
+    <h1 class="h3 page-title mb-1">@Model.Subject</h1>
+    <p class="text-muted mb-0">
+        إلى: @Model.TargetTypeNameAr
+        @if (!string.IsNullOrWhiteSpace(Model.TargetDisplayName))
+        {
+            <span>· @Model.TargetDisplayName</span>
+        }
+        · @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+    </p>
+</div>
+
+<section class="section-card mb-3">
+    <h2>نص الرسالة</h2>
+    <p class="mb-0 inbox-body">@Model.Body</p>
+</section>
+
+@if (Model.HasReply)
+{
+    <section class="section-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">الرد</h2>
+            <span class="pill pill-green">@Model.RepliedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+        </div>
+        <p class="mb-0 inbox-body">@Model.ReplyBody</p>
+    </section>
+}
+else
+{
+    <section class="section-card mb-3">
+        <h2>بانتظار الرد</h2>
+        <p class="text-muted mb-0">تم إيصال الرسالة إلى @Model.RecipientCount مستلم/مستلمين.</p>
+    </section>
+}
+
+<a class="btn btn-outline-secondary" asp-action="Index">رجوع للصندوق</a>

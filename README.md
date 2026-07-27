@@ -64,6 +64,7 @@ Default database provider is **SQLite** for local/dev. Switch to SQL Server in c
 | Role | Username | Password |
 |------|----------|----------|
 | Super Admin | `admin` | `Admin@12345` |
+| School Admin | `schooladmin1` | `SchoolAdmin@12345` |
 | Teacher | `teacher1` | `Teacher@12345` |
 | Student | `student1` | `Student@12345` |
 | Parent | `parent1` | `Parent@12345` |

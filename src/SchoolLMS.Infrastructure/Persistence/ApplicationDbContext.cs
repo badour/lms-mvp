@@ -214,6 +214,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.HasOne(x => x.Student).WithMany(x => x.QimamCertificates).HasForeignKey(x => x.StudentId);
         });
 
+        builder.Entity<Message>(e =>
+        {
+            e.Property(x => x.SenderUserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.Subject).HasMaxLength(250).IsRequired();
+            e.Property(x => x.Body).HasMaxLength(4000).IsRequired();
+            e.Property(x => x.Category).HasMaxLength(50).IsRequired();
+            e.Property(x => x.TargetDisplayName).HasMaxLength(200);
+            e.Property(x => x.ReplyBody).HasMaxLength(4000);
+            e.Property(x => x.RepliedByUserId).HasMaxLength(450);
+            e.HasIndex(x => new { x.SchoolId, x.StudentId, x.CreatedAt });
+            e.HasIndex(x => x.SenderUserId);
+            e.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
+            e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId);
+            e.HasMany(x => x.Recipients).WithOne(x => x.Message).HasForeignKey(x => x.MessageId);
+        });
+
+        builder.Entity<MessageRecipient>(e =>
+        {
+            e.Property(x => x.RecipientUserId).HasMaxLength(450).IsRequired();
+            e.HasIndex(x => x.MessageId);
+            e.HasIndex(x => x.RecipientUserId);
+        });
+
         builder.Entity<StudentGuardian>(e =>
         {
             e.HasKey(x => new { x.StudentId, x.GuardianId });

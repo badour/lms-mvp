@@ -299,6 +299,15 @@ html[dir="ltr"] .sidebar {
   font-size: 1.05rem;
 }
 
+.inbox-body {
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.inbox-target-help .mini-card {
+  min-height: 100%;
+}
+
 @media (max-width: 992px) {
   .sidebar {
     position: fixed;

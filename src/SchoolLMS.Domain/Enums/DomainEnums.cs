@@ -151,6 +151,13 @@ public enum NotificationDeliveryStatus
     Read = 5
 }
 
+public enum StudentMessageTargetType
+{
+    SystemAdmin = 1,
+    SchoolManagement = 2,
+    Instructor = 3
+}
+
 public enum BehaviourPolarity
 {
     Positive = 1,

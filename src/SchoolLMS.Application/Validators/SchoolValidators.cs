@@ -1,6 +1,8 @@
 using FluentValidation;
+using SchoolLMS.Application.DTOs.Messages;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.DTOs.Students;
+using SchoolLMS.Domain.Enums;
 
 namespace SchoolLMS.Application.Validators;
 
@@ -62,5 +64,19 @@ public class CreateQimamCertificateRequestValidator : AbstractValidator<CreateQi
         RuleFor(x => x.ClassName).NotEmpty().WithMessage("اسم الصف مطلوب.").MaximumLength(150);
         RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
         RuleFor(x => x.Description).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Description));
+    }
+}
+
+public class SendStudentInboxMessageRequestValidator : AbstractValidator<SendStudentInboxMessageRequest>
+{
+    public SendStudentInboxMessageRequestValidator()
+    {
+        RuleFor(x => x.TargetType).IsInEnum().WithMessage("نوع المستلم غير صالح.");
+        RuleFor(x => x.Subject).NotEmpty().WithMessage("الموضوع مطلوب.").MaximumLength(250);
+        RuleFor(x => x.Body).NotEmpty().WithMessage("نص الرسالة مطلوب.").MaximumLength(4000);
+        RuleFor(x => x.TeacherId)
+            .NotNull()
+            .WithMessage("اختر المعلم المستلم.")
+            .When(x => x.TargetType == StudentMessageTargetType.Instructor);
     }
 }
