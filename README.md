@@ -23,7 +23,23 @@ docs/
 
 ## Quick start (development)
 
-Requirements: .NET 8 SDK
+Requirements: **.NET 8 SDK** (and for Visual Studio: VS 2022 17.8+ with the **ASP.NET and web development** workload)
+
+### Visual Studio
+
+1. Open **`SchoolLMS.sln`** (not a single `.csproj`).
+2. Right-click the solution → **Restore NuGet Packages**.
+3. Set **`SchoolLMS.Web`** as the Startup Project.
+4. Press F5 / Run.
+
+If you see `NU1105` about `SchoolLMS.Web.csproj`, close Visual Studio, delete all `bin` / `obj` folders, reopen **`SchoolLMS.sln`**, then restore again:
+
+```powershell
+dotnet restore SchoolLMS.sln
+dotnet build SchoolLMS.sln
+```
+
+### Command line
 
 ```bash
 dotnet restore SchoolLMS.sln

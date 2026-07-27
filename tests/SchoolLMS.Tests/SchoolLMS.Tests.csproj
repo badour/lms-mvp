@@ -27,8 +27,6 @@
     <ProjectReference Include="..\..\src\SchoolLMS.Domain\SchoolLMS.Domain.csproj" />
     <ProjectReference Include="..\..\src\SchoolLMS.Application\SchoolLMS.Application.csproj" />
     <ProjectReference Include="..\..\src\SchoolLMS.Infrastructure\SchoolLMS.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\SchoolLMS.Web\SchoolLMS.Web.csproj" />
-    <ProjectReference Include="..\..\src\SchoolLMS.Api\SchoolLMS.Api.csproj" />
   </ItemGroup>
 
 </Project>
