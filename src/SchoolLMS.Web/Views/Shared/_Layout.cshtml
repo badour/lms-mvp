@@ -1,55 +1,128 @@
 ﻿@using System.Globalization
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
-    var isRtl = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+    // Arabic-first school platform: keep RTL layout as the primary shell.
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var isRtl = culture != "en";
     var dir = isRtl ? "rtl" : "ltr";
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var isStudentSection = string.Equals(area, "Student", StringComparison.OrdinalIgnoreCase);
+    string StudentActive(string ctrl) =>
+        isStudentSection && string.Equals(controller, ctrl, StringComparison.OrdinalIgnoreCase) ? "active" : "";
 }
 <!DOCTYPE html>
-<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" dir="@dir">
+<html lang="@culture" dir="@dir">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - نظام إدارة المدارس</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/@(isRtl ? "bootstrap.rtl.min.css" : "bootstrap.min.css")" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="app-body">
-    <div class="d-flex" id="wrapper">
+<body class="app-body @(isRtl ? "is-rtl" : "is-ltr")">
+    <div class="app-shell" id="wrapper">
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <aside class="sidebar border-end" id="sidebar">
+            <aside class="sidebar" id="sidebar" aria-label="القائمة الرئيسية">
                 <div class="sidebar-brand px-3 py-4">
                     <div class="fw-bold fs-5 text-white">School LMS</div>
                     <div class="small text-white-50">نظام إدارة المدارس</div>
                 </div>
-                <nav class="nav flex-column px-2 gap-1">
-                    <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>لوحة التحكم</a>
-                    <a class="nav-link" asp-area="Admin" asp-controller="Schools" asp-action="Index"><i class="bi bi-building me-2"></i>المدارس</a>
-                    <a class="nav-link" asp-area="Admin" asp-controller="Students" asp-action="Index"><i class="bi bi-people me-2"></i>الطلاب</a>
-                    <a class="nav-link" asp-area="Teacher" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-easel me-2"></i>المعلم</a>
-                    <a class="nav-link" asp-area="Student" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-mortarboard me-2"></i>الطالب</a>
-                    <a class="nav-link" asp-area="Parent" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-person-hearts me-2"></i>ولي الأمر</a>
+
+                <nav class="sidebar-nav px-2 pb-4">
+                    <div class="nav-group-label">الإدارة</div>
+                    <a class="nav-link @(area == "Admin" && controller == "Dashboard" ? "active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-speedometer2"></i><span>لوحة التحكم</span>
+                    </a>
+                    <a class="nav-link @(area == "Admin" && controller == "Schools" ? "active" : "")" asp-area="Admin" asp-controller="Schools" asp-action="Index">
+                        <i class="bi bi-building"></i><span>المدارس</span>
+                    </a>
+                    <a class="nav-link @(area == "Admin" && controller == "Students" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Index">
+                        <i class="bi bi-people"></i><span>الطلاب</span>
+                    </a>
+                    <a class="nav-link @(area == "Teacher" ? "active" : "")" asp-area="Teacher" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-easel"></i><span>المعلم</span>
+                    </a>
+                    <a class="nav-link @(area == "Parent" ? "active" : "")" asp-area="Parent" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-person-hearts"></i><span>ولي الأمر</span>
+                    </a>
+
+                    <div class="nav-group-label mt-3">بوابة الطالب</div>
+                    <button class="nav-link nav-toggle @(isStudentSection ? "active open" : "")" type="button" data-submenu-toggle="student-menu" aria-expanded="@(isStudentSection ? "true" : "false")">
+                        <span class="nav-toggle__main">
+                            <i class="bi bi-mortarboard"></i><span>الطالب</span>
+                        </span>
+                        <i class="bi bi-chevron-down nav-toggle__chevron"></i>
+                    </button>
+                    <div class="submenu @(isStudentSection ? "show" : "")" id="student-menu">
+                        <a class="nav-link sub @StudentActive("Dashboard")" asp-area="Student" asp-controller="Dashboard" asp-action="Index">
+                            <i class="bi bi-grid"></i><span>الرئيسية</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Homework")" asp-area="Student" asp-controller="Homework" asp-action="Index">
+                            <i class="bi bi-journal-text"></i><span>الواجبات البيتية</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Exams")" asp-area="Student" asp-controller="Exams" asp-action="Index">
+                            <i class="bi bi-file-earmark-text"></i><span>الامتحانات</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Attendance")" asp-area="Student" asp-controller="Attendance" asp-action="Index">
+                            <i class="bi bi-check2-circle"></i><span>الحضور والغياب</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Subjects")" asp-area="Student" asp-controller="Subjects" asp-action="Index">
+                            <i class="bi bi-book"></i><span>المواد الدراسية</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Classroom")" asp-area="Student" asp-controller="Classroom" asp-action="Index">
+                            <i class="bi bi-display"></i><span>القاعة الإلكترونية</span>
+                        </a>
+
+                        <div class="submenu-divider">خيارات إضافية</div>
+                        <a class="nav-link sub @StudentActive("Schedule")" asp-area="Student" asp-controller="Schedule" asp-action="Index">
+                            <i class="bi bi-calendar-week"></i><span>الجدول الأسبوعي</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Profile")" asp-area="Student" asp-controller="Profile" asp-action="Index">
+                            <i class="bi bi-person"></i><span>ملف الطالب</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Payment")" asp-area="Student" asp-controller="Payment" asp-action="Index">
+                            <i class="bi bi-credit-card"></i><span>الدفع الإلكتروني</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Messages")" asp-area="Student" asp-controller="Messages" asp-action="Index">
+                            <i class="bi bi-envelope"></i><span>الطلبات والشكاوى</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("Badges")" asp-area="Student" asp-controller="Badges" asp-action="Index">
+                            <i class="bi bi-award"></i><span>الأوسمة والإنجازات</span>
+                        </a>
+                    </div>
                 </nav>
             </aside>
         }
 
-        <div class="flex-grow-1 main-panel">
-            <header class="topbar border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
+        <div class="main-panel">
+            <header class="topbar px-3 py-2">
+                <div class="topbar__start">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <button class="btn btn-sm btn-outline-secondary" type="button" id="sidebarToggle"><i class="bi bi-list"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="sidebarToggle" aria-label="القائمة">
+                            <i class="bi bi-list"></i>
+                        </button>
                     }
-                    <strong>@ViewData["Title"]</strong>
+                    <div>
+                        <strong class="page-heading">@ViewData["Title"]</strong>
+                        @if (isStudentSection)
+                        {
+                            <div class="small text-muted">أهلاً بك في منصتك التعليمية</div>
+                        }
+                    </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="topbar__end">
                     <a class="btn btn-sm btn-outline-primary" asp-controller="Account" asp-action="SetLanguage" asp-route-culture="ar" asp-route-returnUrl="@Context.Request.Path">عربي</a>
                     <a class="btn btn-sm btn-outline-primary" asp-controller="Account" asp-action="SetLanguage" asp-route-culture="en" asp-route-returnUrl="@Context.Request.Path">EN</a>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <span class="small text-muted">@User.Identity.Name</span>
+                        <span class="small text-muted user-chip">@User.Identity.Name</span>
                         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                             @Html.AntiForgeryToken()
                             <button class="btn btn-sm btn-danger" type="submit">خروج</button>
@@ -62,7 +135,7 @@
                 </div>
             </header>
 
-            <main class="container-fluid py-4">
+            <main class="container-fluid py-4 content-area">
                 @if (TempData["Success"] is string success)
                 {
                     <div class="alert alert-success">@success</div>
