@@ -50,6 +50,7 @@ public interface IApplicationDbContext
     DbSet<StudentDocument> StudentDocuments { get; }
     DbSet<StudentHobby> StudentHobbies { get; }
     DbSet<StudentNote> StudentNotes { get; }
+    DbSet<StudentQimamCertificate> StudentQimamCertificates { get; }
     DbSet<Employee> Employees { get; }
     DbSet<Teacher> Teachers { get; }
 

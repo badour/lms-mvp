@@ -1,0 +1,123 @@
+@model SchoolLMS.Application.Common.PagedResult<SchoolLMS.Application.DTOs.Students.QimamCertificateListItemDto>
+@{
+    ViewData["Title"] = "شهادات تطبيق قمم";
+}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+        <h1 class="h3 page-title mb-1">شهادات تطبيق قمم</h1>
+        <p class="text-muted mb-0">قائمة شهادات قمم المرتبطة بالطلاب</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> إضافة شهادة</a>
+</div>
+
+<form method="get" class="card stat-card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">بحث</label>
+            <input name="Search" value="@Context.Request.Query["Search"]" class="form-control" placeholder="اسم الشهادة / الطالب / الصف" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">المدرسة</label>
+            <select name="SchoolId" class="form-select" asp-items="ViewBag.Schools">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">الطالب</label>
+            <select name="StudentId" class="form-select" asp-items="ViewBag.Students">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-primary w-100" type="submit">تصفية</button>
+        </div>
+    </div>
+</form>
+
+<div class="card stat-card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+                <th>اسم الشهادة</th>
+                <th>التاريخ</th>
+                <th>اسم الصف</th>
+                <th>الطالب</th>
+                <th>الصورة</th>
+                <th>المستند</th>
+                <th>الملاحظات / الوصف</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">لا توجد شهادات مسجّلة بعد.</td>
+                </tr>
+            }
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td class="fw-semibold">@item.CertificateName</td>
+                    <td>@item.CertificateDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.ClassName</td>
+                    <td>
+                        <div>@item.StudentNameAr</div>
+                        <div class="small text-muted">@item.StudentNumber · @item.SchoolNameAr</div>
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(item.ImagePath))
+                        {
+                            <a href="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "image" })" target="_blank" rel="noopener">
+                                <img src="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "image" })" alt="@item.ImageOriginalName" class="qimam-thumb" />
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(item.DocumentPath))
+                        {
+                            <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "document" })">
+                                <i class="bi bi-download"></i> @item.DocumentOriginalName
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(item.Notes))
+                        {
+                            <div class="small"><strong>ملاحظات:</strong> @item.Notes</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <div class="small text-muted">@item.Description</div>
+                        }
+                        @if (string.IsNullOrWhiteSpace(item.Notes) && string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-action="Delete" method="post" onsubmit="return confirm('حذف هذه الشهادة؟');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="small text-muted">صفحة @Model.Page من @Model.TotalPages · الإجمالي @Model.TotalCount</div>
+</div>

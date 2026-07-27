@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateSchoolRequestValidator>();
         services.AddScoped<ISchoolService, SchoolService>();
         services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<IQimamCertificateService, QimamCertificateService>();
         services.AddScoped<IDashboardService, DashboardService>();
         return services;
     }

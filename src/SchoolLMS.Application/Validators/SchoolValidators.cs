@@ -51,3 +51,16 @@ public class CreateStudentRequestValidator : AbstractValidator<CreateStudentRequ
         RuleForEach(x => x.NotesList).MaximumLength(2000).When(x => x.NotesList is not null);
     }
 }
+
+public class CreateQimamCertificateRequestValidator : AbstractValidator<CreateQimamCertificateRequest>
+{
+    public CreateQimamCertificateRequestValidator()
+    {
+        RuleFor(x => x.StudentId).GreaterThan(0).WithMessage("الطالب مطلوب.");
+        RuleFor(x => x.CertificateName).NotEmpty().WithMessage("اسم الشهادة مطلوب.").MaximumLength(250);
+        RuleFor(x => x.CertificateDate).NotNull().WithMessage("تاريخ الشهادة مطلوب.");
+        RuleFor(x => x.ClassName).NotEmpty().WithMessage("اسم الصف مطلوب.").MaximumLength(150);
+        RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
+        RuleFor(x => x.Description).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Description));
+    }
+}

@@ -47,6 +47,9 @@
                     <a class="nav-link sub @(area == "Admin" && controller == "Students" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Create">
                         <i class="bi bi-person-plus"></i><span>إضافة طالب جديد</span>
                     </a>
+                    <a class="nav-link sub @(area == "Admin" && controller == "QimamCertificates" ? "active" : "")" asp-area="Admin" asp-controller="QimamCertificates" asp-action="Index">
+                        <i class="bi bi-award"></i><span>شهادات تطبيق قمم</span>
+                    </a>
                     <a class="nav-link @(area == "Teacher" ? "active" : "")" asp-area="Teacher" asp-controller="Dashboard" asp-action="Index">
                         <i class="bi bi-easel"></i><span>المعلم</span>
                     </a>
@@ -96,6 +99,9 @@
                         </a>
                         <a class="nav-link sub @StudentActive("Badges")" asp-area="Student" asp-controller="Badges" asp-action="Index">
                             <i class="bi bi-award"></i><span>الأوسمة والإنجازات</span>
+                        </a>
+                        <a class="nav-link sub @StudentActive("QimamCertificates")" asp-area="Student" asp-controller="QimamCertificates" asp-action="Index">
+                            <i class="bi bi-patch-check"></i><span>شهادات تطبيق قمم</span>
                         </a>
                     </div>
                 </nav>

@@ -38,6 +38,7 @@ public class Student : SchoolOwnedEntity
     public ICollection<StudentDocument> Documents { get; set; } = new List<StudentDocument>();
     public ICollection<StudentHobby> Hobbies { get; set; } = new List<StudentHobby>();
     public ICollection<StudentNote> StudentNotes { get; set; } = new List<StudentNote>();
+    public ICollection<StudentQimamCertificate> QimamCertificates { get; set; } = new List<StudentQimamCertificate>();
     public ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
     public ICollection<StudentAddress> Addresses { get; set; } = new List<StudentAddress>();
 }

@@ -63,6 +63,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<StudentDocument> StudentDocuments => Set<StudentDocument>();
     public DbSet<StudentHobby> StudentHobbies => Set<StudentHobby>();
     public DbSet<StudentNote> StudentNotes => Set<StudentNote>();
+    public DbSet<StudentQimamCertificate> StudentQimamCertificates => Set<StudentQimamCertificate>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
 
@@ -196,6 +197,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         {
             e.Property(x => x.NoteText).HasMaxLength(2000).IsRequired();
             e.HasIndex(x => x.StudentId);
+        });
+
+        builder.Entity<StudentQimamCertificate>(e =>
+        {
+            e.Property(x => x.CertificateName).HasMaxLength(250).IsRequired();
+            e.Property(x => x.ClassName).HasMaxLength(150).IsRequired();
+            e.Property(x => x.ImagePath).HasMaxLength(500);
+            e.Property(x => x.ImageOriginalName).HasMaxLength(300);
+            e.Property(x => x.DocumentPath).HasMaxLength(500);
+            e.Property(x => x.DocumentOriginalName).HasMaxLength(300);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.Property(x => x.Description).HasMaxLength(4000);
+            e.HasIndex(x => x.StudentId);
+            e.HasIndex(x => new { x.SchoolId, x.CertificateDate });
+            e.HasOne(x => x.Student).WithMany(x => x.QimamCertificates).HasForeignKey(x => x.StudentId);
         });
 
         builder.Entity<StudentGuardian>(e =>

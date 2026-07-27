@@ -1,0 +1,64 @@
+@model IReadOnlyList<SchoolLMS.Application.DTOs.Students.QimamCertificateListItemDto>
+@{
+    ViewData["Title"] = "شهادات تطبيق قمم";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">بوابة الطالب</div>
+    <h1 class="h3 page-title mb-1">شهادات تطبيق قمم</h1>
+    <p class="text-muted mb-0">عرض شهاداتك المسجّلة مع الصور والمستندات والملاحظات</p>
+</div>
+
+@if (!Model.Any())
+{
+    <section class="section-card">
+        <h2>لا توجد شهادات بعد</h2>
+        <p class="text-muted mb-0">عندما تتم إضافة شهادات قمم لحسابك ستظهر هنا تلقائياً.</p>
+    </section>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var item in Model)
+        {
+            <div class="col-lg-6">
+                <section class="section-card h-100 qimam-card">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div>
+                            <h2 class="h5 mb-1">@item.CertificateName</h2>
+                            <div class="small text-muted">@item.ClassName · @item.CertificateDate.ToString("yyyy-MM-dd")</div>
+                        </div>
+                        <span class="pill pill-blue">قمم</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(item.ImagePath))
+                    {
+                        <a href="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "image" })" target="_blank" rel="noopener" class="d-block mb-3">
+                            <img src="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "image" })" alt="@item.ImageOriginalName" class="qimam-preview" />
+                        </a>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                    {
+                        <p class="mb-2">@item.Description</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                    {
+                        <div class="mini-card mb-2">
+                            <div>
+                                <strong>ملاحظات</strong>
+                                <div class="small text-muted">@item.Notes</div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(item.DocumentPath))
+                    {
+                        <a class="btn btn-sm btn-outline-primary" href="@Url.Action("QimamCertificate", "Files", new { area = "", id = item.Id, kind = "document" })">
+                            <i class="bi bi-file-earmark-arrow-down"></i> تحميل المستند
+                        </a>
+                    }
+                </section>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,67 @@
+@model SchoolLMS.Web.Models.CreateQimamCertificateForm
+@{
+    ViewData["Title"] = "إضافة شهادة قمم";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+    <h1 class="h3 page-title mb-1">إضافة شهادة تطبيق قمم</h1>
+    <p class="text-muted mb-0">تسجيل اسم الشهادة والتاريخ واسم الصف مع رفع الصورة والمستند</p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="student-create-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>بيانات الشهادة</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="StudentId" class="form-label"></label>
+                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.Students">
+                    <option value="">اختر الطالب</option>
+                </select>
+                <span asp-validation-for="StudentId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CertificateName" class="form-label"></label>
+                <input asp-for="CertificateName" class="form-control" placeholder="مثال: شهادة مشاركة في مسابقة قمم" />
+                <span asp-validation-for="CertificateName" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="CertificateDate" class="form-label"></label>
+                <input asp-for="CertificateDate" class="form-control" type="date" />
+                <span asp-validation-for="CertificateDate" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassName" class="form-label"></label>
+                <input asp-for="ClassName" class="form-control" placeholder="اسم الصف" />
+                <span asp-validation-for="ClassName" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Image" class="form-label"></label>
+                <input asp-for="Image" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
+                <div class="form-text">صورة الشهادة (حتى 5 ميجابايت)</div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Document" class="form-label"></label>
+                <input asp-for="Document" class="form-control" type="file" accept=".pdf,.doc,.docx,application/pdf" />
+                <div class="form-text">مستند الشهادة PDF أو Word (حتى 10 ميجابايت)</div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="ملاحظات قصيرة عن الشهادة"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="وصف تفصيلي للشهادة"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> حفظ الشهادة</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع للقائمة</a>
+    </div>
+</form>
