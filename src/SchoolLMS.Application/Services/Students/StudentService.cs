@@ -61,6 +61,8 @@ public class StudentService : IStudentService
             query = query.Where(x =>
                 x.s.FullNameAr.Contains(term) ||
                 (x.s.FullNameEn != null && x.s.FullNameEn.Contains(term)) ||
+                (x.s.FatherName != null && x.s.FatherName.Contains(term)) ||
+                (x.s.Phone1 != null && x.s.Phone1.Contains(term)) ||
                 x.s.StudentNumber.Contains(term));
         }
 
@@ -78,6 +80,8 @@ public class StudentService : IStudentService
                 StudentNumber = x.s.StudentNumber,
                 FullNameAr = x.s.FullNameAr,
                 FullNameEn = x.s.FullNameEn,
+                FatherName = x.s.FatherName,
+                Phone1 = x.s.Phone1,
                 Gender = x.s.Gender,
                 Status = x.s.Status,
                 GradeNameAr = _db.StudentEnrollments
@@ -152,9 +156,13 @@ public class StudentService : IStudentService
             return ServiceResult<int>.Failure(validation.Errors.Select(e => e.ErrorMessage));
         }
 
+        var studentNumber = string.IsNullOrWhiteSpace(request.StudentNumber)
+            ? await GenerateStudentNumberAsync(request.SchoolId, cancellationToken)
+            : request.StudentNumber.Trim();
+
         var exists = await _db.Students.AnyAsync(x =>
             x.SchoolId == request.SchoolId &&
-            x.StudentNumber == request.StudentNumber &&
+            x.StudentNumber == studentNumber &&
             !x.IsDeleted, cancellationToken);
 
         if (exists)
@@ -166,22 +174,126 @@ public class StudentService : IStudentService
         {
             SchoolId = request.SchoolId,
             SchoolBranchId = request.SchoolBranchId,
-            StudentNumber = request.StudentNumber.Trim(),
+            StudentNumber = studentNumber,
             FullNameAr = request.FullNameAr.Trim(),
             FullNameEn = request.FullNameEn?.Trim(),
+            FatherName = request.FatherName.Trim(),
+            MotherName = request.MotherName.Trim(),
             Gender = request.Gender,
             DateOfBirth = request.DateOfBirth,
             PlaceOfBirth = request.PlaceOfBirth,
             Nationality = request.Nationality,
-            NationalId = request.NationalId,
+            NationalId = request.PassportOrCardId.Trim(),
+            PassportOrCardId = request.PassportOrCardId.Trim(),
+            AdmissionDate = request.AdmissionDate,
+            RegistrationDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow),
+            ClassClassification = request.ClassClassification?.Trim(),
+            Phone1 = request.Phone1.Trim(),
+            Phone2 = request.Phone2?.Trim(),
+            City = request.City.Trim(),
+            Region = request.Region.Trim(),
+            Address = request.Address.Trim(),
             PreviousSchool = request.PreviousSchool,
             Notes = request.Notes,
-            RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-            Status = StudentStatus.Active
+            Status = StudentStatus.Active,
+            HealthProfile = new StudentHealthProfile
+            {
+                SchoolId = request.SchoolId,
+                BloodType = request.BloodType.Trim().ToUpperInvariant(),
+                ChronicDiseases = request.DiseaseHistory?.Trim()
+            }
         };
 
         _db.Students.Add(student);
         await _db.SaveChangesAsync(cancellationToken);
+
+        var father = new Guardian
+        {
+            SchoolId = request.SchoolId,
+            FullNameAr = request.FatherName.Trim(),
+            Phone = request.Phone1.Trim()
+        };
+        _db.Guardians.Add(father);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _db.StudentGuardians.Add(new StudentGuardian
+        {
+            StudentId = student.Id,
+            GuardianId = father.Id,
+            Relationship = "أب",
+            IsPrimary = true,
+            IsFinanciallyResponsible = true,
+            CanReceiveNotifications = true,
+            CanCollectStudent = true
+        });
+
+        var mother = new Guardian
+        {
+            SchoolId = request.SchoolId,
+            FullNameAr = request.MotherName.Trim(),
+            Phone = request.Phone2 ?? request.Phone1
+        };
+        _db.Guardians.Add(mother);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _db.StudentGuardians.Add(new StudentGuardian
+        {
+            StudentId = student.Id,
+            GuardianId = mother.Id,
+            Relationship = "أم",
+            IsPrimary = false,
+            IsFinanciallyResponsible = false,
+            CanReceiveNotifications = true,
+            CanCollectStudent = true
+        });
+
+        _db.StudentAddresses.Add(new StudentAddress
+        {
+            SchoolId = request.SchoolId,
+            StudentId = student.Id,
+            Country = "العراق",
+            Governorate = request.City,
+            District = request.Region,
+            DetailedAddress = request.Address
+        });
+
+        if (!string.IsNullOrWhiteSpace(request.EmergencyContactName) || !string.IsNullOrWhiteSpace(request.EmergencyContactPhone))
+        {
+            _db.EmergencyContacts.Add(new EmergencyContact
+            {
+                SchoolId = request.SchoolId,
+                StudentId = student.Id,
+                FullName = request.EmergencyContactName?.Trim() ?? "جهة طوارئ",
+                Relationship = "طوارئ",
+                Phone = request.EmergencyContactPhone?.Trim() ?? string.Empty,
+                PriorityOrder = 1
+            });
+        }
+
+        var hobbyOrder = 1;
+        foreach (var hobby in request.Hobbies.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct())
+        {
+            _db.StudentHobbies.Add(new StudentHobby
+            {
+                SchoolId = request.SchoolId,
+                StudentId = student.Id,
+                Name = hobby,
+                SortOrder = hobbyOrder++
+            });
+        }
+
+        var noteOrder = 1;
+        foreach (var note in request.NotesList.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()))
+        {
+            _db.StudentNotes.Add(new StudentNote
+            {
+                SchoolId = request.SchoolId,
+                StudentId = student.Id,
+                NoteText = note,
+                NoteDate = DateTime.UtcNow,
+                SortOrder = noteOrder++
+            });
+        }
 
         if (request.AcademicYearId.HasValue && request.GradeLevelId.HasValue && request.ClassSectionId.HasValue)
         {
@@ -193,15 +305,44 @@ public class StudentService : IStudentService
                 GradeLevelId = request.GradeLevelId.Value,
                 ClassSectionId = request.ClassSectionId.Value,
                 Status = EnrollmentStatus.Active,
-                EnrollmentDate = DateOnly.FromDateTime(DateTime.UtcNow)
+                EnrollmentDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow)
             });
-            await _db.SaveChangesAsync(cancellationToken);
         }
+        else if (request.GradeLevelId.HasValue && request.ClassSectionId.HasValue)
+        {
+            var currentYearId = await _db.AcademicYears.AsNoTracking()
+                .Where(x => x.SchoolId == request.SchoolId && x.IsCurrent && !x.IsDeleted)
+                .Select(x => (int?)x.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (currentYearId.HasValue)
+            {
+                _db.StudentEnrollments.Add(new StudentEnrollment
+                {
+                    SchoolId = request.SchoolId,
+                    StudentId = student.Id,
+                    AcademicYearId = currentYearId.Value,
+                    GradeLevelId = request.GradeLevelId.Value,
+                    ClassSectionId = request.ClassSectionId.Value,
+                    Status = EnrollmentStatus.Active,
+                    EnrollmentDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow)
+                });
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         await _audit.LogAsync("Student.Create", nameof(Student), student.Id.ToString(),
             newValues: request, schoolId: student.SchoolId, cancellationToken: cancellationToken);
 
         return ServiceResult<int>.Success(student.Id);
+    }
+
+    private async Task<string> GenerateStudentNumberAsync(int schoolId, CancellationToken cancellationToken)
+    {
+        var year = DateTime.UtcNow.Year;
+        var count = await _db.Students.CountAsync(x => x.SchoolId == schoolId && !x.IsDeleted, cancellationToken);
+        return $"S{schoolId:000}-{year}-{(count + 1):0000}";
     }
 
     public async Task<ServiceResult> UpdateAsync(UpdateStudentRequest request, CancellationToken cancellationToken = default)
@@ -222,10 +363,14 @@ public class StudentService : IStudentService
             return ServiceResult.Failure("ليس لديك صلاحية تعديل الطالب.");
         }
 
+        var newNumber = string.IsNullOrWhiteSpace(request.StudentNumber)
+            ? student.StudentNumber
+            : request.StudentNumber.Trim();
+
         var duplicate = await _db.Students.AnyAsync(x =>
             x.Id != request.Id &&
             x.SchoolId == student.SchoolId &&
-            x.StudentNumber == request.StudentNumber &&
+            x.StudentNumber == newNumber &&
             !x.IsDeleted, cancellationToken);
 
         if (duplicate)
@@ -233,14 +378,24 @@ public class StudentService : IStudentService
             return ServiceResult.Failure("رقم الطالب مستخدم مسبقاً في هذه المدرسة.");
         }
 
-        student.StudentNumber = request.StudentNumber.Trim();
+        student.StudentNumber = newNumber;
         student.FullNameAr = request.FullNameAr.Trim();
         student.FullNameEn = request.FullNameEn?.Trim();
+        student.FatherName = request.FatherName.Trim();
+        student.MotherName = request.MotherName.Trim();
         student.Gender = request.Gender;
         student.DateOfBirth = request.DateOfBirth;
         student.PlaceOfBirth = request.PlaceOfBirth;
         student.Nationality = request.Nationality;
-        student.NationalId = request.NationalId;
+        student.NationalId = request.PassportOrCardId?.Trim() ?? request.NationalId;
+        student.PassportOrCardId = request.PassportOrCardId?.Trim();
+        student.AdmissionDate = request.AdmissionDate;
+        student.ClassClassification = request.ClassClassification?.Trim();
+        student.Phone1 = request.Phone1.Trim();
+        student.Phone2 = request.Phone2?.Trim();
+        student.City = request.City.Trim();
+        student.Region = request.Region.Trim();
+        student.Address = request.Address.Trim();
         student.PreviousSchool = request.PreviousSchool;
         student.Notes = request.Notes;
         student.Status = request.Status;

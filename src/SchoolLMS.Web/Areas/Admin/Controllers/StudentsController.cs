@@ -32,9 +32,15 @@ public class StudentsController : Controller
     [HttpGet]
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        ViewData["Title"] = "إضافة طالب";
+        ViewData["Title"] = "إضافة طالب جديد";
         await LoadLookupsAsync(cancellationToken);
-        return View(new CreateStudentRequest());
+        return View(new CreateStudentRequest
+        {
+            AdmissionDate = DateOnly.FromDateTime(DateTime.Today),
+            Gender = SchoolLMS.Domain.Enums.Gender.Male,
+            Hobbies = [],
+            NotesList = []
+        });
     }
 
     [HttpPost]

@@ -1,12 +1,10 @@
 using FluentAssertions;
-using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SchoolLMS.Application.DTOs.Students;
 using SchoolLMS.Application.Services.Students;
 using SchoolLMS.Application.Validators;
+using SchoolLMS.Domain.Entities.Academic;
 using SchoolLMS.Domain.Entities.Tenancy;
 using SchoolLMS.Domain.Enums;
 using SchoolLMS.Domain.Interfaces;
@@ -20,7 +18,20 @@ public class StudentServiceTests
     public async Task CreateAsync_rejects_duplicate_student_number_in_same_school()
     {
         await using var db = CreateDb();
-        db.Schools.Add(new School { NameAr = "مدرسة اختبار", NameEn = "Test School", IsActive = true });
+        var school = new School { NameAr = "مدرسة اختبار", NameEn = "Test School", IsActive = true };
+        db.Schools.Add(school);
+        await db.SaveChangesAsync();
+
+        var stage = new AcademicStage { SchoolId = school.Id, NameAr = "ابتدائي", NameEn = "Primary", SortOrder = 1 };
+        db.AcademicStages.Add(stage);
+        await db.SaveChangesAsync();
+
+        var grade = new GradeLevel { SchoolId = school.Id, AcademicStageId = stage.Id, NameAr = "الخامس", NameEn = "G5", SortOrder = 5 };
+        db.GradeLevels.Add(grade);
+        await db.SaveChangesAsync();
+
+        var section = new ClassSection { SchoolId = school.Id, GradeLevelId = grade.Id, NameAr = "أ", NameEn = "A" };
+        db.ClassSections.Add(section);
         await db.SaveChangesAsync();
 
         var currentUser = new Mock<ICurrentUserContext>();
@@ -36,16 +47,30 @@ public class StudentServiceTests
 
         var request = new CreateStudentRequest
         {
-            SchoolId = 1,
+            SchoolId = school.Id,
             StudentNumber = "S-100",
             FullNameAr = "طالب تجريبي",
-            Gender = Gender.Male
+            FatherName = "والد تجريبي",
+            MotherName = "والدة تجريبية",
+            PassportOrCardId = "A1234567",
+            Gender = Gender.Male,
+            DateOfBirth = new DateOnly(2014, 1, 1),
+            AdmissionDate = DateOnly.FromDateTime(DateTime.Today),
+            GradeLevelId = grade.Id,
+            ClassSectionId = section.Id,
+            Phone1 = "07700000000",
+            City = "بغداد",
+            Region = "الكرادة",
+            Address = "شارع تجريبي",
+            BloodType = "O+",
+            Hobbies = ["قراءة"],
+            NotesList = ["ملاحظة أولى"]
         };
 
         var first = await service.CreateAsync(request);
         var second = await service.CreateAsync(request);
 
-        first.Succeeded.Should().BeTrue();
+        first.Succeeded.Should().BeTrue(first.Error);
         second.Succeeded.Should().BeFalse();
         second.Error.Should().Contain("رقم الطالب");
     }

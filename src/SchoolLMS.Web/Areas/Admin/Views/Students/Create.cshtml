@@ -1,22 +1,245 @@
 @model SchoolLMS.Application.DTOs.Students.CreateStudentRequest
-<h1 class="h3 page-title mb-3">إضافة طالب</h1>
-<form method="post" class="card stat-card p-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">المدرسة</label><select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools"></select></div>
-        <div class="col-md-4"><label class="form-label">رقم الطالب</label><input asp-for="StudentNumber" class="form-control" /></div>
-        <div class="col-md-4"><label class="form-label">الجنس</label><select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<SchoolLMS.Domain.Enums.Gender>()"></select></div>
-        <div class="col-md-6"><label class="form-label">الاسم بالعربية</label><input asp-for="FullNameAr" class="form-control" /></div>
-        <div class="col-md-6"><label class="form-label">الاسم بالإنجليزية</label><input asp-for="FullNameEn" class="form-control" /></div>
-        <div class="col-md-4"><label class="form-label">السنة الدراسية</label><select asp-for="AcademicYearId" class="form-select" asp-items="ViewBag.Years"><option value="">-</option></select></div>
-        <div class="col-md-4"><label class="form-label">الصف</label><select asp-for="GradeLevelId" class="form-select" asp-items="ViewBag.Grades"><option value="">-</option></select></div>
-        <div class="col-md-4"><label class="form-label">الشعبة</label><select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections"><option value="">-</option></select></div>
-        <div class="col-md-4"><label class="form-label">الجنسية</label><input asp-for="Nationality" class="form-control" /></div>
-        <div class="col-md-4"><label class="form-label">تاريخ الميلاد</label><input asp-for="DateOfBirth" class="form-control" type="date" /></div>
-        <div class="col-md-4"><label class="form-label">الهوية</label><input asp-for="NationalId" class="form-control" /></div>
-    </div>
-    <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-primary" type="submit">حفظ</button>
+@{
+    ViewData["Title"] = "إضافة طالب جديد";
+    var bloodTypes = new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+    <h1 class="h3 page-title mb-1">إضافة طالب جديد</h1>
+    <p class="text-muted mb-0">تسجيل بيانات الطالب وولي الأمر والعنوان والصحة والهوايات</p>
+</div>
+
+<form method="post" class="student-create-form" id="createStudentForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>البيانات الأساسية</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools"></select>
+                <span asp-validation-for="SchoolId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="StudentNumber" class="form-label"></label>
+                <input asp-for="StudentNumber" class="form-control" placeholder="يُولَّد تلقائياً إن تُرك فارغاً" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="FullNameAr" class="form-label"></label>
+                <input asp-for="FullNameAr" class="form-control" />
+                <span asp-validation-for="FullNameAr" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="FatherName" class="form-label"></label>
+                <input asp-for="FatherName" class="form-control" />
+                <span asp-validation-for="FatherName" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="MotherName" class="form-label"></label>
+                <input asp-for="MotherName" class="form-control" />
+                <span asp-validation-for="MotherName" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="PassportOrCardId" class="form-label"></label>
+                <input asp-for="PassportOrCardId" class="form-control" />
+                <span asp-validation-for="PassportOrCardId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="DateOfBirth" class="form-label"></label>
+                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="AdmissionDate" class="form-label"></label>
+                <input asp-for="AdmissionDate" class="form-control" type="date" />
+                <span asp-validation-for="AdmissionDate" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Gender" class="form-label"></label>
+                <select asp-for="Gender" class="form-select">
+                    <option value="1">ذكر</option>
+                    <option value="2">أنثى</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="AcademicYearId" class="form-label"></label>
+                <select asp-for="AcademicYearId" class="form-select" asp-items="ViewBag.Years">
+                    <option value="">السنة الحالية</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="GradeLevelId" class="form-label"></label>
+                <select asp-for="GradeLevelId" class="form-select" asp-items="ViewBag.Grades">
+                    <option value="">اختر الصف</option>
+                </select>
+                <span asp-validation-for="GradeLevelId" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections">
+                    <option value="">اختر الشعبة</option>
+                </select>
+                <span asp-validation-for="ClassSectionId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassClassification" class="form-label"></label>
+                <input asp-for="ClassClassification" class="form-control" placeholder="اختياري (مثال: علمي / أدبي)" />
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <h2>التواصل والعنوان</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Phone1" class="form-label"></label>
+                <input asp-for="Phone1" class="form-control" />
+                <span asp-validation-for="Phone1" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Phone2" class="form-label"></label>
+                <input asp-for="Phone2" class="form-control" placeholder="اختياري" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="City" class="form-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Region" class="form-label"></label>
+                <input asp-for="Region" class="form-control" />
+                <span asp-validation-for="Region" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Address" class="form-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <h2>الطوارئ والصحة</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="EmergencyContactName" class="form-label"></label>
+                <input asp-for="EmergencyContactName" class="form-control" placeholder="اختياري" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="EmergencyContactPhone" class="form-label"></label>
+                <input asp-for="EmergencyContactPhone" class="form-control" placeholder="اختياري" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="BloodType" class="form-label"></label>
+                <select asp-for="BloodType" class="form-select">
+                    <option value="">اختر فصيلة الدم</option>
+                    @foreach (var type in bloodTypes)
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+                <span asp-validation-for="BloodType" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="DiseaseHistory" class="form-label"></label>
+                <textarea asp-for="DiseaseHistory" class="form-control" rows="3" placeholder="الأمراض المزمنة / التاريخ المرضي"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">الهوايات</h2>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addHobbyBtn">+ إضافة هواية</button>
+        </div>
+        <div id="hobbiesList" class="dynamic-list">
+            @if (Model.Hobbies?.Any() == true)
+            {
+                for (var i = 0; i < Model.Hobbies.Count; i++)
+                {
+                    <div class="dynamic-item input-group mb-2">
+                        <input name="Hobbies[@i]" class="form-control" value="@Model.Hobbies[i]" placeholder="اسم الهواية" />
+                        <button type="button" class="btn btn-outline-danger remove-item">حذف</button>
+                    </div>
+                }
+            }
+        </div>
+        <div class="small text-muted">يمكن إضافة أكثر من هواية</div>
+    </section>
+
+    <section class="section-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">قائمة الملاحظات</h2>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addNoteBtn">+ إضافة ملاحظة</button>
+        </div>
+        <div id="notesList" class="dynamic-list">
+            @if (Model.NotesList?.Any() == true)
+            {
+                for (var i = 0; i < Model.NotesList.Count; i++)
+                {
+                    <div class="dynamic-item input-group mb-2">
+                        <input name="NotesList[@i]" class="form-control" value="@Model.NotesList[i]" placeholder="نص الملاحظة" />
+                        <button type="button" class="btn btn-outline-danger remove-item">حذف</button>
+                    </div>
+                }
+            }
+        </div>
+        <div class="small text-muted">أضف ملاحظات متعددة حول الطالب عند الحاجة</div>
+    </section>
+
+    <div class="d-flex gap-2 justify-content-end">
         <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+        <button class="btn btn-primary px-4" type="submit">حفظ الطالب</button>
     </div>
 </form>
+
+@section Scripts {
+<script>
+(function () {
+  function reindex(container, fieldName) {
+    container.querySelectorAll('.dynamic-item').forEach(function (item, index) {
+      var input = item.querySelector('input');
+      if (input) input.name = fieldName + '[' + index + ']';
+    });
+  }
+
+  function addItem(containerId, fieldName, placeholder) {
+    var container = document.getElementById(containerId);
+    var wrap = document.createElement('div');
+    wrap.className = 'dynamic-item input-group mb-2';
+    wrap.innerHTML = '<input name="' + fieldName + '[0]" class="form-control" placeholder="' + placeholder + '" />' +
+      '<button type="button" class="btn btn-outline-danger remove-item">حذف</button>';
+    container.appendChild(wrap);
+    reindex(container, fieldName);
+  }
+
+  document.getElementById('addHobbyBtn').addEventListener('click', function () {
+    addItem('hobbiesList', 'Hobbies', 'اسم الهواية');
+  });
+  document.getElementById('addNoteBtn').addEventListener('click', function () {
+    addItem('notesList', 'NotesList', 'نص الملاحظة');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('remove-item')) return;
+    var item = e.target.closest('.dynamic-item');
+    var container = item.parentElement;
+    var fieldName = container.id === 'hobbiesList' ? 'Hobbies' : 'NotesList';
+    item.remove();
+    reindex(container, fieldName);
+  });
+
+  if (!document.querySelector('#hobbiesList .dynamic-item')) {
+    addItem('hobbiesList', 'Hobbies', 'اسم الهواية');
+  }
+  if (!document.querySelector('#notesList .dynamic-item')) {
+    addItem('notesList', 'NotesList', 'نص الملاحظة');
+  }
+})();
+</script>
+}

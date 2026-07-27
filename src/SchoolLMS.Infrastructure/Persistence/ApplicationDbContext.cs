@@ -61,6 +61,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<StudentHealthProfile> StudentHealthProfiles => Set<StudentHealthProfile>();
     public DbSet<StudentEducationalProfile> StudentEducationalProfiles => Set<StudentEducationalProfile>();
     public DbSet<StudentDocument> StudentDocuments => Set<StudentDocument>();
+    public DbSet<StudentHobby> StudentHobbies => Set<StudentHobby>();
+    public DbSet<StudentNote> StudentNotes => Set<StudentNote>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
 
@@ -166,9 +168,34 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         {
             e.Property(x => x.StudentNumber).HasMaxLength(50).IsRequired();
             e.Property(x => x.FullNameAr).HasMaxLength(200).IsRequired();
+            e.Property(x => x.FatherName).HasMaxLength(200);
+            e.Property(x => x.MotherName).HasMaxLength(200);
+            e.Property(x => x.PassportOrCardId).HasMaxLength(100);
+            e.Property(x => x.ClassClassification).HasMaxLength(100);
+            e.Property(x => x.Phone1).HasMaxLength(30);
+            e.Property(x => x.Phone2).HasMaxLength(30);
+            e.Property(x => x.City).HasMaxLength(100);
+            e.Property(x => x.Region).HasMaxLength(100);
+            e.Property(x => x.Address).HasMaxLength(500);
             e.HasIndex(x => new { x.SchoolId, x.StudentNumber }).IsUnique();
             e.HasIndex(x => x.SchoolId);
             e.HasIndex(x => x.Status);
+            e.HasIndex(x => x.PassportOrCardId);
+            e.HasMany(x => x.Hobbies).WithOne(x => x.Student).HasForeignKey(x => x.StudentId);
+            e.HasMany(x => x.StudentNotes).WithOne(x => x.Student).HasForeignKey(x => x.StudentId);
+            e.HasMany(x => x.EmergencyContacts).WithOne(x => x.Student).HasForeignKey(x => x.StudentId);
+        });
+
+        builder.Entity<StudentHobby>(e =>
+        {
+            e.Property(x => x.Name).HasMaxLength(150).IsRequired();
+            e.HasIndex(x => x.StudentId);
+        });
+
+        builder.Entity<StudentNote>(e =>
+        {
+            e.Property(x => x.NoteText).HasMaxLength(2000).IsRequired();
+            e.HasIndex(x => x.StudentId);
         });
 
         builder.Entity<StudentGuardian>(e =>

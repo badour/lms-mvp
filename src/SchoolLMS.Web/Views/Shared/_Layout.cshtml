@@ -1,10 +1,9 @@
-﻿@using System.Globalization
-@using Microsoft.AspNetCore.Mvc.Rendering
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @{
-    // Arabic-first school platform: keep RTL layout as the primary shell.
-    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-    var isRtl = culture != "en";
-    var dir = isRtl ? "rtl" : "ltr";
+    // Force RTL shell for the Arabic school platform.
+    var culture = "ar";
+    var isRtl = true;
+    var dir = "rtl";
     var area = ViewContext.RouteData.Values["area"]?.ToString();
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -44,6 +43,9 @@
                     </a>
                     <a class="nav-link @(area == "Admin" && controller == "Students" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Index">
                         <i class="bi bi-people"></i><span>الطلاب</span>
+                    </a>
+                    <a class="nav-link sub @(area == "Admin" && controller == "Students" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Create">
+                        <i class="bi bi-person-plus"></i><span>إضافة طالب جديد</span>
                     </a>
                     <a class="nav-link @(area == "Teacher" ? "active" : "")" asp-area="Teacher" asp-controller="Dashboard" asp-action="Index">
                         <i class="bi bi-easel"></i><span>المعلم</span>

@@ -48,6 +48,8 @@ public interface IApplicationDbContext
     DbSet<StudentHealthProfile> StudentHealthProfiles { get; }
     DbSet<StudentEducationalProfile> StudentEducationalProfiles { get; }
     DbSet<StudentDocument> StudentDocuments { get; }
+    DbSet<StudentHobby> StudentHobbies { get; }
+    DbSet<StudentNote> StudentNotes { get; }
     DbSet<Employee> Employees { get; }
     DbSet<Teacher> Teachers { get; }
 

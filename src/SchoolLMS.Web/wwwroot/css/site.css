@@ -271,11 +271,12 @@ html[dir="ltr"] .sidebar {
   white-space: nowrap;
 }
 
-.user-chip {
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.dynamic-list .dynamic-item .form-control {
+  text-align: start;
+}
+
+.student-create-form .section-card h2 {
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 992px) {
