@@ -22,7 +22,6 @@ public class LessonService : ILessonService
         ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".png", ".jpg", ".jpeg", ".zip"
     };
 
-    private const long MaxVideoBytes = 200 * 1024 * 1024;
     private const long MaxMaterialBytes = 20 * 1024 * 1024;
 
     private readonly IApplicationDbContext _db;
@@ -189,7 +188,7 @@ public class LessonService : ILessonService
         var classIds = request.ClassSectionIds.Where(x => x > 0).Distinct().ToList();
         if (classIds.Count == 0)
         {
-            return ServiceResult<int>.Failure("اختر صفاً واحداً على الأقل.");
+            return ServiceResult<int>.Failure("اختر شعبة واحدةً على الأقل.");
         }
 
         var classes = await _db.ClassSections.AsNoTracking()
@@ -198,10 +197,10 @@ public class LessonService : ILessonService
 
         if (classes.Count != classIds.Count)
         {
-            return ServiceResult<int>.Failure("بعض الصفوف المحددة غير صالحة لهذه المدرسة.");
+            return ServiceResult<int>.Failure("بعض الشعب المحددة غير صالحة لهذه المدرسة.");
         }
 
-        var videoValidation = ValidateUpload(request.Video, VideoExtensions, MaxVideoBytes, "فيديو الدرس");
+        var videoValidation = ValidateUpload(request.Video, VideoExtensions, maxBytes: null, "فيديو الدرس");
         if (videoValidation is not null)
         {
             return ServiceResult<int>.Failure(videoValidation);
@@ -348,7 +347,7 @@ public class LessonService : ILessonService
         }
     }
 
-    private static string? ValidateUpload(FileUploadInput? file, HashSet<string> allowedExtensions, long maxBytes, string label)
+    private static string? ValidateUpload(FileUploadInput? file, HashSet<string> allowedExtensions, long? maxBytes, string label)
     {
         if (file is null || file.Length <= 0)
         {
@@ -361,9 +360,9 @@ public class LessonService : ILessonService
             return $"{label}: نوع الملف غير مدعوم.";
         }
 
-        if (file.Length > maxBytes)
+        if (maxBytes.HasValue && file.Length > maxBytes.Value)
         {
-            var maxMb = maxBytes / (1024 * 1024);
+            var maxMb = maxBytes.Value / (1024 * 1024);
             return $"{label}: حجم الملف يتجاوز {maxMb} ميجابايت.";
         }
 

@@ -89,7 +89,8 @@ public class CreateLessonRequestValidator : AbstractValidator<CreateLessonReques
         RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
         RuleFor(x => x.SubjectId).GreaterThan(0).WithMessage("اسم الدرس / المادة مطلوب.");
         RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
-        RuleFor(x => x.ClassSectionIds).NotEmpty().WithMessage("اختر صفاً واحداً على الأقل.");
+        RuleFor(x => x.ClassSectionIds).NotEmpty().WithMessage("اختر شعبة واحدةً على الأقل.");
+        RuleForEach(x => x.ClassSectionIds).GreaterThan(0).WithMessage("اختر شعبة صالحة.");
         RuleFor(x => x.LessonDateTime).NotNull().WithMessage("تاريخ ووقت الدرس مطلوب.");
         RuleFor(x => x.Status).IsInEnum().WithMessage("حالة الدرس غير صالحة.");
         RuleFor(x => x.Description).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Description));

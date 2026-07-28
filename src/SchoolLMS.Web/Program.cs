@@ -20,11 +20,13 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 220 * 1024 * 1024;
+    options.MultipartBodyLengthLimit = long.MaxValue;
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
 });
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = 220 * 1024 * 1024;
+    options.Limits.MaxRequestBodySize = null; // unlimited (needed for large lesson videos)
 });
 builder.Services.AddControllersWithViews()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)

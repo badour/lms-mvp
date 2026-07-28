@@ -35,7 +35,7 @@ public class CreateLessonRequest
     [Required(ErrorMessage = "المعلم مطلوب")]
     public int TeacherId { get; set; }
 
-    [Display(Name = "الصفوف المشمولة")]
+    [Display(Name = "الشعب المشمولة")]
     public List<int> ClassSectionIds { get; set; } = [];
 
     [Display(Name = "وصف الدرس")]

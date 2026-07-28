@@ -1,11 +1,14 @@
 @model SchoolLMS.Web.Models.CreateLessonForm
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
     ViewData["Title"] = "إضافة درس جديد";
+    var classOptions = (IEnumerable<SelectListItem>)(ViewBag.ClassOptions ?? Enumerable.Empty<SelectListItem>());
+    var selectedSections = Model.ClassSectionIds?.Where(x => x > 0).ToList() ?? new List<int>();
 }
 <div class="mb-4">
     <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">التعليم الإلكتروني</div>
     <h1 class="h3 page-title mb-1">إضافة درس جديد</h1>
-    <p class="text-muted mb-0">اختر المدرسة واسم الدرس والمعلم والصفوف، ثم ارفع الفيديو والمواد</p>
+    <p class="text-muted mb-0">اختر المدرسة واسم الدرس والمعلم والشعب، ثم ارفع الفيديو والمواد</p>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="student-create-form" id="createLessonForm">
@@ -36,13 +39,41 @@
                 </select>
                 <span asp-validation-for="TeacherId" class="text-danger"></span>
             </div>
-            <div class="col-md-6">
-                <label asp-for="ClassSectionIds" class="form-label"></label>
-                <select asp-for="ClassSectionIds" class="form-select" asp-items="ViewBag.Classes" id="ClassSectionIds" multiple size="5"></select>
-                <div class="form-text">يمكن اختيار أكثر من صف</div>
-                <span asp-validation-for="ClassSectionIds" class="text-danger"></span>
-            </div>
         </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">الشعب المشمولة</h2>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addSectionBtn">+ إضافة شعبة</button>
+        </div>
+        <div id="sectionsList" class="dynamic-list">
+            @if (selectedSections.Any())
+            {
+                for (var i = 0; i < selectedSections.Count; i++)
+                {
+                    <div class="dynamic-item input-group mb-2">
+                        <select name="ClassSectionIds[@i]" class="form-select section-select">
+                            <option value="">اختر الشعبة</option>
+                            @foreach (var opt in classOptions)
+                            {
+                                if (opt.Value == selectedSections[i].ToString())
+                                {
+                                    <option value="@opt.Value" selected>@opt.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            }
+                        </select>
+                        <button type="button" class="btn btn-outline-danger remove-item">حذف</button>
+                    </div>
+                }
+            }
+        </div>
+        <div class="small text-muted">يمكن إضافة أكثر من شعبة كما في قائمة الهوايات</div>
+        <span asp-validation-for="ClassSectionIds" class="text-danger"></span>
     </section>
 
     <section class="section-card mb-3">
@@ -51,7 +82,7 @@
             <div class="col-md-6">
                 <label asp-for="Video" class="form-label"></label>
                 <input asp-for="Video" class="form-control" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" />
-                <div class="form-text">رفع فيديو الدرس (حتى 200 ميجابايت)</div>
+                <div class="form-text">رفع فيديو الدرس (بدون حد أقصى لحجم الملف)</div>
             </div>
             <div class="col-md-6">
                 <label asp-for="Materials" class="form-label"></label>
@@ -105,46 +136,98 @@
   const schoolSelect = document.getElementById('SchoolId');
   const subjectSelect = document.getElementById('SubjectId');
   const teacherSelect = document.getElementById('TeacherId');
-  const classSelect = document.getElementById('ClassSectionIds');
+  const sectionsList = document.getElementById('sectionsList');
+  let classOptions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+      classOptions.Select(x => new { id = x.Value, name = x.Text })));
 
-  const fillSelect = (select, items, placeholder, multiple) => {
+  const fillSelect = (select, items, placeholder) => {
     if (!select) return;
-    const selected = multiple
-      ? Array.from(select.selectedOptions).map(o => o.value)
-      : [select.value];
+    const selected = select.value;
     select.innerHTML = '';
-    if (!multiple) {
-      const empty = document.createElement('option');
-      empty.value = '';
-      empty.textContent = placeholder;
-      select.appendChild(empty);
-    }
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = placeholder;
+    select.appendChild(empty);
     items.forEach(item => {
       const opt = document.createElement('option');
       opt.value = item.id;
       opt.textContent = item.name;
-      if (selected.includes(String(item.id))) opt.selected = true;
+      if (String(item.id) === String(selected)) opt.selected = true;
       select.appendChild(opt);
     });
+  };
+
+  const buildSectionOptionsHtml = (selectedValue) => {
+    let html = '<option value="">اختر الشعبة</option>';
+    classOptions.forEach(item => {
+      const selected = String(item.id) === String(selectedValue || '') ? ' selected' : '';
+      html += '<option value="' + item.id + '"' + selected + '>' + item.name + '</option>';
+    });
+    return html;
+  };
+
+  const reindexSections = () => {
+    sectionsList.querySelectorAll('.dynamic-item').forEach((item, index) => {
+      const select = item.querySelector('select');
+      if (select) select.name = 'ClassSectionIds[' + index + ']';
+    });
+  };
+
+  const addSectionRow = (selectedValue) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'dynamic-item input-group mb-2';
+    wrap.innerHTML =
+      '<select name="ClassSectionIds[0]" class="form-select section-select">' + buildSectionOptionsHtml(selectedValue) + '</select>' +
+      '<button type="button" class="btn btn-outline-danger remove-item">حذف</button>';
+    sectionsList.appendChild(wrap);
+    reindexSections();
+  };
+
+  const refreshSectionRows = () => {
+    const currentValues = Array.from(sectionsList.querySelectorAll('select')).map(s => s.value);
+    sectionsList.innerHTML = '';
+    if (currentValues.length === 0) {
+      addSectionRow('');
+      return;
+    }
+    currentValues.forEach(value => addSectionRow(value));
   };
 
   const loadLookups = async () => {
     const schoolId = schoolSelect?.value;
     if (!schoolId) {
-      fillSelect(subjectSelect, [], 'اختر اسم الدرس / المادة', false);
-      fillSelect(teacherSelect, [], 'اختر المعلم', false);
-      fillSelect(classSelect, [], '', true);
+      fillSelect(subjectSelect, [], 'اختر اسم الدرس / المادة');
+      fillSelect(teacherSelect, [], 'اختر المعلم');
+      classOptions = [];
+      refreshSectionRows();
       return;
     }
-    const res = await fetch(`/Admin/Lessons/Lookups?schoolId=${encodeURIComponent(schoolId)}`);
+    const res = await fetch('/Admin/Lessons/Lookups?schoolId=' + encodeURIComponent(schoolId));
     if (!res.ok) return;
     const data = await res.json();
-    fillSelect(subjectSelect, data.subjects || [], 'اختر اسم الدرس / المادة', false);
-    fillSelect(teacherSelect, data.teachers || [], 'اختر المعلم', false);
-    fillSelect(classSelect, data.classes || [], '', true);
+    fillSelect(subjectSelect, data.subjects || [], 'اختر اسم الدرس / المادة');
+    fillSelect(teacherSelect, data.teachers || [], 'اختر المعلم');
+    classOptions = data.classes || [];
+    refreshSectionRows();
   };
 
+  document.getElementById('addSectionBtn')?.addEventListener('click', () => addSectionRow(''));
+  document.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('remove-item')) return;
+    const item = e.target.closest('.dynamic-item');
+    if (!item || !sectionsList.contains(item)) return;
+    item.remove();
+    reindexSections();
+    if (!sectionsList.querySelector('.dynamic-item')) addSectionRow('');
+  });
+
   schoolSelect?.addEventListener('change', loadLookups);
+
+  if (!sectionsList.querySelector('.dynamic-item')) {
+    addSectionRow('');
+  } else {
+    reindexSections();
+  }
 })();
 </script>
 }

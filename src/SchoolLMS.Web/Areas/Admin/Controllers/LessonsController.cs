@@ -49,8 +49,8 @@ public class LessonsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [RequestSizeLimit(220 * 1024 * 1024)]
-    [RequestFormLimits(MultipartBodyLengthLimit = 220 * 1024 * 1024)]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
     public async Task<IActionResult> Create(CreateLessonForm form, CancellationToken cancellationToken)
     {
         var uploads = new List<FileUploadInput>();
@@ -76,7 +76,7 @@ public class LessonsController : Controller
                 SchoolId = form.SchoolId,
                 SubjectId = form.SubjectId,
                 TeacherId = form.TeacherId,
-                ClassSectionIds = form.ClassSectionIds ?? [],
+                ClassSectionIds = (form.ClassSectionIds ?? []).Where(x => x > 0).Distinct().ToList(),
                 Description = form.Description,
                 Notes = form.Notes,
                 LessonDateTime = form.LessonDateTime,
@@ -169,7 +169,7 @@ public class LessonsController : Controller
         {
             ViewBag.Subjects = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
             ViewBag.Teachers = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
-            ViewBag.Classes = new MultiSelectList(Enumerable.Empty<object>(), "Id", "Name");
+            ViewBag.ClassOptions = Enumerable.Empty<SelectListItem>();
             return;
         }
 
@@ -189,15 +189,19 @@ public class LessonsController : Controller
                 .ToListAsync(cancellationToken),
             "Id", "Name");
 
-        ViewBag.Classes = new MultiSelectList(
-            await (
-                from section in _db.ClassSections.AsNoTracking()
-                join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-                where section.SchoolId == schoolId && !section.IsDeleted && section.IsActive
-                orderby grade.SortOrder, section.NameAr
-                select new { section.Id, Name = grade.NameAr + " / " + section.NameAr }
-            ).ToListAsync(cancellationToken),
-            "Id", "Name", selectedClassIds ?? Array.Empty<int>());
+        var classes = await (
+            from section in _db.ClassSections.AsNoTracking()
+            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
+            where section.SchoolId == schoolId && !section.IsDeleted && section.IsActive
+            orderby grade.SortOrder, section.NameAr
+            select new SelectListItem
+            {
+                Value = section.Id.ToString(),
+                Text = grade.NameAr + " / " + section.NameAr
+            }
+        ).ToListAsync(cancellationToken);
+
+        ViewBag.ClassOptions = classes;
     }
 
     private static FileUploadInput? ToUpload(IFormFile? file)
