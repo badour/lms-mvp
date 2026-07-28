@@ -97,3 +97,35 @@ public class CreateLessonRequestValidator : AbstractValidator<CreateLessonReques
         RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
     }
 }
+
+public class AdminSendMessageRequestValidator : AbstractValidator<AdminSendMessageRequest>
+{
+    public AdminSendMessageRequestValidator()
+    {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
+        RuleFor(x => x.Subject).NotEmpty().WithMessage("الموضوع مطلوب.").MaximumLength(250);
+        RuleFor(x => x.Body).NotEmpty().WithMessage("نص الرسالة مطلوب.").MaximumLength(4000);
+        RuleFor(x => x.RecipientKind)
+            .Must(x => x is StudentMessageTargetType.Student or StudentMessageTargetType.SchoolManagement)
+            .WithMessage("اختر طالباً أو إدارة مدرسة.");
+
+        When(x => x.RecipientKind == StudentMessageTargetType.Student, () =>
+        {
+            RuleFor(x => x.StudentId).NotNull().GreaterThan(0).WithMessage("اختر الطالب.");
+        });
+
+        When(x => x.RecipientKind == StudentMessageTargetType.SchoolManagement, () =>
+        {
+            RuleFor(x => x.ManagementUserId).NotEmpty().WithMessage("اختر حساب الإدارة.");
+        });
+    }
+}
+
+public class AdminReplyMessageRequestValidator : AbstractValidator<AdminReplyMessageRequest>
+{
+    public AdminReplyMessageRequestValidator()
+    {
+        RuleFor(x => x.ParentMessageId).GreaterThan(0);
+        RuleFor(x => x.Body).NotEmpty().WithMessage("نص الرد مطلوب.").MaximumLength(4000);
+    }
+}

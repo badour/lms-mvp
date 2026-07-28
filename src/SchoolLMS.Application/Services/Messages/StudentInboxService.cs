@@ -39,10 +39,15 @@ public class StudentInboxService : IStudentInboxService
             return Array.Empty<StudentInboxMessageDto>();
         }
 
+        var userId = _currentUser.UserId;
+
         var items = await _db.Messages.AsNoTracking()
             .Where(x => !x.IsDeleted
-                        && x.Category == "StudentInbox"
-                        && (x.StudentId == student.Id || x.SenderUserId == _currentUser.UserId))
+                        && x.ParentMessageId == null
+                        && (
+                            (x.Category == "StudentInbox" && (x.StudentId == student.Id || x.SenderUserId == userId))
+                            || _db.MessageRecipients.Any(r => r.MessageId == x.Id && r.RecipientUserId == userId)
+                        ))
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new StudentInboxMessageDto
             {
@@ -52,14 +57,18 @@ public class StudentInboxService : IStudentInboxService
                 TargetType = x.TargetType,
                 TargetTypeNameAr = TargetTypeName(x.TargetType),
                 TargetDisplayName = x.TargetDisplayName,
+                SenderDisplayName = x.SenderDisplayName,
                 TeacherNameAr = x.TeacherId == null
                     ? null
                     : _db.Teachers.Where(t => t.Id == x.TeacherId).Select(t => t.FullNameAr).FirstOrDefault(),
                 CreatedAt = x.CreatedAt,
-                HasReply = x.RepliedAt != null,
+                HasReply = x.RepliedAt != null || _db.Messages.Any(r => r.ParentMessageId == x.Id && !r.IsDeleted),
                 ReplyBody = x.ReplyBody,
                 RepliedAt = x.RepliedAt,
-                RecipientCount = _db.MessageRecipients.Count(r => r.MessageId == x.Id)
+                RecipientCount = _db.MessageRecipients.Count(r => r.MessageId == x.Id),
+                IsIncoming = x.SenderUserId != userId,
+                IsRead = !_db.MessageRecipients.Any(r =>
+                    r.MessageId == x.Id && r.RecipientUserId == userId && r.ReadAt == null)
             })
             .ToListAsync(cancellationToken);
 
@@ -74,29 +83,68 @@ public class StudentInboxService : IStudentInboxService
             return null;
         }
 
-        return await _db.Messages.AsNoTracking()
-            .Where(x => x.Id == id
-                        && !x.IsDeleted
-                        && x.Category == "StudentInbox"
-                        && (x.StudentId == student.Id || x.SenderUserId == _currentUser.UserId))
-            .Select(x => new StudentInboxMessageDto
-            {
-                Id = x.Id,
-                Subject = x.Subject,
-                Body = x.Body,
-                TargetType = x.TargetType,
-                TargetTypeNameAr = TargetTypeName(x.TargetType),
-                TargetDisplayName = x.TargetDisplayName,
-                TeacherNameAr = x.TeacherId == null
-                    ? null
-                    : _db.Teachers.Where(t => t.Id == x.TeacherId).Select(t => t.FullNameAr).FirstOrDefault(),
-                CreatedAt = x.CreatedAt,
-                HasReply = x.RepliedAt != null,
-                ReplyBody = x.ReplyBody,
-                RepliedAt = x.RepliedAt,
-                RecipientCount = _db.MessageRecipients.Count(r => r.MessageId == x.Id)
-            })
+        var userId = _currentUser.UserId;
+
+        var message = await _db.Messages
+            .Include(x => x.Attachments)
+            .Include(x => x.Recipients)
+            .FirstOrDefaultAsync(x =>
+                x.Id == id
+                && !x.IsDeleted
+                && (
+                    (x.Category == "StudentInbox" && (x.StudentId == student.Id || x.SenderUserId == userId))
+                    || x.Recipients.Any(r => r.RecipientUserId == userId)
+                ), cancellationToken);
+
+        if (message is null)
+        {
+            return null;
+        }
+
+        var recipient = message.Recipients.FirstOrDefault(r => r.RecipientUserId == userId);
+        if (recipient is not null && recipient.ReadAt is null)
+        {
+            recipient.ReadAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        var reply = await _db.Messages.AsNoTracking()
+            .Where(x => x.ParentMessageId == message.Id && !x.IsDeleted)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new { x.Body, x.CreatedAt })
             .FirstOrDefaultAsync(cancellationToken);
+
+        return new StudentInboxMessageDto
+        {
+            Id = message.Id,
+            Subject = message.Subject,
+            Body = message.Body,
+            TargetType = message.TargetType,
+            TargetTypeNameAr = TargetTypeName(message.TargetType),
+            TargetDisplayName = message.TargetDisplayName,
+            SenderDisplayName = message.SenderDisplayName,
+            TeacherNameAr = message.TeacherId == null
+                ? null
+                : await _db.Teachers.AsNoTracking()
+                    .Where(t => t.Id == message.TeacherId)
+                    .Select(t => t.FullNameAr)
+                    .FirstOrDefaultAsync(cancellationToken),
+            CreatedAt = message.CreatedAt,
+            HasReply = message.RepliedAt != null || reply is not null,
+            ReplyBody = reply?.Body ?? message.ReplyBody,
+            RepliedAt = reply?.CreatedAt ?? message.RepliedAt,
+            RecipientCount = message.Recipients.Count,
+            IsIncoming = message.SenderUserId != userId,
+            IsRead = true,
+            Attachments = message.Attachments.Where(a => !a.IsDeleted).Select(a => new MessageAttachmentDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                OriginalFileName = a.OriginalFileName,
+                ContentType = a.ContentType,
+                FileSizeBytes = a.FileSizeBytes
+            }).ToList()
+        };
     }
 
     public async Task<IReadOnlyList<InstructorOptionDto>> GetMyInstructorsAsync(CancellationToken cancellationToken = default)
@@ -157,7 +205,7 @@ public class StudentInboxService : IStudentInboxService
             return ServiceResult<int>.Failure(validation.Errors.Select(e => e.ErrorMessage));
         }
 
-        var student = await GetCurrentStudentAsync(cancellationToken);
+        var student = await GetCurrentStudentProfileAsync(cancellationToken);
         if (student is null)
         {
             return ServiceResult<int>.Failure("حساب الطالب غير مرتبط بملف طالب.");
@@ -237,6 +285,7 @@ public class StudentInboxService : IStudentInboxService
         {
             SchoolId = student.SchoolId,
             SenderUserId = _currentUser.UserId!,
+            SenderDisplayName = student.FullNameAr,
             StudentId = student.Id,
             Subject = request.Subject.Trim(),
             Body = request.Body.Trim(),
@@ -279,17 +328,21 @@ public class StudentInboxService : IStudentInboxService
 
         return await _db.Students.AsNoTracking()
             .Where(x => x.UserId == _currentUser.UserId && !x.IsDeleted)
-            .Select(x => new StudentContext(x.Id, x.SchoolId))
+            .Select(x => new StudentContext(x.Id, x.SchoolId, x.FullNameAr))
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    private Task<StudentContext?> GetCurrentStudentProfileAsync(CancellationToken cancellationToken) =>
+        GetCurrentStudentAsync(cancellationToken);
 
     private static string TargetTypeName(StudentMessageTargetType type) => type switch
     {
         StudentMessageTargetType.SystemAdmin => "إدارة النظام",
         StudentMessageTargetType.SchoolManagement => "إدارة المدرسة",
         StudentMessageTargetType.Instructor => "المعلم",
+        StudentMessageTargetType.Student => "الطالب",
         _ => type.ToString()
     };
 
-    private sealed record StudentContext(int Id, int SchoolId);
+    private sealed record StudentContext(int Id, int SchoolId, string FullNameAr);
 }

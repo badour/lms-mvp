@@ -83,6 +83,7 @@ public interface IApplicationDbContext
     DbSet<NotificationTemplate> NotificationTemplates { get; }
     DbSet<Message> Messages { get; }
     DbSet<MessageRecipient> MessageRecipients { get; }
+    DbSet<MessageAttachment> MessageAttachments { get; }
     DbSet<BehaviourCategory> BehaviourCategories { get; }
     DbSet<BehaviourRecord> BehaviourRecords { get; }
     DbSet<Badge> Badges { get; }

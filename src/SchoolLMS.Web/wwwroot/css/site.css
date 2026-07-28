@@ -310,6 +310,32 @@ html[dir="ltr"] .sidebar {
   border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
+.lesson-video-wrap {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lesson-video-wrap video::-webkit-media-controls-download-button {
+  display: none !important;
+}
+
+.lesson-video-wrap video::-internal-media-controls-download-button {
+  display: none !important;
+}
+
+.message-thread-item {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.75rem;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.message-thread-item--mine {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
 .inbox-target-help .mini-card {
   min-height: 100%;
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolLMS.Application.Services.Lessons;
+using SchoolLMS.Application.Services.Messages;
 using SchoolLMS.Application.Services.Students;
 using SchoolLMS.Domain.Interfaces;
 
@@ -11,15 +12,18 @@ public class FilesController : Controller
 {
     private readonly IQimamCertificateService _certificateService;
     private readonly ILessonService _lessonService;
+    private readonly IAdminMessagingService _messagingService;
     private readonly IFileStorage _fileStorage;
 
     public FilesController(
         IQimamCertificateService certificateService,
         ILessonService lessonService,
+        IAdminMessagingService messagingService,
         IFileStorage fileStorage)
     {
         _certificateService = certificateService;
         _lessonService = lessonService;
+        _messagingService = messagingService;
         _fileStorage = fileStorage;
     }
 
@@ -51,13 +55,30 @@ public class FilesController : Controller
         }
 
         var stream = await _fileStorage.OpenReadAsync(meta.RelativePath, cancellationToken);
-        return File(stream, meta.ContentType);
+        Response.Headers.CacheControl = "private, no-store";
+        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        Response.Headers.ContentDisposition = $"inline; filename=\"stream{Path.GetExtension(meta.OriginalFileName)}\"";
+        // Serve inline without download filename to discourage Save As via Content-Disposition: attachment.
+        return File(stream, meta.ContentType, enableRangeProcessing: true);
     }
 
     [HttpGet]
     public async Task<IActionResult> LessonMaterial(int id, CancellationToken cancellationToken = default)
     {
         var meta = await _lessonService.GetMaterialFileAsync(id, cancellationToken);
+        if (meta is null)
+        {
+            return NotFound();
+        }
+
+        var stream = await _fileStorage.OpenReadAsync(meta.RelativePath, cancellationToken);
+        return File(stream, meta.ContentType, meta.OriginalFileName);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MessageAttachment(int id, CancellationToken cancellationToken = default)
+    {
+        var meta = await _messagingService.GetAttachmentAsync(id, cancellationToken);
         if (meta is null)
         {
             return NotFound();

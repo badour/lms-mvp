@@ -79,10 +79,16 @@
             <h2>فيديو الدرس</h2>
             @if (!string.IsNullOrWhiteSpace(Model.VideoPath))
             {
-                <video class="w-100 rounded lesson-video" controls preload="metadata"
-                       src="@Url.Action("LessonVideo", "Files", new { area = "", id = Model.Id })">
-                </video>
-                <div class="small text-muted mt-2">@Model.VideoOriginalName</div>
+                <div class="lesson-video-wrap" oncontextmenu="return false;">
+                    <video class="w-100 rounded lesson-video"
+                           controls
+                           controlsList="nodownload noremoteplayback"
+                           disablePictureInPicture
+                           preload="metadata"
+                           src="@Url.Action("LessonVideo", "Files", new { area = "", id = Model.Id })">
+                    </video>
+                </div>
+                <div class="small text-muted mt-2">@Model.VideoOriginalName · العرض فقط (لا يمكن التحميل)</div>
             }
             else if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
             {

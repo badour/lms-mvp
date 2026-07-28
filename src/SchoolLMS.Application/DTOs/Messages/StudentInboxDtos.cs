@@ -11,12 +11,16 @@ public class StudentInboxMessageDto
     public StudentMessageTargetType TargetType { get; set; }
     public string TargetTypeNameAr { get; set; } = string.Empty;
     public string? TargetDisplayName { get; set; }
+    public string? SenderDisplayName { get; set; }
     public string? TeacherNameAr { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool HasReply { get; set; }
     public string? ReplyBody { get; set; }
     public DateTime? RepliedAt { get; set; }
     public int RecipientCount { get; set; }
+    public bool IsIncoming { get; set; }
+    public bool IsRead { get; set; }
+    public List<MessageAttachmentDto> Attachments { get; set; } = [];
 }
 
 public class InstructorOptionDto

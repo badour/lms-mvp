@@ -96,6 +96,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<MessageRecipient> MessageRecipients => Set<MessageRecipient>();
+    public DbSet<MessageAttachment> MessageAttachments => Set<MessageAttachment>();
     public DbSet<BehaviourCategory> BehaviourCategories => Set<BehaviourCategory>();
     public DbSet<BehaviourRecord> BehaviourRecords => Set<BehaviourRecord>();
     public DbSet<Badge> Badges => Set<Badge>();
@@ -218,6 +219,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<Message>(e =>
         {
             e.Property(x => x.SenderUserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.SenderDisplayName).HasMaxLength(200);
             e.Property(x => x.Subject).HasMaxLength(250).IsRequired();
             e.Property(x => x.Body).HasMaxLength(4000).IsRequired();
             e.Property(x => x.Category).HasMaxLength(50).IsRequired();
@@ -226,9 +228,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.Property(x => x.RepliedByUserId).HasMaxLength(450);
             e.HasIndex(x => new { x.SchoolId, x.StudentId, x.CreatedAt });
             e.HasIndex(x => x.SenderUserId);
+            e.HasIndex(x => x.ParentMessageId);
             e.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
             e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId);
+            e.HasOne(x => x.ParentMessage).WithMany(x => x.Replies).HasForeignKey(x => x.ParentMessageId);
             e.HasMany(x => x.Recipients).WithOne(x => x.Message).HasForeignKey(x => x.MessageId);
+            e.HasMany(x => x.Attachments).WithOne(x => x.Message).HasForeignKey(x => x.MessageId);
         });
 
         builder.Entity<MessageRecipient>(e =>
@@ -236,6 +241,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.Property(x => x.RecipientUserId).HasMaxLength(450).IsRequired();
             e.HasIndex(x => x.MessageId);
             e.HasIndex(x => x.RecipientUserId);
+        });
+
+        builder.Entity<MessageAttachment>(e =>
+        {
+            e.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            e.Property(x => x.OriginalFileName).HasMaxLength(300).IsRequired();
+            e.Property(x => x.RelativePath).HasMaxLength(500).IsRequired();
+            e.Property(x => x.ContentType).HasMaxLength(150);
+            e.HasIndex(x => x.MessageId);
         });
 
         builder.Entity<StudentGuardian>(e =>

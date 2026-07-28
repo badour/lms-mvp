@@ -8,7 +8,9 @@ public class Message : SchoolOwnedEntity
 {
     public int Id { get; set; }
     public string SenderUserId { get; set; } = string.Empty;
+    public string? SenderDisplayName { get; set; }
     public int? StudentId { get; set; }
+    public int? ParentMessageId { get; set; }
     public string Subject { get; set; } = string.Empty;
     public string Body { get; set; } = string.Empty;
     public string Category { get; set; } = "StudentInbox";
@@ -22,5 +24,8 @@ public class Message : SchoolOwnedEntity
 
     public Student? Student { get; set; }
     public Teacher? Teacher { get; set; }
+    public Message? ParentMessage { get; set; }
+    public ICollection<Message> Replies { get; set; } = new List<Message>();
     public ICollection<MessageRecipient> Recipients { get; set; } = new List<MessageRecipient>();
+    public ICollection<MessageAttachment> Attachments { get; set; } = new List<MessageAttachment>();
 }

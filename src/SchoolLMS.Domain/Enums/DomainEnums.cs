@@ -155,7 +155,8 @@ public enum StudentMessageTargetType
 {
     SystemAdmin = 1,
     SchoolManagement = 2,
-    Instructor = 3
+    Instructor = 3,
+    Student = 4
 }
 
 public enum BehaviourPolarity
