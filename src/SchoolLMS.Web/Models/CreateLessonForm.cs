@@ -5,6 +5,8 @@ namespace SchoolLMS.Web.Models;
 
 public class CreateLessonForm
 {
+    public int Id { get; set; }
+
     [Display(Name = "المدرسة")]
     [Required(ErrorMessage = "المدرسة مطلوبة")]
     public int SchoolId { get; set; }
@@ -23,8 +25,14 @@ public class CreateLessonForm
     [Display(Name = "فيديو الدرس")]
     public IFormFile? Video { get; set; }
 
+    [Display(Name = "حذف الفيديو الحالي")]
+    public bool RemoveVideo { get; set; }
+
     [Display(Name = "مواد الدرس")]
     public List<IFormFile>? Materials { get; set; }
+
+    [Display(Name = "حذف مواد")]
+    public List<int> RemoveMaterialIds { get; set; } = [];
 
     [Display(Name = "وصف الدرس")]
     [MaxLength(4000)]
@@ -44,4 +52,14 @@ public class CreateLessonForm
 
     [Display(Name = "منشور")]
     public bool IsPosted { get; set; }
+
+    public string? ExistingVideoName { get; set; }
+    public List<ExistingLessonMaterialFormItem> ExistingMaterials { get; set; } = [];
+}
+
+public class ExistingLessonMaterialFormItem
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? OriginalFileName { get; set; }
 }

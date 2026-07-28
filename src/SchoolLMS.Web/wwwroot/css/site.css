@@ -304,6 +304,12 @@ html[dir="ltr"] .sidebar {
   line-height: 1.7;
 }
 
+.lesson-video {
+  max-height: 360px;
+  background: #0b1220;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 .inbox-target-help .mini-card {
   min-height: 100%;
 }

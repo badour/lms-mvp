@@ -48,13 +48,14 @@
                 <th>الحالة</th>
                 <th>منشور</th>
                 <th>المحتوى</th>
+                <th style="width:150px">إجراءات</th>
             </tr>
             </thead>
             <tbody>
             @if (!Model.Items.Any())
             {
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-4">لا توجد دروس بعد. ابدأ بإضافة درس جديد.</td>
+                    <td colspan="9" class="text-center text-muted py-4">لا توجد دروس بعد. ابدأ بإضافة درس جديد.</td>
                 </tr>
             }
             @foreach (var item in Model.Items)
@@ -89,6 +90,24 @@
                     <td>
                         <span class="small">@(item.HasVideo ? "فيديو" : "بدون فيديو")</span>
                         <span class="small text-muted">· @item.MaterialCount ملفات</span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="Delete" method="post" class="d-inline"
+                                  onsubmit="return confirm('حذف هذا الدرس مع الفيديو وجميع المواد من قاعدة البيانات والمجلدات؟');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }

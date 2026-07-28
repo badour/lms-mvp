@@ -33,6 +33,20 @@ public class LessonsController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
+    {
+        var lesson = await _lessonService.GetByIdAsync(id, cancellationToken);
+        if (lesson is null)
+        {
+            TempData["Error"] = "الدرس غير موجود.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData["Title"] = "عرض الدرس";
+        return View(lesson);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Create(int? schoolId, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "إضافة درس جديد";
@@ -43,7 +57,7 @@ public class LessonsController : Controller
             Status = PublicationStatus.Draft,
             IsPosted = false
         };
-        await LoadFormLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, null, cancellationToken);
+        await LoadFormLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, cancellationToken);
         return View(form);
     }
 
@@ -59,20 +73,84 @@ public class LessonsController : Controller
         try
         {
             video = ToUpload(form.Video);
-            if (form.Materials is not null)
+            uploads.AddRange(ToUploads(form.Materials));
+
+            var request = ToCreateRequest(form, video, uploads);
+            var result = await _lessonService.CreateAsync(request, cancellationToken);
+            if (!result.Succeeded)
             {
-                foreach (var file in form.Materials.Where(x => x is { Length: > 0 }))
+                foreach (var error in result.Errors)
                 {
-                    var upload = ToUpload(file);
-                    if (upload is not null)
-                    {
-                        uploads.Add(upload);
-                    }
+                    ModelState.AddModelError(string.Empty, error);
                 }
+
+                await LoadFormLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, cancellationToken);
+                return View(form);
             }
 
-            var request = new CreateLessonRequest
+            TempData["Success"] = "تم حفظ الدرس الإلكتروني بنجاح.";
+            return RedirectToAction(nameof(Index));
+        }
+        finally
+        {
+            await DisposeUploadsAsync(video, uploads);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+    {
+        var lesson = await _lessonService.GetByIdAsync(id, cancellationToken);
+        if (lesson is null)
+        {
+            TempData["Error"] = "الدرس غير موجود.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData["Title"] = "تعديل الدرس";
+        var form = new CreateLessonForm
+        {
+            Id = lesson.Id,
+            SchoolId = lesson.SchoolId,
+            SubjectId = lesson.SubjectId,
+            TeacherId = lesson.TeacherId,
+            ClassSectionIds = lesson.ClassSectionIds,
+            Description = lesson.Description,
+            Notes = lesson.Notes,
+            LessonDateTime = lesson.LessonDateTime,
+            Status = lesson.Status,
+            IsPosted = lesson.IsPosted,
+            ExistingVideoName = lesson.VideoOriginalName,
+            ExistingMaterials = lesson.Materials.Select(x => new ExistingLessonMaterialFormItem
             {
+                Id = x.Id,
+                Title = x.Title,
+                OriginalFileName = x.OriginalFileName
+            }).ToList()
+        };
+
+        await LoadFormLookupsAsync(form.SchoolId, cancellationToken);
+        return View(form);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
+    public async Task<IActionResult> Edit(int id, CreateLessonForm form, CancellationToken cancellationToken)
+    {
+        form.Id = id;
+        var uploads = new List<FileUploadInput>();
+        FileUploadInput? video = null;
+
+        try
+        {
+            video = ToUpload(form.Video);
+            uploads.AddRange(ToUploads(form.Materials));
+
+            var request = new UpdateLessonRequest
+            {
+                Id = id,
                 SchoolId = form.SchoolId,
                 SubjectId = form.SubjectId,
                 TeacherId = form.TeacherId,
@@ -82,11 +160,13 @@ public class LessonsController : Controller
                 LessonDateTime = form.LessonDateTime,
                 Status = form.Status,
                 IsPosted = form.IsPosted,
+                RemoveVideo = form.RemoveVideo,
+                RemoveMaterialIds = form.RemoveMaterialIds ?? [],
                 Video = video,
                 Materials = uploads
             };
 
-            var result = await _lessonService.CreateAsync(request, cancellationToken);
+            var result = await _lessonService.UpdateAsync(request, cancellationToken);
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
@@ -94,25 +174,38 @@ public class LessonsController : Controller
                     ModelState.AddModelError(string.Empty, error);
                 }
 
-                await LoadFormLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, form.ClassSectionIds, cancellationToken);
+                var current = await _lessonService.GetByIdAsync(id, cancellationToken);
+                form.ExistingVideoName = current?.VideoOriginalName;
+                form.ExistingMaterials = current?.Materials.Select(x => new ExistingLessonMaterialFormItem
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    OriginalFileName = x.OriginalFileName
+                }).ToList() ?? [];
+
+                await LoadFormLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, cancellationToken);
+                ViewData["Title"] = "تعديل الدرس";
                 return View(form);
             }
 
-            TempData["Success"] = "تم حفظ الدرس الإلكتروني بنجاح.";
+            TempData["Success"] = "تم تحديث الدرس بنجاح.";
             return RedirectToAction(nameof(Index));
         }
         finally
         {
-            if (video is not null)
-            {
-                await video.DisposeAsync();
-            }
-
-            foreach (var upload in uploads)
-            {
-                await upload.DisposeAsync();
-            }
+            await DisposeUploadsAsync(video, uploads);
         }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var result = await _lessonService.DeleteAsync(id, cancellationToken);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? "تم حذف الدرس مع الفيديو والمواد من النظام والملفات."
+            : result.Error;
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
@@ -146,6 +239,22 @@ public class LessonsController : Controller
         return Json(new { subjects, teachers, classes });
     }
 
+    private static CreateLessonRequest ToCreateRequest(CreateLessonForm form, FileUploadInput? video, List<FileUploadInput> materials) =>
+        new()
+        {
+            SchoolId = form.SchoolId,
+            SubjectId = form.SubjectId,
+            TeacherId = form.TeacherId,
+            ClassSectionIds = (form.ClassSectionIds ?? []).Where(x => x > 0).Distinct().ToList(),
+            Description = form.Description,
+            Notes = form.Notes,
+            LessonDateTime = form.LessonDateTime,
+            Status = form.Status,
+            IsPosted = form.IsPosted,
+            Video = video,
+            Materials = materials
+        };
+
     private async Task LoadFilterLookupsAsync(int? schoolId, CancellationToken cancellationToken)
     {
         ViewBag.Schools = new SelectList(
@@ -161,7 +270,7 @@ public class LessonsController : Controller
         }, "Id", "Name");
     }
 
-    private async Task LoadFormLookupsAsync(int? schoolId, IEnumerable<int>? selectedClassIds, CancellationToken cancellationToken)
+    private async Task LoadFormLookupsAsync(int? schoolId, CancellationToken cancellationToken)
     {
         await LoadFilterLookupsAsync(schoolId, cancellationToken);
 
@@ -189,7 +298,7 @@ public class LessonsController : Controller
                 .ToListAsync(cancellationToken),
             "Id", "Name");
 
-        var classes = await (
+        ViewBag.ClassOptions = await (
             from section in _db.ClassSections.AsNoTracking()
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
             where section.SchoolId == schoolId && !section.IsDeleted && section.IsActive
@@ -200,8 +309,26 @@ public class LessonsController : Controller
                 Text = grade.NameAr + " / " + section.NameAr
             }
         ).ToListAsync(cancellationToken);
+    }
 
-        ViewBag.ClassOptions = classes;
+    private static List<FileUploadInput> ToUploads(List<IFormFile>? files)
+    {
+        var list = new List<FileUploadInput>();
+        if (files is null)
+        {
+            return list;
+        }
+
+        foreach (var file in files.Where(x => x is { Length: > 0 }))
+        {
+            var upload = ToUpload(file);
+            if (upload is not null)
+            {
+                list.Add(upload);
+            }
+        }
+
+        return list;
     }
 
     private static FileUploadInput? ToUpload(IFormFile? file)
@@ -218,5 +345,18 @@ public class LessonsController : Controller
             Length = file.Length,
             Content = file.OpenReadStream()
         };
+    }
+
+    private static async Task DisposeUploadsAsync(FileUploadInput? video, List<FileUploadInput> uploads)
+    {
+        if (video is not null)
+        {
+            await video.DisposeAsync();
+        }
+
+        foreach (var upload in uploads)
+        {
+            await upload.DisposeAsync();
+        }
     }
 }

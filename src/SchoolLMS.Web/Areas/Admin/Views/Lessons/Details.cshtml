@@ -1,0 +1,97 @@
+@model SchoolLMS.Application.DTOs.Lessons.LessonDetailsDto
+@{
+    ViewData["Title"] = "عرض الدرس";
+    string StatusText(SchoolLMS.Domain.Enums.PublicationStatus status) => status switch
+    {
+        SchoolLMS.Domain.Enums.PublicationStatus.Published => "منشور",
+        SchoolLMS.Domain.Enums.PublicationStatus.Archived => "مؤرشف",
+        SchoolLMS.Domain.Enums.PublicationStatus.Cancelled => "ملغى",
+        _ => "مسودة"
+    };
+}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">التعليم الإلكتروني</div>
+        <h1 class="h3 page-title mb-1">@Model.TitleAr</h1>
+        <p class="text-muted mb-0">@Model.SchoolNameAr · @Model.SubjectNameAr</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> تعديل</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="section-card mb-3">
+            <h2>معلومات الدرس</h2>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="small text-muted">المدرسة</div><div class="fw-semibold">@Model.SchoolNameAr</div></div>
+                <div class="col-md-6"><div class="small text-muted">المادة / اسم الدرس</div><div class="fw-semibold">@Model.SubjectNameAr</div></div>
+                <div class="col-md-6"><div class="small text-muted">المعلم</div><div class="fw-semibold">@(Model.TeacherNameAr ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">التاريخ والوقت</div><div class="fw-semibold">@(Model.LessonDateTime?.ToString("yyyy-MM-dd HH:mm") ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">الحالة</div><div class="fw-semibold">@StatusText(Model.Status)</div></div>
+                <div class="col-md-6"><div class="small text-muted">منشور</div><div class="fw-semibold">@(Model.IsPosted ? "نعم" : "لا")</div></div>
+                <div class="col-12">
+                    <div class="small text-muted">الشعب المشمولة</div>
+                    <div class="fw-semibold">@(Model.IncludedClassNames.Any() ? string.Join("، ", Model.IncludedClassNames) : "—")</div>
+                </div>
+                <div class="col-12">
+                    <div class="small text-muted">وصف الدرس</div>
+                    <p class="mb-0 inbox-body">@(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)</p>
+                </div>
+                <div class="col-12">
+                    <div class="small text-muted">ملاحظات الدرس</div>
+                    <p class="mb-0 inbox-body">@(string.IsNullOrWhiteSpace(Model.Notes) ? "—" : Model.Notes)</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card mb-3">
+            <h2>مواد الدرس</h2>
+            @if (!Model.Materials.Any())
+            {
+                <p class="text-muted mb-0">لا توجد مواد مرفوعة.</p>
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var material in Model.Materials)
+                    {
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <div class="fw-semibold">@material.Title</div>
+                                <div class="small text-muted">@(material.OriginalFileName ?? "ملف")</div>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@Url.Action("LessonMaterial", "Files", new { area = "", id = material.Id })">
+                                <i class="bi bi-download"></i> تحميل
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="section-card mb-3">
+            <h2>فيديو الدرس</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.VideoPath))
+            {
+                <video class="w-100 rounded lesson-video" controls preload="metadata"
+                       src="@Url.Action("LessonVideo", "Files", new { area = "", id = Model.Id })">
+                </video>
+                <div class="small text-muted mt-2">@Model.VideoOriginalName</div>
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
+            {
+                <a href="@Model.VideoUrl" target="_blank" rel="noopener">@Model.VideoUrl</a>
+            }
+            else
+            {
+                <p class="text-muted mb-0">لا يوجد فيديو مرفوع لهذا الدرس.</p>
+            }
+        </section>
+    </div>
+</div>
