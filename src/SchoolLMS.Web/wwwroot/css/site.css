@@ -336,6 +336,15 @@ html[dir="ltr"] .sidebar {
   border-color: rgba(14, 165, 233, 0.2);
 }
 
+.schedule-grid th,
+.schedule-grid td {
+  vertical-align: middle;
+}
+
+.schedule-grid input.form-control-sm {
+  min-width: 4.5rem;
+}
+
 .inbox-target-help .mini-card {
   min-height: 100%;
 }

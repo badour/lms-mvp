@@ -84,7 +84,11 @@ public class AttendanceController : Controller
             join section in _db.ClassSections.AsNoTracking() on assignment.ClassSectionId equals section.Id
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
             join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            where assignment.TeacherId == teacherId && assignment.IsActive && !assignment.IsDeleted
+            where assignment.TeacherId == teacherId
+                  && assignment.IsActive
+                  && !assignment.IsDeleted
+                  && stage.IsActive
+                  && !stage.IsDeleted
             select new { id = stage.Id, name = stage.NameAr }
         ).Distinct().OrderBy(x => x.name).ToListAsync(cancellationToken);
 

@@ -268,8 +268,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.HasOne(x => x.ClassSection).WithMany().HasForeignKey(x => x.ClassSectionId);
         });
 
+        builder.Entity<AcademicStage>(e =>
+        {
+            e.Property(x => x.NameAr).HasMaxLength(200).IsRequired();
+            e.Property(x => x.NameEn).HasMaxLength(200);
+            e.Property(x => x.YearName).HasMaxLength(100);
+            e.HasIndex(x => new { x.SchoolId, x.IsActive });
+        });
+
         builder.Entity<ClassSchedule>(e =>
         {
+            e.Property(x => x.EntryText).HasMaxLength(200);
             e.HasIndex(x => new { x.TeacherId, x.DayOfWeek, x.TeachingPeriodId });
             e.HasIndex(x => new { x.ClassSectionId, x.DayOfWeek, x.TeachingPeriodId });
             e.HasOne(x => x.ClassSection).WithMany().HasForeignKey(x => x.ClassSectionId);

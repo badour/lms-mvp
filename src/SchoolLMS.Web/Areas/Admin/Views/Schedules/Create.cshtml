@@ -1,0 +1,91 @@
+@model SchoolLMS.Application.DTOs.Schedules.SaveScheduleRequest
+@{
+    ViewData["Title"] = "إضافة جدول مدرسي";
+    ViewBag.DayNames = SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
+    <h1 class="h3 page-title mb-1">إضافة جدول مدرسي</h1>
+    <p class="text-muted mb-0">7 أيام × 8 حصص — اختر المدرسة ثم المرحلة ثم الشعبة</p>
+</div>
+
+<form method="post" id="scheduleForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>اختيار الصف</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="AcademicStageId" class="form-label"></label>
+                <select asp-for="AcademicStageId" class="form-select" id="AcademicStageId">
+                    <option value="">اختر المرحلة</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" id="ClassSectionId">
+                    <option value="">اختر الشعبة</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <h2>جدول الأسبوع</h2>
+        <div id="gridWrap">
+            <partial name="_ScheduleGrid" model="null" />
+        </div>
+    </section>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> حفظ الجدول</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const school = document.getElementById('SchoolId');
+  const stage = document.getElementById('AcademicStageId');
+  const section = document.getElementById('ClassSectionId');
+
+  function fill(select, items, placeholder) {
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    for (const item of items) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      select.appendChild(opt);
+    }
+  }
+
+  async function loadStages() {
+    stage.innerHTML = '<option value="">اختر المرحلة</option>';
+    section.innerHTML = '<option value="">اختر الشعبة</option>';
+    if (!school.value) return;
+    const res = await fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value));
+    if (!res.ok) return;
+    fill(stage, await res.json(), 'اختر المرحلة');
+  }
+
+  async function loadSections() {
+    section.innerHTML = '<option value="">اختر الشعبة</option>';
+    if (!school.value || !stage.value) return;
+    const res = await fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value) + '&stageId=' + encodeURIComponent(stage.value));
+    if (!res.ok) return;
+    fill(section, await res.json(), 'اختر الشعبة');
+  }
+
+  school.addEventListener('change', loadStages);
+  stage.addEventListener('change', loadSections);
+})();
+</script>
+}

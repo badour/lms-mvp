@@ -171,7 +171,13 @@ public class TeachersController : Controller
             from section in _db.ClassSections.AsNoTracking()
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
             join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            where section.SchoolId == schoolId && !section.IsDeleted && section.IsActive
+            where section.SchoolId == schoolId
+                  && !section.IsDeleted
+                  && section.IsActive
+                  && stage.IsActive
+                  && !stage.IsDeleted
+                  && grade.IsActive
+                  && !grade.IsDeleted
             orderby stage.SortOrder, grade.SortOrder, section.NameAr
             select new
             {

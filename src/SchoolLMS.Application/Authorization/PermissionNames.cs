@@ -5,6 +5,7 @@ public static class PermissionNames
     public const string SchoolsView = "Schools.View";
     public const string SchoolsCreate = "Schools.Create";
     public const string SchoolsEdit = "Schools.Edit";
+    public const string SchoolsDelete = "Schools.Delete";
 
     public const string StudentsView = "Students.View";
     public const string StudentsCreate = "Students.Create";
@@ -50,6 +51,7 @@ public static class PermissionNames
         (SchoolsView, "عرض المدارس", "View schools", "Schools"),
         (SchoolsCreate, "إنشاء مدرسة", "Create school", "Schools"),
         (SchoolsEdit, "تعديل مدرسة", "Edit school", "Schools"),
+        (SchoolsDelete, "حذف مدرسة", "Delete school", "Schools"),
         (StudentsView, "عرض الطلاب", "View students", "Students"),
         (StudentsCreate, "إنشاء طالب", "Create student", "Students"),
         (StudentsEdit, "تعديل طالب", "Edit student", "Students"),

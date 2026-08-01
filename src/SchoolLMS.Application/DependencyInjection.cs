@@ -5,6 +5,7 @@ using SchoolLMS.Application.Services.Dashboards;
 using SchoolLMS.Application.Services.Exams;
 using SchoolLMS.Application.Services.Lessons;
 using SchoolLMS.Application.Services.Messages;
+using SchoolLMS.Application.Services.Schedules;
 using SchoolLMS.Application.Services.Schools;
 using SchoolLMS.Application.Services.Students;
 using SchoolLMS.Application.Services.Teachers;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<IAttendanceAdminService, AttendanceAdminService>();
         services.AddScoped<IExamAdminService, ExamAdminService>();
+        services.AddScoped<IScheduleAdminService, ScheduleAdminService>();
         services.AddScoped<IDashboardService, DashboardService>();
         return services;
     }

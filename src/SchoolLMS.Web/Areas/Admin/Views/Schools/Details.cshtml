@@ -1,0 +1,72 @@
+@model SchoolLMS.Application.DTOs.Schools.SchoolDetailsDto
+@{
+    ViewData["Title"] = "عرض المدرسة";
+}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">المدارس</div>
+        <h1 class="h3 page-title mb-1">@Model.NameAr</h1>
+        <p class="text-muted mb-0">@Model.NameEn · @(Model.YearName ?? "—")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> تعديل</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <section class="section-card mb-3">
+            <h2>بيانات المدرسة</h2>
+            <div class="mb-2"><div class="small text-muted">البريد (للمراسلات)</div><div class="fw-semibold">@(Model.Email ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">العنوان</div><div class="fw-semibold">@(Model.Address ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">النوع / الجنس</div><div class="fw-semibold">@Model.SchoolType · @Model.GenderType</div></div>
+            <div class="mb-2"><div class="small text-muted">العملة</div><div class="fw-semibold">@Model.Currency</div></div>
+            <div><div class="small text-muted">الحالة</div><div class="fw-semibold">@(Model.IsActive ? "نشطة" : "موقوفة")</div></div>
+        </section>
+    </div>
+    <div class="col-lg-7">
+        <section class="section-card mb-3">
+            <h2>المراحل الدراسية</h2>
+            @if (!Model.Stages.Any())
+            {
+                <p class="text-muted mb-0">لا توجد مراحل.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>المرحلة</th>
+                            <th>الصف</th>
+                            <th>السنة</th>
+                            <th>الحالة</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var stage in Model.Stages)
+                        {
+                            <tr>
+                                <td>@stage.StageName</td>
+                                <td>@stage.ClassName</td>
+                                <td>@(stage.YearName ?? "—")</td>
+                                <td>
+                                    @if (stage.IsActive)
+                                    {
+                                        <span class="pill pill-green">نشطة</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pill pill-orange">غير نشطة</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>

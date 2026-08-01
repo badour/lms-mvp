@@ -1,0 +1,42 @@
+@model SchoolLMS.Application.DTOs.Schedules.ScheduleDetailsDto?
+@{
+    var dayNames = ViewBag.DayNames as string[] ?? SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
+    var periodNames = Model?.PeriodNames?.Count == 8
+        ? Model.PeriodNames
+        : Enumerable.Range(1, 8).Select(i => $"الحصة {i}").ToList();
+    var cellMap = (Model?.Cells ?? [])
+        .GroupBy(c => (c.DayOfWeek, c.PeriodSortOrder))
+        .ToDictionary(g => g.Key, g => g.First().EntryText ?? string.Empty);
+    var idx = 0;
+}
+<div class="table-responsive">
+    <table class="table table-bordered align-middle schedule-grid text-center">
+        <thead>
+        <tr>
+            <th style="min-width:100px">اليوم / الحصة</th>
+            @for (var p = 1; p <= 8; p++)
+            {
+                <th>@periodNames[p - 1]</th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        @for (byte day = 0; day < 7; day++)
+        {
+            <tr>
+                <th class="text-start">@dayNames[day]</th>
+                @for (var p = 1; p <= 8; p++)
+                {
+                    var text = cellMap.TryGetValue((day, p), out var value) ? value : string.Empty;
+                    <td>
+                        <input type="hidden" name="Cells[@idx].DayOfWeek" value="@day" />
+                        <input type="hidden" name="Cells[@idx].PeriodSortOrder" value="@p" />
+                        <input class="form-control form-control-sm" name="Cells[@idx].EntryText" value="@text" placeholder="—" />
+                    </td>
+                    idx++;
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

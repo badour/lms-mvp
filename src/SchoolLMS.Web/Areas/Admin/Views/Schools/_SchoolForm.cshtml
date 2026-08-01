@@ -1,0 +1,122 @@
+@model SchoolLMS.Application.DTOs.Schools.CreateSchoolRequest
+@{
+    var isUpdate = Model is SchoolLMS.Application.DTOs.Schools.UpdateSchoolRequest;
+}
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<section class="section-card mb-3">
+    <h2>بيانات المدرسة</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="NameAr" class="form-label"></label>
+            <input asp-for="NameAr" class="form-control" />
+            <span asp-validation-for="NameAr" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="NameEn" class="form-label"></label>
+            <input asp-for="NameEn" class="form-control" />
+            <span asp-validation-for="NameEn" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="يُستخدم في نموذج المراسلات" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <div class="col-12">
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="SchoolType" class="form-label"></label>
+            <select asp-for="SchoolType" class="form-select">
+                <option value="Private">خاصة</option>
+                <option value="International">دولية</option>
+                <option value="Mixed">مختلطة</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="GenderType" class="form-label"></label>
+            <select asp-for="GenderType" class="form-select">
+                <option value="Boys">بنين</option>
+                <option value="Girls">بنات</option>
+                <option value="CoEducational">مختلط</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="YearName" class="form-label"></label>
+            <input asp-for="YearName" class="form-control" />
+            <span asp-validation-for="YearName" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Currency" class="form-label"></label>
+            <input asp-for="Currency" class="form-control" />
+        </div>
+        @if (isUpdate)
+        {
+            var update = (SchoolLMS.Application.DTOs.Schools.UpdateSchoolRequest)Model;
+            <div class="col-md-3 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="IsActive" value="true" id="IsActive" @(update.IsActive ? "checked" : null) />
+                    <input type="hidden" name="IsActive" value="false" />
+                    <label class="form-check-label" for="IsActive">مدرسة نشطة</label>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="section-card mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="mb-0">المراحل الدراسية</h2>
+        <button type="button" class="btn btn-sm btn-outline-primary" id="addStageRow"><i class="bi bi-plus"></i> إضافة مرحلة</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle" id="stagesTable">
+            <thead>
+            <tr>
+                <th>اسم المرحلة</th>
+                <th>الصف</th>
+                <th>اسم السنة</th>
+                <th>الحالة</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody id="stagesBody">
+            @for (var i = 0; i < Model.Stages.Count; i++)
+            {
+                <tr class="stage-row">
+                    <td>
+                        <input type="hidden" name="Stages[@i].Id" value="@Model.Stages[i].Id" />
+                        <input type="hidden" name="Stages[@i].GradeLevelId" value="@Model.Stages[i].GradeLevelId" />
+                        <input type="hidden" name="Stages[@i].ClassSectionId" value="@Model.Stages[i].ClassSectionId" />
+                        <input class="form-control" name="Stages[@i].StageName" value="@Model.Stages[i].StageName" required />
+                    </td>
+                    <td><input class="form-control" name="Stages[@i].ClassName" value="@Model.Stages[i].ClassName" required /></td>
+                    <td><input class="form-control" name="Stages[@i].YearName" value="@(Model.Stages[i].YearName ?? Model.YearName)" /></td>
+                    <td>
+                        <select class="form-select" name="Stages[@i].IsActive">
+                            @if (Model.Stages[i].IsActive)
+                            {
+                                <option value="true" selected>نشطة</option>
+                                <option value="false">غير نشطة</option>
+                            }
+                            else
+                            {
+                                <option value="true">نشطة</option>
+                                <option value="false" selected>غير نشطة</option>
+                            }
+                        </select>
+                    </td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger remove-stage"><i class="bi bi-trash"></i></button></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="small text-muted">المراحل غير النشطة تُخفى تلقائياً من قوائم الحضور والجداول والامتحانات.</div>
+</section>

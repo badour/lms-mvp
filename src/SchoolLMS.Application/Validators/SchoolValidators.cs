@@ -3,6 +3,7 @@ using SchoolLMS.Application.DTOs.Attendance;
 using SchoolLMS.Application.DTOs.Exams;
 using SchoolLMS.Application.DTOs.Lessons;
 using SchoolLMS.Application.DTOs.Messages;
+using SchoolLMS.Application.DTOs.Schedules;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.DTOs.Students;
 using SchoolLMS.Application.DTOs.Teachers;
@@ -16,10 +17,30 @@ public class CreateSchoolRequestValidator : AbstractValidator<CreateSchoolReques
     {
         RuleFor(x => x.NameAr).NotEmpty().WithMessage("اسم المدرسة بالعربية مطلوب.").MaximumLength(200);
         RuleFor(x => x.NameEn).NotEmpty().WithMessage("School English name is required.").MaximumLength(200);
-        RuleFor(x => x.Email).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email))
-            .WithMessage("البريد الإلكتروني غير صالح.");
+        RuleFor(x => x.Email).NotEmpty().WithMessage("البريد الإلكتروني مطلوب للمراسلات.")
+            .EmailAddress().WithMessage("البريد الإلكتروني غير صالح.");
+        RuleFor(x => x.Address).NotEmpty().WithMessage("العنوان مطلوب.").MaximumLength(500);
         RuleFor(x => x.Phone).MaximumLength(50);
+        RuleFor(x => x.SchoolType).NotEmpty().WithMessage("نوع المدرسة مطلوب.");
+        RuleFor(x => x.GenderType).NotEmpty().WithMessage("نوع الجنس مطلوب.");
+        RuleFor(x => x.YearName).NotEmpty().WithMessage("اسم السنة مطلوب.").MaximumLength(100);
         RuleFor(x => x.Currency).NotEmpty().MaximumLength(10);
+        RuleFor(x => x.Stages).NotEmpty().WithMessage("أضف مرحلة دراسية واحدةً على الأقل.");
+        RuleForEach(x => x.Stages).ChildRules(stage =>
+        {
+            stage.RuleFor(s => s.StageName).NotEmpty().WithMessage("اسم المرحلة مطلوب.").MaximumLength(200);
+            stage.RuleFor(s => s.ClassName).NotEmpty().WithMessage("اسم الصف مطلوب.").MaximumLength(200);
+        });
+    }
+}
+
+public class SaveScheduleRequestValidator : AbstractValidator<SaveScheduleRequest>
+{
+    public SaveScheduleRequestValidator()
+    {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
+        RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
+        RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("الشعبة مطلوبة.");
     }
 }
 
