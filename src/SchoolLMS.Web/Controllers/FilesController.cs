@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolLMS.Application.Services.Lessons;
 using SchoolLMS.Application.Services.Messages;
 using SchoolLMS.Application.Services.Students;
+using SchoolLMS.Application.Services.Teachers;
 using SchoolLMS.Domain.Interfaces;
 
 namespace SchoolLMS.Web.Controllers;
@@ -13,17 +14,20 @@ public class FilesController : Controller
     private readonly IQimamCertificateService _certificateService;
     private readonly ILessonService _lessonService;
     private readonly IAdminMessagingService _messagingService;
+    private readonly ITeacherService _teacherService;
     private readonly IFileStorage _fileStorage;
 
     public FilesController(
         IQimamCertificateService certificateService,
         ILessonService lessonService,
         IAdminMessagingService messagingService,
+        ITeacherService teacherService,
         IFileStorage fileStorage)
     {
         _certificateService = certificateService;
         _lessonService = lessonService;
         _messagingService = messagingService;
+        _teacherService = teacherService;
         _fileStorage = fileStorage;
     }
 
@@ -58,7 +62,6 @@ public class FilesController : Controller
         Response.Headers.CacheControl = "private, no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
         Response.Headers.ContentDisposition = $"inline; filename=\"stream{Path.GetExtension(meta.OriginalFileName)}\"";
-        // Serve inline without download filename to discourage Save As via Content-Disposition: attachment.
         return File(stream, meta.ContentType, enableRangeProcessing: true);
     }
 
@@ -86,5 +89,18 @@ public class FilesController : Controller
 
         var stream = await _fileStorage.OpenReadAsync(meta.RelativePath, cancellationToken);
         return File(stream, meta.ContentType, meta.OriginalFileName);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TeacherAttachment(int id, CancellationToken cancellationToken = default)
+    {
+        var meta = await _teacherService.GetAttachmentAsync(id, cancellationToken);
+        if (meta is null)
+        {
+            return NotFound();
+        }
+
+        var stream = await _fileStorage.OpenReadAsync(meta.Value.RelativePath, cancellationToken);
+        return File(stream, meta.Value.ContentType, meta.Value.OriginalFileName);
     }
 }

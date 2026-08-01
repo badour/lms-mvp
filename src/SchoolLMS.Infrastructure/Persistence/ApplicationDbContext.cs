@@ -278,6 +278,41 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.HasOne(x => x.Classroom).WithMany().HasForeignKey(x => x.ClassroomId);
         });
 
+        builder.Entity<Teacher>(e =>
+        {
+            e.Property(x => x.FullNameAr).HasMaxLength(200).IsRequired();
+            e.Property(x => x.FullNameEn).HasMaxLength(200);
+            e.Property(x => x.DocumentId).HasMaxLength(100);
+            e.Property(x => x.ParentName).HasMaxLength(200);
+            e.Property(x => x.MotherName).HasMaxLength(200);
+            e.Property(x => x.RoleName).HasMaxLength(100);
+            e.Property(x => x.Specialization).HasMaxLength(200);
+            e.Property(x => x.EducationalInfo).HasMaxLength(4000);
+            e.Property(x => x.Phone).HasMaxLength(30);
+            e.Property(x => x.Email).HasMaxLength(200);
+            e.Property(x => x.City).HasMaxLength(100);
+            e.Property(x => x.Address).HasMaxLength(500);
+            e.Property(x => x.AttachmentPath).HasMaxLength(500);
+            e.Property(x => x.AttachmentOriginalName).HasMaxLength(300);
+            e.Property(x => x.AttachmentContentType).HasMaxLength(150);
+            e.HasIndex(x => x.SchoolId);
+            e.HasIndex(x => x.DocumentId);
+            e.HasOne(x => x.Employee).WithMany().HasForeignKey(x => x.EmployeeId);
+        });
+
+        builder.Entity<Exam>(e =>
+        {
+            e.Property(x => x.MaxScore).HasPrecision(18, 2);
+            e.Property(x => x.PassScore).HasPrecision(18, 2);
+            e.Property(x => x.Topics).HasMaxLength(2000);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.Property(x => x.Instructions).HasMaxLength(4000);
+            e.HasIndex(x => new { x.SchoolId, x.ExamDate });
+            e.HasIndex(x => x.TeacherId);
+            e.HasIndex(x => x.ClassSectionId);
+            e.HasOne(x => x.ExamPeriod).WithMany().HasForeignKey(x => x.ExamPeriodId);
+        });
+
         builder.Entity<StudentAttendance>(e =>
         {
             e.HasIndex(x => new { x.AttendanceSessionId, x.StudentId }).IsUnique();

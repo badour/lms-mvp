@@ -6,6 +6,14 @@ public enum Gender
     Female = 2
 }
 
+public enum MaritalStatus
+{
+    Single = 1,
+    Married = 2,
+    Divorced = 3,
+    Widowed = 4
+}
+
 public enum SchoolType
 {
     Private = 1,

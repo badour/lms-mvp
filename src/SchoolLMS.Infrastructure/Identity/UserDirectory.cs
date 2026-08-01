@@ -122,4 +122,53 @@ public class UserDirectory : IUserDirectory
             .OrderBy(x => x.Item2)
             .ToList();
     }
+
+    public async Task<(bool Succeeded, string? UserId, IReadOnlyList<string> Errors)> CreateSchoolUserAsync(
+        string userName,
+        string email,
+        string fullNameAr,
+        string password,
+        string roleName,
+        int schoolId,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await _userManager.FindByNameAsync(userName)
+                       ?? await _userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            return (false, null, new[] { "اسم المستخدم أو البريد مستخدم مسبقاً." });
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = userName.Trim(),
+            Email = email.Trim(),
+            EmailConfirmed = true,
+            FullNameAr = fullNameAr.Trim(),
+            IsActive = true,
+            PreferredCulture = "ar"
+        };
+
+        var create = await _userManager.CreateAsync(user, password);
+        if (!create.Succeeded)
+        {
+            return (false, null, create.Errors.Select(e => e.Description).ToList());
+        }
+
+        if (!await _roleManager.RoleExistsAsync(roleName))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+
+        await _userManager.AddToRoleAsync(user, roleName);
+        _db.UserSchoolAssignments.Add(new UserSchoolAssignment
+        {
+            UserId = user.Id,
+            SchoolId = schoolId,
+            IsActive = true
+        });
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return (true, user.Id, Array.Empty<string>());
+    }
 }

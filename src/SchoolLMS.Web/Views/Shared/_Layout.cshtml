@@ -51,6 +51,36 @@
                         <i class="bi bi-award"></i><span>شهادات تطبيق قمم</span>
                     </a>
 
+                    <div class="nav-group-label mt-3">وضع المعلم</div>
+                    <button class="nav-link nav-toggle @(area == "Admin" && controller == "Teachers" ? "active open" : "")" type="button" data-submenu-toggle="teachers-menu" aria-expanded="@(area == "Admin" && controller == "Teachers" ? "true" : "false")">
+                        <span class="nav-toggle__main">
+                            <i class="bi bi-person-workspace"></i><span>وضع المعلم</span>
+                        </span>
+                        <i class="bi bi-chevron-down nav-toggle__chevron"></i>
+                    </button>
+                    <div class="submenu @(area == "Admin" && controller == "Teachers" ? "show" : "")" id="teachers-menu">
+                        <a class="nav-link sub @(area == "Admin" && controller == "Teachers" && action == "Index" ? "active" : "")" asp-area="Admin" asp-controller="Teachers" asp-action="Index">
+                            <i class="bi bi-people"></i><span>المعلمون</span>
+                        </a>
+                        <a class="nav-link sub @(area == "Admin" && controller == "Teachers" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Teachers" asp-action="Create">
+                            <i class="bi bi-person-plus"></i><span>إضافة معلم</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-group-label mt-3">الحضور والامتحانات</div>
+                    <a class="nav-link @(area == "Admin" && controller == "Attendance" ? "active" : "")" asp-area="Admin" asp-controller="Attendance" asp-action="Index">
+                        <i class="bi bi-calendar2-check"></i><span>حضور الصفوف</span>
+                    </a>
+                    <a class="nav-link sub @(area == "Admin" && controller == "Attendance" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Attendance" asp-action="Create">
+                        <i class="bi bi-check2-square"></i><span>تسجيل حضور</span>
+                    </a>
+                    <a class="nav-link @(area == "Admin" && controller == "Exams" ? "active" : "")" asp-area="Admin" asp-controller="Exams" asp-action="Index">
+                        <i class="bi bi-file-earmark-text"></i><span>الامتحانات</span>
+                    </a>
+                    <a class="nav-link sub @(area == "Admin" && controller == "Exams" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Exams" asp-action="Create">
+                        <i class="bi bi-plus-circle"></i><span>إنشاء امتحان</span>
+                    </a>
+
                     <div class="nav-group-label mt-3">التعليم الإلكتروني</div>
                     <button class="nav-link nav-toggle @(area == "Admin" && controller == "Lessons" ? "active open" : "")" type="button" data-submenu-toggle="elearning-menu" aria-expanded="@(area == "Admin" && controller == "Lessons" ? "true" : "false")">
                         <span class="nav-toggle__main">

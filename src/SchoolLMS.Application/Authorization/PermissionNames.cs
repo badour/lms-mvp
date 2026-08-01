@@ -15,6 +15,7 @@ public static class PermissionNames
     public const string TeachersView = "Teachers.View";
     public const string TeachersCreate = "Teachers.Create";
     public const string TeachersEdit = "Teachers.Edit";
+    public const string TeachersDelete = "Teachers.Delete";
 
     public const string AcademicYearsView = "AcademicYears.View";
     public const string AcademicYearsManage = "AcademicYears.Edit";
@@ -57,6 +58,7 @@ public static class PermissionNames
         (TeachersView, "عرض المعلمين", "View teachers", "Teachers"),
         (TeachersCreate, "إنشاء معلم", "Create teacher", "Teachers"),
         (TeachersEdit, "تعديل معلم", "Edit teacher", "Teachers"),
+        (TeachersDelete, "حذف معلم", "Delete teacher", "Teachers"),
         (AcademicYearsView, "عرض السنوات الدراسية", "View academic years", "Academic"),
         (AcademicYearsManage, "إدارة السنوات الدراسية", "Manage academic years", "Academic"),
         (GradesView, "عرض الدرجات", "View grades", "Grades"),

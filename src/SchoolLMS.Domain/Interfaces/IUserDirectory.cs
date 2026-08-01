@@ -7,4 +7,12 @@ public interface IUserDirectory
     Task<string?> GetDisplayNameAsync(string userId, CancellationToken cancellationToken = default);
     Task<IReadOnlyDictionary<string, string>> GetDisplayNamesAsync(IEnumerable<string> userIds, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<(string UserId, string DisplayName, string? UserName)>> GetSchoolManagementAccountsAsync(int schoolId, CancellationToken cancellationToken = default);
+    Task<(bool Succeeded, string? UserId, IReadOnlyList<string> Errors)> CreateSchoolUserAsync(
+        string userName,
+        string email,
+        string fullNameAr,
+        string password,
+        string roleName,
+        int schoolId,
+        CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,174 @@
+@model SchoolLMS.Web.Models.TeacherForm
+@{
+    var isEdit = Model.Id.HasValue;
+}
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<section class="section-card mb-3">
+    <h2>البيانات الأساسية</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="SchoolId" class="form-label"></label>
+            <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId" disabled="@isEdit">
+                <option value="">اختر المدرسة</option>
+            </select>
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="SchoolId" />
+            }
+            <span asp-validation-for="SchoolId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="FullNameAr" class="form-label"></label>
+            <input asp-for="FullNameAr" class="form-control" />
+            <span asp-validation-for="FullNameAr" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="DocumentId" class="form-label"></label>
+            <input asp-for="DocumentId" class="form-control" />
+            <span asp-validation-for="DocumentId" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ParentName" class="form-label"></label>
+            <input asp-for="ParentName" class="form-control" />
+            <span asp-validation-for="ParentName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="MotherName" class="form-label"></label>
+            <input asp-for="MotherName" class="form-control" />
+            <span asp-validation-for="MotherName" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Gender" class="form-label"></label>
+            <select asp-for="Gender" class="form-select">
+                <option value="@((int)SchoolLMS.Domain.Enums.Gender.Male)">ذكر</option>
+                <option value="@((int)SchoolLMS.Domain.Enums.Gender.Female)">أنثى</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="MaritalStatus" class="form-label"></label>
+            <select asp-for="MaritalStatus" class="form-select">
+                <option value="@((int)SchoolLMS.Domain.Enums.MaritalStatus.Single)">أعزب</option>
+                <option value="@((int)SchoolLMS.Domain.Enums.MaritalStatus.Married)">متزوج</option>
+                <option value="@((int)SchoolLMS.Domain.Enums.MaritalStatus.Divorced)">مطلق</option>
+                <option value="@((int)SchoolLMS.Domain.Enums.MaritalStatus.Widowed)">أرمل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="RoleName" class="form-label"></label>
+            <select asp-for="RoleName" class="form-select">
+                <option value="معلم">معلم</option>
+                <option value="معلم أول">معلم أول</option>
+                <option value="مشرف مادة">مشرف مادة</option>
+                <option value="منسق">منسق</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="City" class="form-label"></label>
+            <input asp-for="City" class="form-control" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+        <div class="col-md-8">
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Specialization" class="form-label"></label>
+            <input asp-for="Specialization" class="form-control" />
+        </div>
+    </div>
+</section>
+
+<section class="section-card mb-3">
+    <h2>المعلومات التعليمية والتواريخ</h2>
+    <div class="row g-3">
+        <div class="col-12">
+            <label asp-for="EducationalInfo" class="form-label"></label>
+            <textarea asp-for="EducationalInfo" class="form-control" rows="4" placeholder="المؤهلات، الشهادات، الخبرات..."></textarea>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-card mb-3">
+    <h2>المراحل والشعب والدروس المرتبطة</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="SubjectId" class="form-label"></label>
+            <select asp-for="SubjectId" class="form-select" asp-items="ViewBag.Subjects" id="SubjectId">
+                <option value="">اختر المادة</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AcademicYearId" class="form-label"></label>
+            <select asp-for="AcademicYearId" class="form-select" asp-items="ViewBag.Years" id="AcademicYearId">
+                <option value="">السنة الحالية</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ClassSectionIds" class="form-label"></label>
+            <select asp-for="ClassSectionIds" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionIds" multiple size="8"></select>
+            <div class="small text-muted mt-1">يمكن اختيار أكثر من شعبة (Ctrl / Cmd).</div>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="OnlineLessonIds" class="form-label"></label>
+            <select asp-for="OnlineLessonIds" class="form-select" asp-items="ViewBag.Lessons" id="OnlineLessonIds" multiple size="8"></select>
+            <div class="small text-muted mt-1">الدروس الإلكترونية المرتبطة (فيديو ومواد).</div>
+        </div>
+    </div>
+</section>
+
+<section class="section-card mb-3">
+    <h2>المرفق وحساب الدخول</h2>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Attachment" class="form-label"></label>
+            <input asp-for="Attachment" class="form-control" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip" />
+            @if (!string.IsNullOrWhiteSpace(Model.ExistingAttachmentName))
+            {
+                <div class="small text-muted mt-1">المرفق الحالي: @Model.ExistingAttachmentName</div>
+                <div class="form-check mt-2">
+                    <input asp-for="RemoveAttachment" class="form-check-input" />
+                    <label asp-for="RemoveAttachment" class="form-check-label">حذف المرفق الحالي</label>
+                </div>
+            }
+        </div>
+        @if (!isEdit)
+        {
+            <div class="col-md-6">
+                <div class="form-check mb-2">
+                    <input asp-for="CreateLoginAccount" class="form-check-input" />
+                    <label asp-for="CreateLoginAccount" class="form-check-label"></label>
+                </div>
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control" placeholder="اختياري — يُولَّد تلقائياً" />
+                <label asp-for="Password" class="form-label mt-2"></label>
+                <input asp-for="Password" class="form-control" />
+                <div class="small text-muted mt-1">الافتراضي: Teacher@12345</div>
+            </div>
+        }
+    </div>
+</section>

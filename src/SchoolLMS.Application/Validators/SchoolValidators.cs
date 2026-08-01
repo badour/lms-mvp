@@ -1,8 +1,11 @@
 using FluentValidation;
+using SchoolLMS.Application.DTOs.Attendance;
+using SchoolLMS.Application.DTOs.Exams;
 using SchoolLMS.Application.DTOs.Lessons;
 using SchoolLMS.Application.DTOs.Messages;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.DTOs.Students;
+using SchoolLMS.Application.DTOs.Teachers;
 using SchoolLMS.Domain.Enums;
 
 namespace SchoolLMS.Application.Validators;
@@ -127,5 +130,53 @@ public class AdminReplyMessageRequestValidator : AbstractValidator<AdminReplyMes
     {
         RuleFor(x => x.ParentMessageId).GreaterThan(0);
         RuleFor(x => x.Body).NotEmpty().WithMessage("نص الرد مطلوب.").MaximumLength(4000);
+    }
+}
+
+public class TeacherUpsertRequestValidator : AbstractValidator<TeacherUpsertRequest>
+{
+    public TeacherUpsertRequestValidator()
+    {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
+        RuleFor(x => x.FullNameAr).NotEmpty().WithMessage("اسم المعلم مطلوب.").MaximumLength(200);
+        RuleFor(x => x.DocumentId).NotEmpty().WithMessage("رقم الوثيقة مطلوب.").MaximumLength(100);
+        RuleFor(x => x.ParentName).NotEmpty().WithMessage("اسم الأب مطلوب.").MaximumLength(200);
+        RuleFor(x => x.MotherName).NotEmpty().WithMessage("اسم الأم مطلوب.").MaximumLength(200);
+        RuleFor(x => x.RoleName).NotEmpty().WithMessage("الدور مطلوب.").MaximumLength(100);
+        RuleFor(x => x.Phone).NotEmpty().WithMessage("الهاتف مطلوب.").MaximumLength(30);
+        RuleFor(x => x.City).NotEmpty().WithMessage("المدينة مطلوبة.").MaximumLength(100);
+        RuleFor(x => x.Address).NotEmpty().WithMessage("العنوان مطلوب.").MaximumLength(500);
+        RuleFor(x => x.Gender).IsInEnum();
+        RuleFor(x => x.MaritalStatus).IsInEnum();
+        RuleFor(x => x.EducationalInfo).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.EducationalInfo));
+        RuleFor(x => x.EndDate)
+            .GreaterThanOrEqualTo(x => x.StartDate)
+            .When(x => x.StartDate.HasValue && x.EndDate.HasValue)
+            .WithMessage("تاريخ الانتهاء يجب أن يكون بعد تاريخ المباشرة.");
+    }
+}
+
+public class SaveAttendanceRequestValidator : AbstractValidator<SaveAttendanceRequest>
+{
+    public SaveAttendanceRequestValidator()
+    {
+        RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
+        RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
+        RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("الشعبة مطلوبة.");
+        RuleFor(x => x.AttendanceDate).NotEmpty().WithMessage("التاريخ مطلوب.");
+    }
+}
+
+public class CreateExamRequestValidator : AbstractValidator<CreateExamRequest>
+{
+    public CreateExamRequestValidator()
+    {
+        RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
+        RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
+        RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("الشعبة مطلوبة.");
+        RuleFor(x => x.ExamDateTime).NotEmpty().WithMessage("تاريخ ووقت الامتحان مطلوب.");
+        RuleFor(x => x.Status).IsInEnum().WithMessage("حالة الامتحان غير صالحة.");
+        RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
+        RuleFor(x => x.Instructions).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Instructions));
     }
 }
