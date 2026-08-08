@@ -41,6 +41,7 @@
                             <th>المرحلة</th>
                             <th>الصف</th>
                             <th>الشعبة</th>
+                            <th>المدرسة</th>
                             <th>السنة</th>
                             <th>الحالة</th>
                         </tr>
@@ -52,6 +53,7 @@
                                 <td>@stage.StageName</td>
                                 <td>@stage.ClassName</td>
                                 <td>@(string.IsNullOrWhiteSpace(stage.SectionName) ? "—" : stage.SectionName)</td>
+                                <td>@Model.NameAr</td>
                                 <td>@(stage.YearName ?? "—")</td>
                                 <td>
                                     @if (stage.IsActive)

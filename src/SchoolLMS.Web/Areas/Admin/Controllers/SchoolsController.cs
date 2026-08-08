@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.Services.Schools;
 
@@ -38,9 +39,10 @@ public class SchoolsController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "إضافة مدرسة جديدة";
+        await LoadSchoolOptionsAsync(null, cancellationToken);
         return View(new CreateSchoolRequest
         {
             SchoolType = "Private",
@@ -74,6 +76,7 @@ public class SchoolsController : Controller
                 ModelState.AddModelError(string.Empty, error);
             }
 
+            await LoadSchoolOptionsAsync(null, cancellationToken);
             return View(request);
         }
 
@@ -91,6 +94,7 @@ public class SchoolsController : Controller
         }
 
         ViewData["Title"] = "تعديل مدرسة";
+        await LoadSchoolOptionsAsync(id, cancellationToken);
         return View(new UpdateSchoolRequest
         {
             Id = school.Id,
@@ -105,8 +109,12 @@ public class SchoolsController : Controller
             YearName = school.YearName ?? $"{DateTime.Today.Year}-{DateTime.Today.Year + 1}",
             IsActive = school.IsActive,
             Stages = school.Stages.Count > 0
-                ? school.Stages
-                : [new SchoolStageItemDto { IsActive = true, YearName = school.YearName, SectionName = "أ" }]
+                ? school.Stages.Select(s =>
+                {
+                    s.SchoolId = s.SchoolId > 0 ? s.SchoolId : school.Id;
+                    return s;
+                }).ToList()
+                : [new SchoolStageItemDto { IsActive = true, YearName = school.YearName, SectionName = "أ", SchoolId = school.Id }]
         });
     }
 
@@ -123,6 +131,7 @@ public class SchoolsController : Controller
                 ModelState.AddModelError(string.Empty, error);
             }
 
+            await LoadSchoolOptionsAsync(request.Id, cancellationToken);
             return View(request);
         }
 
@@ -139,5 +148,14 @@ public class SchoolsController : Controller
             ? "تم حذف المدرسة وجميع مراحلها المرتبطة."
             : result.Error;
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task LoadSchoolOptionsAsync(int? selectedSchoolId, CancellationToken cancellationToken)
+    {
+        var schools = await _schoolService.GetAllAsync(cancellationToken);
+        ViewBag.SchoolOptions = new SelectList(schools, nameof(SchoolListItemDto.Id), nameof(SchoolListItemDto.NameAr), selectedSchoolId);
+        ViewBag.SchoolOptionsJson = schools
+            .Select(x => new { id = x.Id, name = x.NameAr })
+            .ToList();
     }
 }

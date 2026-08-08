@@ -3,17 +3,33 @@
   const addBtn = document.getElementById('addStageRow');
   if (!body || !addBtn) return;
 
-  function schoolName() {
-    return document.getElementById('SchoolNameAr')?.value
-      || document.querySelector('[name="NameAr"]')?.value
-      || '';
+  let schoolOptions = [];
+  try {
+    const raw = document.getElementById('schoolOptionsData')?.textContent || '[]';
+    schoolOptions = JSON.parse(raw);
+  } catch {
+    schoolOptions = [];
   }
 
-  function syncSchoolNameMirrors() {
-    const name = schoolName();
-    body.querySelectorAll('.school-name-mirror').forEach((el) => {
-      el.value = name;
-    });
+  function schoolOptionsHtml(selectedId) {
+    const selected = selectedId != null ? String(selectedId) : '';
+    const options = ['<option value="">اختر المدرسة</option>']
+      .concat(
+        (schoolOptions || []).map((item) => {
+          const id = String(item.id);
+          const sel = selected && id === selected ? ' selected' : '';
+          return `<option value="${id}"${sel}>${escapeHtml(item.name || '')}</option>`;
+        })
+      );
+    return options.join('');
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function reindex() {
@@ -28,6 +44,7 @@
   function addRow() {
     const i = body.querySelectorAll('tr.stage-row').length;
     const year = document.querySelector('[name="YearName"]')?.value || '';
+    const previousSchool = body.querySelector('tr.stage-row:last-child .stage-school-select')?.value || '';
     const tr = document.createElement('tr');
     tr.className = 'stage-row';
     tr.innerHTML = `
@@ -39,8 +56,12 @@
       </td>
       <td><input class="form-control" name="Stages[${i}].ClassName" placeholder="الأول ابتدائي" required /></td>
       <td><input class="form-control" name="Stages[${i}].SectionName" value="أ" placeholder="أ / ب / ت" required /></td>
-      <td><input class="form-control school-name-mirror" value="${schoolName()}" readonly tabindex="-1" /></td>
-      <td><input class="form-control" name="Stages[${i}].YearName" value="${year}" /></td>
+      <td>
+        <select class="form-select stage-school-select" name="Stages[${i}].SchoolId">
+          ${schoolOptionsHtml(previousSchool)}
+        </select>
+      </td>
+      <td><input class="form-control" name="Stages[${i}].YearName" value="${escapeHtml(year)}" /></td>
       <td>
         <select class="form-select" name="Stages[${i}].IsActive">
           <option value="true" selected>نشطة</option>
@@ -60,8 +81,4 @@
     btn.closest('tr')?.remove();
     reindex();
   });
-
-  const nameInput = document.getElementById('SchoolNameAr') || document.querySelector('[name="NameAr"]');
-  nameInput?.addEventListener('input', syncSchoolNameMirrors);
-  syncSchoolNameMirrors();
 })();

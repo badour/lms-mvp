@@ -1,6 +1,8 @@
 @model SchoolLMS.Application.DTOs.Schools.CreateSchoolRequest
 @{
     var isUpdate = Model is SchoolLMS.Application.DTOs.Schools.UpdateSchoolRequest;
+    var currentSchoolId = isUpdate ? ((SchoolLMS.Application.DTOs.Schools.UpdateSchoolRequest)Model).Id : 0;
+    var schoolOptions = ViewBag.SchoolOptions as SelectList;
 }
 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -91,6 +93,7 @@
             <tbody id="stagesBody">
             @for (var i = 0; i < Model.Stages.Count; i++)
             {
+                var selectedSchoolId = Model.Stages[i].SchoolId > 0 ? Model.Stages[i].SchoolId : currentSchoolId;
                 <tr class="stage-row">
                     <td>
                         <input type="hidden" name="Stages[@i].Id" value="@Model.Stages[i].Id" />
@@ -100,7 +103,25 @@
                     </td>
                     <td><input class="form-control" name="Stages[@i].ClassName" value="@Model.Stages[i].ClassName" placeholder="الأول ابتدائي" required /></td>
                     <td><input class="form-control" name="Stages[@i].SectionName" value="@(string.IsNullOrWhiteSpace(Model.Stages[i].SectionName) ? "أ" : Model.Stages[i].SectionName)" placeholder="أ / ب / ت" required /></td>
-                    <td><input class="form-control school-name-mirror" value="@Model.NameAr" readonly tabindex="-1" /></td>
+                    <td>
+                        <select class="form-select stage-school-select" name="Stages[@i].SchoolId">
+                            <option value="">اختر المدرسة</option>
+                            @if (schoolOptions is not null)
+                            {
+                                foreach (var opt in schoolOptions)
+                                {
+                                    if (selectedSchoolId > 0 && opt.Value == selectedSchoolId.ToString())
+                                    {
+                                        <option value="@opt.Value" selected>@opt.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@opt.Value">@opt.Text</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </td>
                     <td><input class="form-control" name="Stages[@i].YearName" value="@(Model.Stages[i].YearName ?? Model.YearName)" /></td>
                     <td>
                         <select class="form-select" name="Stages[@i].IsActive">
@@ -124,3 +145,5 @@
     </div>
     <div class="small text-muted">أدخل اسم المرحلة (ابتدائية / متوسطة / ثانوية) واسم الصف (مثل الأول ابتدائي) والشعبة (أ / ب / ت). المراحل غير النشطة تُخفى من قوائم الحضور والجداول والامتحانات.</div>
 </section>
+
+<script type="application/json" id="schoolOptionsData">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptionsJson ?? new List<object>()))</script>

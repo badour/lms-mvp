@@ -40,6 +40,10 @@ public class SchoolStageItemDto
     [MaxLength(50)]
     public string SectionName { get; set; } = "أ";
 
+    [Display(Name = "اسم المدرسة")]
+    [Required(ErrorMessage = "اسم المدرسة مطلوب")]
+    public int SchoolId { get; set; }
+
     [Display(Name = "اسم السنة")]
     [MaxLength(100)]
     public string? YearName { get; set; }

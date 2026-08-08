@@ -98,6 +98,7 @@ public class SchoolService : ISchoolService
                 StageName = stage.NameAr,
                 ClassName = grade != null ? grade.NameAr : string.Empty,
                 SectionName = section != null ? section.NameAr : "أ",
+                SchoolId = stage.SchoolId,
                 YearName = stage.YearName ?? yearName,
                 IsActive = stage.IsActive,
                 GradeLevelId = grade != null ? grade.Id : null,
@@ -161,8 +162,23 @@ public class SchoolService : ISchoolService
         _db.Schools.Add(school);
         await _db.SaveChangesAsync(cancellationToken);
 
+        // New school is available in the school list; stages without a pick default to it.
+        foreach (var stage in request.Stages ?? [])
+        {
+            if (stage.SchoolId <= 0)
+            {
+                stage.SchoolId = school.Id;
+            }
+        }
+
+        var stageTargetError = await ValidateStageSchoolIdsAsync(request.Stages, cancellationToken);
+        if (stageTargetError is not null)
+        {
+            return ServiceResult<int>.Failure(stageTargetError);
+        }
+
         await EnsureAcademicYearAsync(school.Id, request.YearName, cancellationToken);
-        await SyncStagesAsync(school.Id, request.YearName, request.Stages, cancellationToken);
+        await ApplyStagesBySchoolAsync(school.Id, request.YearName, request.Stages ?? [], replacePrimary: true, cancellationToken);
         await EnsureDefaultSubjectsAsync(school.Id, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
 
@@ -196,6 +212,20 @@ public class SchoolService : ISchoolService
             return ServiceResult.Failure("المدرسة غير موجودة.");
         }
 
+        foreach (var stage in request.Stages ?? [])
+        {
+            if (stage.SchoolId <= 0)
+            {
+                stage.SchoolId = request.Id;
+            }
+        }
+
+        var stageTargetError = await ValidateStageSchoolIdsAsync(request.Stages, cancellationToken);
+        if (stageTargetError is not null)
+        {
+            return ServiceResult.Failure(stageTargetError);
+        }
+
         school.NameAr = request.NameAr.Trim();
         school.NameEn = request.NameEn.Trim();
         school.Address = request.Address.Trim();
@@ -207,7 +237,7 @@ public class SchoolService : ISchoolService
         school.IsActive = request.IsActive;
 
         await EnsureAcademicYearAsync(school.Id, request.YearName, cancellationToken);
-        await SyncStagesAsync(school.Id, request.YearName, request.Stages, cancellationToken);
+        await ApplyStagesBySchoolAsync(school.Id, request.YearName, request.Stages ?? [], replacePrimary: true, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
 
         await _audit.LogAsync("School.Update", nameof(School), school.Id.ToString(),
@@ -314,7 +344,62 @@ public class SchoolService : ISchoolService
         }
     }
 
-    private async Task SyncStagesAsync(int schoolId, string schoolYearName, List<SchoolStageItemDto> stages, CancellationToken cancellationToken)
+    private async Task<string?> ValidateStageSchoolIdsAsync(List<SchoolStageItemDto>? stages, CancellationToken cancellationToken)
+    {
+        var ids = (stages ?? [])
+            .Where(x => !string.IsNullOrWhiteSpace(x.StageName))
+            .Select(x => x.SchoolId)
+            .Distinct()
+            .ToList();
+
+        if (ids.Count == 0)
+        {
+            return null;
+        }
+
+        if (ids.Any(x => x <= 0))
+        {
+            return "اختر اسم المدرسة من القائمة لكل مرحلة.";
+        }
+
+        var validCount = await _db.Schools.AsNoTracking()
+            .CountAsync(x => ids.Contains(x.Id) && !x.IsDeleted, cancellationToken);
+
+        return validCount == ids.Count ? null : "إحدى المراحل مرتبطة بمدرسة غير موجودة.";
+    }
+
+    private async Task ApplyStagesBySchoolAsync(
+        int primarySchoolId,
+        string schoolYearName,
+        List<SchoolStageItemDto> stages,
+        bool replacePrimary,
+        CancellationToken cancellationToken)
+    {
+        var incoming = (stages ?? [])
+            .Where(x => !string.IsNullOrWhiteSpace(x.StageName)
+                        && !string.IsNullOrWhiteSpace(x.ClassName)
+                        && !string.IsNullOrWhiteSpace(x.SectionName))
+            .ToList();
+
+        foreach (var group in incoming.GroupBy(x => x.SchoolId))
+        {
+            await EnsureAcademicYearAsync(group.Key, schoolYearName, cancellationToken);
+            var replaceMissing = replacePrimary && group.Key == primarySchoolId;
+            await SyncStagesAsync(group.Key, schoolYearName, group.ToList(), replaceMissing, cancellationToken);
+        }
+
+        if (replacePrimary && !incoming.Any(x => x.SchoolId == primarySchoolId))
+        {
+            await SyncStagesAsync(primarySchoolId, schoolYearName, [], replaceMissing: true, cancellationToken);
+        }
+    }
+
+    private async Task SyncStagesAsync(
+        int schoolId,
+        string schoolYearName,
+        List<SchoolStageItemDto> stages,
+        bool replaceMissing,
+        CancellationToken cancellationToken)
     {
         var incoming = (stages ?? [])
             .Where(x => !string.IsNullOrWhiteSpace(x.StageName)
@@ -439,6 +524,11 @@ public class SchoolService : ISchoolService
             section.DeletedAt = null;
             await _db.SaveChangesAsync(cancellationToken);
             keepSectionIds.Add(section.Id);
+        }
+
+        if (!replaceMissing)
+        {
+            return;
         }
 
         var now = DateTime.UtcNow;
