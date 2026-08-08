@@ -4,6 +4,10 @@ namespace SchoolLMS.Web.Models;
 
 public class CreateQimamCertificateForm
 {
+    [Display(Name = "اسم المدرسة")]
+    [Required(ErrorMessage = "اسم المدرسة مطلوب")]
+    public int SchoolId { get; set; }
+
     [Display(Name = "الطالب")]
     [Required(ErrorMessage = "الطالب مطلوب")]
     public int StudentId { get; set; }

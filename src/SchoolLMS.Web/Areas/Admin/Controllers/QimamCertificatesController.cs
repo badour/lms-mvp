@@ -32,15 +32,32 @@ public class QimamCertificatesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create(int? studentId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(int? studentId, int? schoolId, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "إضافة شهادة قمم";
+
+        var resolvedSchoolId = schoolId;
+        if (studentId is > 0)
+        {
+            resolvedSchoolId ??= await _db.Students.AsNoTracking()
+                .Where(x => x.Id == studentId.Value && !x.IsDeleted)
+                .Select(x => (int?)x.SchoolId)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         var form = new CreateQimamCertificateForm
         {
+            SchoolId = resolvedSchoolId ?? 0,
             StudentId = studentId ?? 0,
             CertificateDate = DateOnly.FromDateTime(DateTime.Today)
         };
-        await LoadLookupsAsync(null, form.StudentId > 0 ? form.StudentId : null, form.GradeLevelId, form.ClassSectionId, cancellationToken);
+
+        await LoadLookupsAsync(
+            form.SchoolId > 0 ? form.SchoolId : null,
+            form.StudentId > 0 ? form.StudentId : null,
+            form.GradeLevelId,
+            form.ClassSectionId,
+            cancellationToken);
         return View(form);
     }
 
@@ -49,6 +66,52 @@ public class QimamCertificatesController : Controller
     [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<IActionResult> Create(CreateQimamCertificateForm form, CancellationToken cancellationToken)
     {
+        if (form.SchoolId <= 0)
+        {
+            ModelState.AddModelError(nameof(form.SchoolId), "اختر اسم المدرسة.");
+        }
+        else if (form.StudentId > 0)
+        {
+            var studentSchoolId = await _db.Students.AsNoTracking()
+                .Where(x => x.Id == form.StudentId && !x.IsDeleted)
+                .Select(x => (int?)x.SchoolId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (studentSchoolId is null)
+            {
+                ModelState.AddModelError(nameof(form.StudentId), "الطالب غير موجود.");
+            }
+            else if (studentSchoolId.Value != form.SchoolId)
+            {
+                ModelState.AddModelError(nameof(form.StudentId), "الطالب لا ينتمي للمدرسة المختارة.");
+            }
+        }
+
+        if (form.SchoolId > 0 && form.GradeLevelId > 0)
+        {
+            var gradeBelongs = await _db.GradeLevels.AsNoTracking().AnyAsync(
+                x => x.Id == form.GradeLevelId
+                     && x.SchoolId == form.SchoolId
+                     && !x.IsDeleted
+                     && x.IsActive,
+                cancellationToken);
+            if (!gradeBelongs)
+            {
+                ModelState.AddModelError(nameof(form.GradeLevelId), "الصف المختار غير مرتبط بالمدرسة.");
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await LoadLookupsAsync(
+                form.SchoolId > 0 ? form.SchoolId : null,
+                form.StudentId > 0 ? form.StudentId : null,
+                form.GradeLevelId,
+                form.ClassSectionId,
+                cancellationToken);
+            return View(form);
+        }
+
         await using var image = ToUpload(form.Image);
         await using var document = ToUpload(form.Document);
 
@@ -74,7 +137,12 @@ public class QimamCertificatesController : Controller
                 ModelState.AddModelError(string.Empty, error);
             }
 
-            await LoadLookupsAsync(null, form.StudentId > 0 ? form.StudentId : null, form.GradeLevelId, form.ClassSectionId, cancellationToken);
+            await LoadLookupsAsync(
+                form.SchoolId > 0 ? form.SchoolId : null,
+                form.StudentId > 0 ? form.StudentId : null,
+                form.GradeLevelId,
+                form.ClassSectionId,
+                cancellationToken);
             return View(form);
         }
 
@@ -94,11 +162,26 @@ public class QimamCertificatesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GradesByStudent(int studentId, CancellationToken cancellationToken)
+    public async Task<IActionResult> StudentsBySchool(int schoolId, CancellationToken cancellationToken)
     {
-        var student = await _db.Students.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted, cancellationToken);
-        if (student is null)
+        if (schoolId <= 0)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+        var students = await _db.Students.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted)
+            .OrderBy(x => x.FullNameAr)
+            .Select(x => new { id = x.Id, name = x.FullNameAr + " (" + x.StudentNumber + ")" })
+            .ToListAsync(cancellationToken);
+
+        return Json(students);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GradesBySchool(int schoolId, CancellationToken cancellationToken)
+    {
+        if (schoolId <= 0)
         {
             return Json(Array.Empty<object>());
         }
@@ -106,7 +189,7 @@ public class QimamCertificatesController : Controller
         var grades = await (
             from grade in _db.GradeLevels.AsNoTracking()
             join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            where grade.SchoolId == student.SchoolId
+            where grade.SchoolId == schoolId
                   && !grade.IsDeleted
                   && grade.IsActive
                   && !stage.IsDeleted
@@ -116,6 +199,19 @@ public class QimamCertificatesController : Controller
         ).ToListAsync(cancellationToken);
 
         return Json(grades);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GradesByStudent(int studentId, CancellationToken cancellationToken)
+    {
+        var student = await _db.Students.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted, cancellationToken);
+        if (student is null)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+        return await GradesBySchool(student.SchoolId, cancellationToken);
     }
 
     [HttpGet]
@@ -158,27 +254,19 @@ public class QimamCertificatesController : Controller
         var gradeItems = new List<LookupItem>();
         var sectionItems = new List<LookupItem>();
 
-        if (studentId is > 0)
+        if (schoolId is > 0)
         {
-            var studentSchoolId = await _db.Students.AsNoTracking()
-                .Where(x => x.Id == studentId.Value && !x.IsDeleted)
-                .Select(x => (int?)x.SchoolId)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (studentSchoolId.HasValue)
-            {
-                gradeItems = await (
-                    from grade in _db.GradeLevels.AsNoTracking()
-                    join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-                    where grade.SchoolId == studentSchoolId.Value
-                          && !grade.IsDeleted
-                          && grade.IsActive
-                          && !stage.IsDeleted
-                          && stage.IsActive
-                    orderby stage.SortOrder, grade.SortOrder, grade.NameAr
-                    select new LookupItem { Id = grade.Id, Name = grade.NameAr }
-                ).ToListAsync(cancellationToken);
-            }
+            gradeItems = await (
+                from grade in _db.GradeLevels.AsNoTracking()
+                join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
+                where grade.SchoolId == schoolId.Value
+                      && !grade.IsDeleted
+                      && grade.IsActive
+                      && !stage.IsDeleted
+                      && stage.IsActive
+                orderby stage.SortOrder, grade.SortOrder, grade.NameAr
+                select new LookupItem { Id = grade.Id, Name = grade.NameAr }
+            ).ToListAsync(cancellationToken);
         }
 
         if (gradeLevelId is > 0)

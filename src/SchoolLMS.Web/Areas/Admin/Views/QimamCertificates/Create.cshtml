@@ -5,7 +5,7 @@
 <div class="mb-4">
     <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
     <h1 class="h3 page-title mb-1">إضافة شهادة تطبيق قمم</h1>
-    <p class="text-muted mb-0">اختر الطالب ثم الصف والشعبة من مراحل المدرسة، مع رفع صورة ومستند الشهادة</p>
+    <p class="text-muted mb-0">اختر المدرسة أولاً لعرض الصفوف والطلبة المرتبطين بها، ثم أكمل بيانات الشهادة</p>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="student-create-form">
@@ -15,6 +15,13 @@
     <section class="section-card mb-3">
         <h2>بيانات الشهادة</h2>
         <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+                <span asp-validation-for="SchoolId" class="text-danger"></span>
+            </div>
             <div class="col-md-6">
                 <label asp-for="StudentId" class="form-label"></label>
                 <select asp-for="StudentId" class="form-select" asp-items="ViewBag.Students" id="StudentId">
@@ -27,26 +34,26 @@
                 <input asp-for="CertificateName" class="form-control" placeholder="مثال: شهادة مشاركة في مسابقة قمم" />
                 <span asp-validation-for="CertificateName" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label asp-for="CertificateDate" class="form-label"></label>
                 <input asp-for="CertificateDate" class="form-control" type="date" />
                 <span asp-validation-for="CertificateDate" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label asp-for="GradeLevelId" class="form-label"></label>
                 <select asp-for="GradeLevelId" class="form-select" asp-items="ViewBag.Grades" id="GradeLevelId">
-                    <option value="">اختر الصف (مثل الأول ابتدائي)</option>
+                    <option value="">اختر الصف / المرحلة</option>
                 </select>
                 <span asp-validation-for="GradeLevelId" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label asp-for="ClassSectionId" class="form-label"></label>
                 <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionId">
                     <option value="">اختر الشعبة (أ / ب / ت)</option>
                 </select>
                 <span asp-validation-for="ClassSectionId" class="text-danger"></span>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label asp-for="Image" class="form-label"></label>
                 <input asp-for="Image" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
                 <div class="form-text">صورة الشهادة (حتى 5 ميجابايت)</div>
@@ -78,12 +85,14 @@
 @section Scripts {
 <script>
 (() => {
+  const schoolSelect = document.getElementById('SchoolId');
   const studentSelect = document.getElementById('StudentId');
   const gradeSelect = document.getElementById('GradeLevelId');
   const sectionSelect = document.getElementById('ClassSectionId');
-  if (!studentSelect || !gradeSelect || !sectionSelect) return;
+  if (!schoolSelect || !studentSelect || !gradeSelect || !sectionSelect) return;
 
-  const gradesUrl = '@Url.Action("GradesByStudent", "QimamCertificates", new { area = "Admin" })';
+  const studentsUrl = '@Url.Action("StudentsBySchool", "QimamCertificates", new { area = "Admin" })';
+  const gradesUrl = '@Url.Action("GradesBySchool", "QimamCertificates", new { area = "Admin" })';
   const sectionsUrl = '@Url.Action("SectionsByGrade", "QimamCertificates", new { area = "Admin" })';
 
   function clearSelect(select, placeholder) {
@@ -107,15 +116,25 @@
     });
   }
 
-  async function loadGrades(studentId, selectedGradeId) {
-    clearSelect(gradeSelect, 'اختر الصف (مثل الأول ابتدائي)');
-    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
-    if (!studentId) return;
+  async function loadStudents(schoolId, selectedStudentId) {
+    clearSelect(studentSelect, 'اختر الطالب');
+    if (!schoolId) return;
 
-    const res = await fetch(`${gradesUrl}?studentId=${encodeURIComponent(studentId)}`);
+    const res = await fetch(`${studentsUrl}?schoolId=${encodeURIComponent(schoolId)}`);
     if (!res.ok) return;
     const items = await res.json();
-    fillSelect(gradeSelect, items, 'اختر الصف (مثل الأول ابتدائي)', selectedGradeId);
+    fillSelect(studentSelect, items, 'اختر الطالب', selectedStudentId);
+  }
+
+  async function loadGrades(schoolId, selectedGradeId) {
+    clearSelect(gradeSelect, 'اختر الصف / المرحلة');
+    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
+    if (!schoolId) return;
+
+    const res = await fetch(`${gradesUrl}?schoolId=${encodeURIComponent(schoolId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(gradeSelect, items, 'اختر الصف / المرحلة', selectedGradeId);
   }
 
   async function loadSections(gradeLevelId, selectedSectionId) {
@@ -128,7 +147,15 @@
     fillSelect(sectionSelect, items, 'اختر الشعبة (أ / ب / ت)', selectedSectionId);
   }
 
-  studentSelect.addEventListener('change', () => loadGrades(studentSelect.value));
+  async function onSchoolChanged() {
+    const schoolId = schoolSelect.value;
+    await Promise.all([
+      loadStudents(schoolId),
+      loadGrades(schoolId)
+    ]);
+  }
+
+  schoolSelect.addEventListener('change', onSchoolChanged);
   gradeSelect.addEventListener('change', () => loadSections(gradeSelect.value));
 })();
 </script>
