@@ -9,4 +9,5 @@ public interface IStudentService
     Task<StudentDetailsDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<ServiceResult<int>> CreateAsync(CreateStudentRequest request, CancellationToken cancellationToken = default);
     Task<ServiceResult> UpdateAsync(UpdateStudentRequest request, CancellationToken cancellationToken = default);
+    Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

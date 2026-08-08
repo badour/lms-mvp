@@ -38,6 +38,9 @@ public class StudentDetailsDto : StudentListItemDto
     public string? PreviousSchool { get; set; }
     public string? Notes { get; set; }
     public int? SchoolBranchId { get; set; }
+    public int? AcademicYearId { get; set; }
+    public int? GradeLevelId { get; set; }
+    public int? ClassSectionId { get; set; }
     public string? BloodType { get; set; }
     public string? DiseaseHistory { get; set; }
     public string? EmergencyContactName { get; set; }

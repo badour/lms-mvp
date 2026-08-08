@@ -25,6 +25,7 @@
     <th>الصف</th>
     <th>الشعبة</th>
     <th>الحالة</th>
+    <th></th>
 </tr>
 </thead>
 <tbody>
@@ -39,7 +40,22 @@
         <td>@item.GradeNameAr</td>
         <td>@item.SectionNameAr</td>
         <td>@item.Status</td>
+        <td>
+            <div class="d-flex gap-1 flex-wrap">
+                <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id" title="عرض"><i class="bi bi-eye"></i></a>
+                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" title="تعديل"><i class="bi bi-pencil"></i></a>
+                <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('حذف هذا الطالب؟');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@item.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </td>
     </tr>
+}
+@if (!Model.Items.Any())
+{
+    <tr><td colspan="9" class="text-center text-muted py-4">لا يوجد طلاب.</td></tr>
 }
 </tbody>
 </table>

@@ -116,17 +116,48 @@ public class StudentService : IStudentService
                 StudentNumber = x.StudentNumber,
                 FullNameAr = x.FullNameAr,
                 FullNameEn = x.FullNameEn,
+                FatherName = x.FatherName,
+                MotherName = x.MotherName,
                 ProfileImagePath = x.ProfileImagePath,
                 Gender = x.Gender,
                 DateOfBirth = x.DateOfBirth,
                 PlaceOfBirth = x.PlaceOfBirth,
                 Nationality = x.Nationality,
                 NationalId = x.NationalId,
+                PassportOrCardId = x.PassportOrCardId ?? x.NationalId,
                 RegistrationDate = x.RegistrationDate,
+                AdmissionDate = x.AdmissionDate,
+                ClassClassification = x.ClassClassification,
+                Phone1 = x.Phone1,
+                Phone2 = x.Phone2,
+                City = x.City,
+                Region = x.Region,
+                Address = x.Address,
                 Status = x.Status,
                 PreviousSchool = x.PreviousSchool,
                 Notes = x.Notes,
-                SchoolNameAr = _db.Schools.Where(s => s.Id == x.SchoolId).Select(s => s.NameAr).FirstOrDefault() ?? string.Empty
+                SchoolNameAr = _db.Schools.Where(s => s.Id == x.SchoolId).Select(s => s.NameAr).FirstOrDefault() ?? string.Empty,
+                BloodType = _db.StudentHealthProfiles.Where(h => h.StudentId == x.Id && !h.IsDeleted).Select(h => h.BloodType).FirstOrDefault(),
+                DiseaseHistory = _db.StudentHealthProfiles.Where(h => h.StudentId == x.Id && !h.IsDeleted).Select(h => h.ChronicDiseases).FirstOrDefault(),
+                EmergencyContactName = _db.EmergencyContacts.Where(c => c.StudentId == x.Id && !c.IsDeleted).OrderBy(c => c.PriorityOrder).Select(c => c.FullName).FirstOrDefault(),
+                EmergencyContactPhone = _db.EmergencyContacts.Where(c => c.StudentId == x.Id && !c.IsDeleted).OrderBy(c => c.PriorityOrder).Select(c => c.Phone).FirstOrDefault(),
+                AcademicYearId = _db.StudentEnrollments
+                    .Where(e => e.StudentId == x.Id && e.Status == EnrollmentStatus.Active && !e.IsDeleted)
+                    .Select(e => (int?)e.AcademicYearId).FirstOrDefault(),
+                GradeLevelId = _db.StudentEnrollments
+                    .Where(e => e.StudentId == x.Id && e.Status == EnrollmentStatus.Active && !e.IsDeleted)
+                    .Select(e => (int?)e.GradeLevelId).FirstOrDefault(),
+                ClassSectionId = _db.StudentEnrollments
+                    .Where(e => e.StudentId == x.Id && e.Status == EnrollmentStatus.Active && !e.IsDeleted)
+                    .Select(e => (int?)e.ClassSectionId).FirstOrDefault(),
+                GradeNameAr = _db.StudentEnrollments
+                    .Where(e => e.StudentId == x.Id && e.Status == EnrollmentStatus.Active && !e.IsDeleted)
+                    .Select(e => e.GradeLevel!.NameAr).FirstOrDefault(),
+                SectionNameAr = _db.StudentEnrollments
+                    .Where(e => e.StudentId == x.Id && e.Status == EnrollmentStatus.Active && !e.IsDeleted)
+                    .Select(e => e.ClassSection!.NameAr).FirstOrDefault(),
+                Hobbies = _db.StudentHobbies.Where(h => h.StudentId == x.Id && !h.IsDeleted).OrderBy(h => h.SortOrder).Select(h => h.Name).ToList(),
+                NotesList = _db.StudentNotes.Where(n => n.StudentId == x.Id && !n.IsDeleted).OrderBy(n => n.SortOrder).Select(n => n.NoteText).ToList()
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -378,6 +409,22 @@ public class StudentService : IStudentService
             return ServiceResult.Failure("رقم الطالب مستخدم مسبقاً في هذه المدرسة.");
         }
 
+        var validation = await _createValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ServiceResult.Failure(validation.Errors.Select(e => e.ErrorMessage));
+        }
+
+        if (request.SchoolId != student.SchoolId)
+        {
+            if (!_currentUser.CanAccessSchool(request.SchoolId) && !_currentUser.IsSuperAdmin)
+            {
+                return ServiceResult.Failure("غير مصرح بنقل الطالب إلى هذه المدرسة.");
+            }
+
+            student.SchoolId = request.SchoolId;
+        }
+
         student.StudentNumber = newNumber;
         student.FullNameAr = request.FullNameAr.Trim();
         student.FullNameEn = request.FullNameEn?.Trim();
@@ -401,9 +448,100 @@ public class StudentService : IStudentService
         student.Status = request.Status;
         student.SchoolBranchId = request.SchoolBranchId;
 
+        var health = await _db.StudentHealthProfiles
+            .FirstOrDefaultAsync(x => x.StudentId == student.Id && !x.IsDeleted, cancellationToken);
+        if (health is null)
+        {
+            health = new StudentHealthProfile { SchoolId = student.SchoolId, StudentId = student.Id };
+            _db.StudentHealthProfiles.Add(health);
+        }
+
+        health.SchoolId = student.SchoolId;
+        health.BloodType = request.BloodType.Trim().ToUpperInvariant();
+        health.ChronicDiseases = request.DiseaseHistory?.Trim();
+
+        if (request.GradeLevelId.HasValue && request.ClassSectionId.HasValue)
+        {
+            var yearId = request.AcademicYearId
+                ?? await _db.AcademicYears.AsNoTracking()
+                    .Where(x => x.SchoolId == student.SchoolId && x.IsCurrent && !x.IsDeleted)
+                    .Select(x => (int?)x.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+            if (yearId.HasValue)
+            {
+                var enrollment = await _db.StudentEnrollments
+                    .Where(x => x.StudentId == student.Id && !x.IsDeleted && x.Status == EnrollmentStatus.Active)
+                    .OrderByDescending(x => x.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (enrollment is null)
+                {
+                    _db.StudentEnrollments.Add(new StudentEnrollment
+                    {
+                        SchoolId = student.SchoolId,
+                        StudentId = student.Id,
+                        AcademicYearId = yearId.Value,
+                        GradeLevelId = request.GradeLevelId.Value,
+                        ClassSectionId = request.ClassSectionId.Value,
+                        Status = EnrollmentStatus.Active,
+                        EnrollmentDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow)
+                    });
+                }
+                else
+                {
+                    enrollment.SchoolId = student.SchoolId;
+                    enrollment.AcademicYearId = yearId.Value;
+                    enrollment.GradeLevelId = request.GradeLevelId.Value;
+                    enrollment.ClassSectionId = request.ClassSectionId.Value;
+                }
+            }
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
         await _audit.LogAsync("Student.Update", nameof(Student), student.Id.ToString(),
             newValues: request, schoolId: student.SchoolId, cancellationToken: cancellationToken);
+
+        return ServiceResult.Success();
+    }
+
+    public async Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var student = await _db.Students.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        if (student is null)
+        {
+            return ServiceResult.Failure("الطالب غير موجود.");
+        }
+
+        if (!_currentUser.CanAccessSchool(student.SchoolId) && !_currentUser.IsSuperAdmin)
+        {
+            return ServiceResult.Failure("غير مصرح بحذف هذا الطالب.");
+        }
+
+        if (!_currentUser.HasPermission(PermissionNames.StudentsDelete) && !_currentUser.IsSuperAdmin)
+        {
+            return ServiceResult.Failure("ليس لديك صلاحية حذف الطالب.");
+        }
+
+        var now = DateTime.UtcNow;
+        student.IsDeleted = true;
+        student.DeletedAt = now;
+        student.DeletedByUserId = _currentUser.UserId;
+        student.Status = StudentStatus.Withdrawn;
+
+        var enrollments = await _db.StudentEnrollments
+            .Where(x => x.StudentId == student.Id && !x.IsDeleted)
+            .ToListAsync(cancellationToken);
+        foreach (var enrollment in enrollments)
+        {
+            enrollment.IsDeleted = true;
+            enrollment.DeletedAt = now;
+            enrollment.Status = EnrollmentStatus.Withdrawn;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("Student.Delete", nameof(Student), student.Id.ToString(),
+            schoolId: student.SchoolId, cancellationToken: cancellationToken);
 
         return ServiceResult.Success();
     }
