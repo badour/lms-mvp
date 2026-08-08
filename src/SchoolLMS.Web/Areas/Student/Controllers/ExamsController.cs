@@ -1,8 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
+using SchoolLMS.Application.Services.Exams;
 
 namespace SchoolLMS.Web.Areas.Student.Controllers;
 
 public class ExamsController : StudentSectionController
 {
-    public IActionResult Index() => Section("الامتحانات", "متابعة الامتحانات القادمة والنتائج والجداول الزمنية.");
+    private readonly IExamAdminService _examService;
+
+    public ExamsController(IExamAdminService examService)
+    {
+        _examService = examService;
+    }
+
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    {
+        ViewData["Title"] = "الامتحانات";
+        var items = await _examService.GetForCurrentStudentAsync(cancellationToken);
+        return View(items);
+    }
 }

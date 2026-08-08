@@ -134,14 +134,30 @@ public class DashboardService : IDashboardService
         var submittedHomework = await _db.AssignmentSubmissions.AsNoTracking()
             .CountAsync(x => x.StudentId == studentId && !x.IsDeleted && x.SubmittedAt != null, cancellationToken);
 
-        var exams = await _db.Exams.AsNoTracking()
-            .Where(x => !x.IsDeleted && x.IsPublished && x.SchoolId == student.SchoolId && x.ExamDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+        var studentEnrollment = await (
+            from e in _db.StudentEnrollments.AsNoTracking()
+            join g in _db.GradeLevels.AsNoTracking() on e.GradeLevelId equals g.Id
+            where e.StudentId == studentId && e.Status == EnrollmentStatus.Active && !e.IsDeleted
+            select new { e.ClassSectionId, StageId = g.AcademicStageId }
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        var examsQuery = _db.Exams.AsNoTracking()
+            .Where(x => !x.IsDeleted && x.IsPublished && x.SchoolId == student.SchoolId && x.ExamDate >= DateOnly.FromDateTime(DateTime.UtcNow));
+
+        if (studentEnrollment is not null)
+        {
+            examsQuery = examsQuery.Where(x =>
+                x.AcademicStageId == studentEnrollment.StageId &&
+                x.ClassSectionId == studentEnrollment.ClassSectionId);
+        }
+
+        var exams = await examsQuery
             .OrderBy(x => x.ExamDate)
             .Take(5)
             .Select(x => new SimpleItemDto
             {
                 Title = _db.Subjects.Where(s => s.Id == x.SubjectId).Select(s => s.NameAr).FirstOrDefault() ?? "امتحان",
-                Subtitle = x.ExamType.ToString(),
+                Subtitle = x.Notes ?? x.ExamType.ToString(),
                 Date = x.ExamDate.ToDateTime(TimeOnly.MinValue)
             })
             .ToListAsync(cancellationToken);

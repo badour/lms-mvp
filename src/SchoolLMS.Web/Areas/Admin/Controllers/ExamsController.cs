@@ -37,12 +37,14 @@ public class ExamsController : Controller
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "إنشاء امتحان";
-        await LoadTeachersAsync(cancellationToken);
-        return View(new ExamCreateForm
+        var form = new ExamCreateForm
         {
-            ExamDateTime = DateTime.Now.AddDays(1).Date.AddHours(9),
-            Status = PublicationStatus.Draft
-        });
+            ExamDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            Status = PublicationStatus.Published
+        };
+        await LoadSchoolsAsync(cancellationToken);
+        await LoadSchoolLookupsAsync(form, cancellationToken);
+        return View(form);
     }
 
     [HttpPost]
@@ -51,10 +53,13 @@ public class ExamsController : Controller
     {
         var request = new CreateExamRequest
         {
+            SchoolId = form.SchoolId,
+            TeachingPeriodId = form.TeachingPeriodId,
+            SubjectId = form.SubjectId,
             TeacherId = form.TeacherId,
             AcademicStageId = form.AcademicStageId,
             ClassSectionId = form.ClassSectionId,
-            ExamDateTime = form.ExamDateTime,
+            ExamDate = form.ExamDate,
             Notes = form.Notes,
             Instructions = form.Instructions,
             Status = form.Status
@@ -64,98 +69,164 @@ public class ExamsController : Controller
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
-            await LoadTeachersAsync(cancellationToken);
+            await LoadSchoolsAsync(cancellationToken);
+            await LoadSchoolLookupsAsync(form, cancellationToken);
             return View(form);
         }
 
-        TempData["Success"] = "تم إنشاء الامتحان بنجاح.";
+        TempData["Success"] = "تم إنشاء الامتحان بنجاح. سيظهر لطلاب المدرسة والمرحلة والصف المحددين.";
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
-    public async Task<IActionResult> Stages(int teacherId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Teachers(int schoolId, CancellationToken cancellationToken)
     {
-        var teacher = await _db.Teachers.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == teacherId && !x.IsDeleted, cancellationToken);
-        if (teacher is null)
+        var teachers = await _db.Teachers.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.FullNameAr)
+            .Select(x => new { id = x.Id, name = x.FullNameAr })
+            .ToListAsync(cancellationToken);
+        return Json(teachers);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Subjects(int schoolId, CancellationToken cancellationToken)
+    {
+        var subjects = await _db.Subjects.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.NameAr)
+            .Select(x => new { id = x.Id, name = x.NameAr })
+            .ToListAsync(cancellationToken);
+        return Json(subjects);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Periods(int schoolId, CancellationToken cancellationToken)
+    {
+        var periods = await _db.TeachingPeriods
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted)
+            .OrderBy(x => x.SortOrder)
+            .ToListAsync(cancellationToken);
+
+        if (periods.Count < 8)
         {
-            return Json(Array.Empty<object>());
+            var startHour = 8;
+            for (var i = periods.Count + 1; i <= 8; i++)
+            {
+                var start = new TimeOnly(startHour + (i - 1), 0);
+                var end = start.AddMinutes(45);
+                var period = new SchoolLMS.Domain.Entities.Academic.TeachingPeriod
+                {
+                    SchoolId = schoolId,
+                    NameAr = $"الحصة {i}",
+                    NameEn = $"Period {i}",
+                    StartTime = start,
+                    EndTime = end,
+                    SortOrder = i,
+                    IsBreak = false
+                };
+                _db.TeachingPeriods.Add(period);
+                periods.Add(period);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
         }
 
-        var stages = await (
-            from assignment in _db.TeacherAssignments.AsNoTracking()
-            join section in _db.ClassSections.AsNoTracking() on assignment.ClassSectionId equals section.Id
-            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            where assignment.TeacherId == teacherId
-                  && assignment.IsActive
-                  && !assignment.IsDeleted
-                  && stage.IsActive
-                  && !stage.IsDeleted
-            select new { id = stage.Id, name = stage.NameAr }
-        ).Distinct().OrderBy(x => x.name).ToListAsync(cancellationToken);
-
-        if (stages.Count == 0)
+        return Json(periods.OrderBy(x => x.SortOrder).Take(8).Select(x => new
         {
-            stages = await _db.AcademicStages.AsNoTracking()
-                .Where(x => x.SchoolId == teacher.SchoolId && !x.IsDeleted && x.IsActive)
-                .OrderBy(x => x.SortOrder)
-                .Select(x => new { id = x.Id, name = x.NameAr })
-                .ToListAsync(cancellationToken);
-        }
+            id = x.Id,
+            name = $"{x.NameAr} ({x.StartTime:HH\\:mm} - {x.EndTime:HH\\:mm})"
+        }));
+    }
 
+    [HttpGet]
+    public async Task<IActionResult> Stages(int schoolId, CancellationToken cancellationToken)
+    {
+        var stages = await _db.AcademicStages.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new { id = x.Id, name = x.NameAr })
+            .ToListAsync(cancellationToken);
         return Json(stages);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Sections(int teacherId, int stageId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Sections(int schoolId, int stageId, CancellationToken cancellationToken)
     {
-        var assigned = await (
-            from assignment in _db.TeacherAssignments.AsNoTracking()
-            join section in _db.ClassSections.AsNoTracking() on assignment.ClassSectionId equals section.Id
-            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            where assignment.TeacherId == teacherId
-                  && assignment.IsActive
-                  && !assignment.IsDeleted
-                  && grade.AcademicStageId == stageId
-                  && !section.IsDeleted
-            orderby grade.SortOrder, section.NameAr
-            select new { id = section.Id, name = grade.NameAr + " / " + section.NameAr }
-        ).Distinct().ToListAsync(cancellationToken);
-
-        if (assigned.Count > 0)
-        {
-            return Json(assigned);
-        }
-
-        var teacher = await _db.Teachers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == teacherId && !x.IsDeleted, cancellationToken);
-        if (teacher is null)
-        {
-            return Json(Array.Empty<object>());
-        }
-
-        var all = await (
+        var sections = await (
             from section in _db.ClassSections.AsNoTracking()
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            where section.SchoolId == teacher.SchoolId
+            where section.SchoolId == schoolId
                   && grade.AcademicStageId == stageId
                   && !section.IsDeleted
                   && section.IsActive
+                  && grade.IsActive
+                  && !grade.IsDeleted
             orderby grade.SortOrder, section.NameAr
             select new { id = section.Id, name = grade.NameAr + " / " + section.NameAr }
         ).ToListAsync(cancellationToken);
-
-        return Json(all);
+        return Json(sections);
     }
 
-    private async Task LoadTeachersAsync(CancellationToken cancellationToken)
+    private async Task LoadSchoolsAsync(CancellationToken cancellationToken)
     {
+        ViewBag.Schools = new SelectList(
+            await _db.Schools.AsNoTracking().Where(x => !x.IsDeleted && x.IsActive).OrderBy(x => x.NameAr).ToListAsync(cancellationToken),
+            "Id", "NameAr");
+    }
+
+    private async Task LoadSchoolLookupsAsync(ExamCreateForm form, CancellationToken cancellationToken)
+    {
+        if (form.SchoolId <= 0)
+        {
+            ViewBag.Teachers = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+            ViewBag.Subjects = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+            ViewBag.Periods = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+            ViewBag.Stages = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+            ViewBag.Sections = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+            return;
+        }
+
         ViewBag.Teachers = new SelectList(
-            await _db.Teachers.AsNoTracking()
-                .Where(x => !x.IsDeleted && x.IsActive)
-                .OrderBy(x => x.FullNameAr)
-                .Select(x => new { x.Id, Name = x.FullNameAr })
-                .ToListAsync(cancellationToken),
-            "Id", "Name");
+            await _db.Teachers.AsNoTracking().Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.FullNameAr).Select(x => new { x.Id, Name = x.FullNameAr }).ToListAsync(cancellationToken),
+            "Id", "Name", form.TeacherId);
+
+        ViewBag.Subjects = new SelectList(
+            await _db.Subjects.AsNoTracking().Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.NameAr).Select(x => new { x.Id, Name = x.NameAr }).ToListAsync(cancellationToken),
+            "Id", "Name", form.SubjectId);
+
+        var periods = await _db.TeachingPeriods.AsNoTracking()
+            .Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted)
+            .OrderBy(x => x.SortOrder)
+            .Take(8)
+            .ToListAsync(cancellationToken);
+        ViewBag.Periods = new SelectList(
+            periods.Select(x => new { x.Id, Name = $"{x.NameAr} ({x.StartTime:HH\\:mm} - {x.EndTime:HH\\:mm})" }),
+            "Id", "Name", form.TeachingPeriodId);
+
+        ViewBag.Stages = new SelectList(
+            await _db.AcademicStages.AsNoTracking().Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.SortOrder).Select(x => new { x.Id, Name = x.NameAr }).ToListAsync(cancellationToken),
+            "Id", "Name", form.AcademicStageId);
+
+        if (form.AcademicStageId > 0)
+        {
+            var sections = await (
+                from section in _db.ClassSections.AsNoTracking()
+                join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
+                where section.SchoolId == form.SchoolId
+                      && grade.AcademicStageId == form.AcademicStageId
+                      && !section.IsDeleted
+                orderby grade.SortOrder, section.NameAr
+                select new { section.Id, Name = grade.NameAr + " / " + section.NameAr }
+            ).ToListAsync(cancellationToken);
+            ViewBag.Sections = new SelectList(sections, "Id", "Name", form.ClassSectionId);
+        }
+        else
+        {
+            ViewBag.Sections = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+        }
     }
 }

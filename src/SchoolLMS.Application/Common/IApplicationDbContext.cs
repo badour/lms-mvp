@@ -37,6 +37,7 @@ public interface IApplicationDbContext
     DbSet<Classroom> Classrooms { get; }
     DbSet<TeachingPeriod> TeachingPeriods { get; }
     DbSet<ClassSchedule> ClassSchedules { get; }
+    DbSet<RoutineLesson> RoutineLessons { get; }
     DbSet<StudentEnrollment> StudentEnrollments { get; }
     DbSet<TeacherAssignment> TeacherAssignments { get; }
 

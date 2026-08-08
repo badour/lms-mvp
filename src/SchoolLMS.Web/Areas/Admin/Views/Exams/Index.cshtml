@@ -11,9 +11,9 @@
 }
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الامتحانات</div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
         <h1 class="h3 page-title mb-1">الامتحانات</h1>
-        <p class="text-muted mb-0">امتحانات الطلاب حسب المعلم والشعبة</p>
+        <p class="text-muted mb-0">امتحانات الطلاب حسب المدرسة والمرحلة والصف</p>
     </div>
     <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> إنشاء امتحان</a>
 </div>
@@ -38,10 +38,12 @@
             <thead>
             <tr>
                 <th>التاريخ</th>
-                <th>الوقت</th>
+                <th>الفترة</th>
+                <th>المدرسة</th>
+                <th>الدرس</th>
                 <th>المعلم</th>
                 <th>المرحلة</th>
-                <th>الشعبة</th>
+                <th>الصف</th>
                 <th>ملاحظات</th>
                 <th>الحالة</th>
             </tr>
@@ -49,16 +51,18 @@
             <tbody>
             @if (!Model.Any())
             {
-                <tr><td colspan="7" class="text-center text-muted py-4">لا توجد امتحانات بعد.</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-4">لا توجد امتحانات بعد.</td></tr>
             }
             @foreach (var item in Model)
             {
                 <tr>
                     <td>@item.ExamDate.ToString("yyyy-MM-dd")</td>
-                    <td>@(item.StartTime?.ToString("HH:mm") ?? "—")</td>
+                    <td>@item.TimeSlot</td>
+                    <td>@item.SchoolNameAr</td>
+                    <td>@item.LessonNameAr</td>
                     <td>@item.TeacherNameAr</td>
                     <td>@item.StageNameAr</td>
-                    <td>@item.SectionNameAr</td>
+                    <td>@item.ClassNameAr</td>
                     <td>@(string.IsNullOrWhiteSpace(item.Notes) ? "—" : item.Notes)</td>
                     <td>@StatusText(item.Status)</td>
                 </tr>

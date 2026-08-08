@@ -2,10 +2,17 @@
 @{
     ViewData["Title"] = "عرض الجدول";
     var dayNames = ViewBag.DayNames as string[] ?? SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
-    var periodNames = Model.PeriodNames.Count == 8 ? Model.PeriodNames : Enumerable.Range(1, 8).Select(i => $"الحصة {i}").ToList();
+    var periods = Model.Periods.Count == 8
+        ? Model.Periods
+        : Enumerable.Range(1, 8).Select(i => new SchoolLMS.Application.DTOs.Schedules.SchedulePeriodDto
+        {
+            SortOrder = i,
+            NameAr = $"الحصة {i}",
+            TimeSlot = ""
+        }).ToList();
     var cellMap = Model.Cells
         .GroupBy(c => (c.DayOfWeek, c.PeriodSortOrder))
-        .ToDictionary(g => g.Key, g => g.First().EntryText ?? "—");
+        .ToDictionary(g => g.Key, g => g.First());
 }
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
@@ -25,9 +32,15 @@
             <thead>
             <tr>
                 <th>اليوم</th>
-                @foreach (var p in periodNames)
+                @foreach (var p in periods)
                 {
-                    <th>@p</th>
+                    <th>
+                        <div>@p.NameAr</div>
+                        @if (!string.IsNullOrWhiteSpace(p.TimeSlot))
+                        {
+                            <div class="small text-muted fw-normal">@p.TimeSlot</div>
+                        }
+                    </th>
                 }
             </tr>
             </thead>
@@ -38,7 +51,17 @@
                     <th class="text-start">@dayNames[day]</th>
                     @for (var p = 1; p <= 8; p++)
                     {
-                        <td>@(cellMap.TryGetValue((day, p), out var text) ? text : "—")</td>
+                        if (cellMap.TryGetValue((day, p), out var cell))
+                        {
+                            <td class="text-start">
+                                <div class="fw-semibold">@(string.IsNullOrWhiteSpace(cell.LessonName ?? cell.EntryText) ? "—" : (cell.LessonName ?? cell.EntryText))</div>
+                                <div class="small text-muted">@(string.IsNullOrWhiteSpace(cell.TeacherName) ? "—" : cell.TeacherName)</div>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>—</td>
+                        }
                     }
                 </tr>
             }

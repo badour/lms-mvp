@@ -3,6 +3,7 @@ using SchoolLMS.Application.DTOs.Attendance;
 using SchoolLMS.Application.DTOs.Exams;
 using SchoolLMS.Application.DTOs.Lessons;
 using SchoolLMS.Application.DTOs.Messages;
+using SchoolLMS.Application.DTOs.Routines;
 using SchoolLMS.Application.DTOs.Schedules;
 using SchoolLMS.Application.DTOs.Schools;
 using SchoolLMS.Application.DTOs.Students;
@@ -194,12 +195,26 @@ public class CreateExamRequestValidator : AbstractValidator<CreateExamRequest>
 {
     public CreateExamRequestValidator()
     {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
         RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
+        RuleFor(x => x.SubjectId).GreaterThan(0).WithMessage("اسم الدرس مطلوب.");
+        RuleFor(x => x.TeachingPeriodId).GreaterThan(0).WithMessage("الفترة الزمنية مطلوبة.");
         RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
-        RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("الشعبة مطلوبة.");
-        RuleFor(x => x.ExamDateTime).NotEmpty().WithMessage("تاريخ ووقت الامتحان مطلوب.");
+        RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("اسم الصف / الشعبة مطلوب.");
+        RuleFor(x => x.ExamDate).NotEmpty().WithMessage("تاريخ الامتحان مطلوب.");
         RuleFor(x => x.Status).IsInEnum().WithMessage("حالة الامتحان غير صالحة.");
         RuleFor(x => x.Notes).MaximumLength(2000).When(x => !string.IsNullOrWhiteSpace(x.Notes));
         RuleFor(x => x.Instructions).MaximumLength(4000).When(x => !string.IsNullOrWhiteSpace(x.Instructions));
+    }
+}
+
+public class CreateRoutineLessonRequestValidator : AbstractValidator<CreateRoutineLessonRequest>
+{
+    public CreateRoutineLessonRequestValidator()
+    {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
+        RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
+        RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
+        RuleFor(x => x.SessionsPerYear).InclusiveBetween(1, 500).WithMessage("عدد الحصص يجب أن يكون بين 1 و 500.");
     }
 }

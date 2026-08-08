@@ -50,6 +50,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<Classroom> Classrooms => Set<Classroom>();
     public DbSet<TeachingPeriod> TeachingPeriods => Set<TeachingPeriod>();
     public DbSet<ClassSchedule> ClassSchedules => Set<ClassSchedule>();
+    public DbSet<RoutineLesson> RoutineLessons => Set<RoutineLesson>();
     public DbSet<StudentEnrollment> StudentEnrollments => Set<StudentEnrollment>();
     public DbSet<TeacherAssignment> TeacherAssignments => Set<TeacherAssignment>();
 
@@ -285,6 +286,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             e.HasOne(x => x.Subject).WithMany().HasForeignKey(x => x.SubjectId);
             e.HasOne(x => x.TeachingPeriod).WithMany().HasForeignKey(x => x.TeachingPeriodId);
             e.HasOne(x => x.Classroom).WithMany().HasForeignKey(x => x.ClassroomId);
+        });
+
+        builder.Entity<RoutineLesson>(e =>
+        {
+            e.HasIndex(x => new { x.SchoolId, x.TeacherId, x.AcademicStageId });
+            e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId);
+            e.HasOne(x => x.AcademicStage).WithMany().HasForeignKey(x => x.AcademicStageId);
         });
 
         builder.Entity<Teacher>(e =>

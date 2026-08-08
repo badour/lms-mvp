@@ -15,12 +15,22 @@ public class ScheduleListItemDto
     public DateTime? UpdatedAt { get; set; }
 }
 
+public class SchedulePeriodDto
+{
+    public int SortOrder { get; set; }
+    public string NameAr { get; set; } = string.Empty;
+    public string TimeSlot { get; set; } = string.Empty;
+}
+
 public class ScheduleCellDto
 {
     public byte DayOfWeek { get; set; }
     public int PeriodSortOrder { get; set; }
     public int? SubjectId { get; set; }
     public int? TeacherId { get; set; }
+    public string? LessonName { get; set; }
+    public string? TeacherName { get; set; }
+    public string? TimeSlot { get; set; }
     public string? EntryText { get; set; }
 }
 
@@ -34,6 +44,7 @@ public class ScheduleDetailsDto
     public string GradeNameAr { get; set; } = string.Empty;
     public string SectionNameAr { get; set; } = string.Empty;
     public List<string> PeriodNames { get; set; } = [];
+    public List<SchedulePeriodDto> Periods { get; set; } = [];
     public List<ScheduleCellDto> Cells { get; set; } = [];
 }
 

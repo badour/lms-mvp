@@ -109,17 +109,43 @@ public class ScheduleAdminService : IScheduleAdminService
         }
 
         var periods = await EnsurePeriodsAsync(meta.SchoolId, cancellationToken);
-        var cells = await _db.ClassSchedules.AsNoTracking()
-            .Where(x => x.ClassSectionId == classSectionId && !x.IsDeleted)
-            .Select(x => new
+        var periodDtos = periods.Select(p => new SchedulePeriodDto
+        {
+            SortOrder = p.SortOrder,
+            NameAr = p.NameAr,
+            TimeSlot = $"{p.StartTime:HH\\:mm} - {p.EndTime:HH\\:mm}"
+        }).ToList();
+
+        var cellRows = await (
+            from slot in _db.ClassSchedules.AsNoTracking()
+            where slot.ClassSectionId == classSectionId && !slot.IsDeleted
+            join period in _db.TeachingPeriods.AsNoTracking() on slot.TeachingPeriodId equals period.Id
+            join teacher in _db.Teachers.AsNoTracking() on slot.TeacherId equals teacher.Id into tg
+            from teacher in tg.DefaultIfEmpty()
+            select new
             {
-                x.DayOfWeek,
-                PeriodSort = _db.TeachingPeriods.Where(p => p.Id == x.TeachingPeriodId).Select(p => p.SortOrder).FirstOrDefault(),
-                x.SubjectId,
-                x.TeacherId,
-                x.EntryText
-            })
-            .ToListAsync(cancellationToken);
+                slot.DayOfWeek,
+                PeriodSortOrder = period.SortOrder,
+                slot.SubjectId,
+                slot.TeacherId,
+                slot.EntryText,
+                TeacherName = teacher != null ? teacher.FullNameAr : null,
+                period.StartTime,
+                period.EndTime
+            }
+        ).ToListAsync(cancellationToken);
+
+        var cells = cellRows.Select(c => new ScheduleCellDto
+        {
+            DayOfWeek = c.DayOfWeek,
+            PeriodSortOrder = c.PeriodSortOrder,
+            SubjectId = c.SubjectId,
+            TeacherId = c.TeacherId,
+            LessonName = c.EntryText,
+            EntryText = c.EntryText,
+            TeacherName = c.TeacherName,
+            TimeSlot = $"{c.StartTime:HH\\:mm} - {c.EndTime:HH\\:mm}"
+        }).ToList();
 
         return new ScheduleDetailsDto
         {
@@ -130,15 +156,9 @@ public class ScheduleAdminService : IScheduleAdminService
             StageNameAr = meta.StageName,
             GradeNameAr = meta.GradeName,
             SectionNameAr = meta.SectionName,
-            PeriodNames = periods.Select(p => p.NameAr).ToList(),
-            Cells = cells.Select(c => new ScheduleCellDto
-            {
-                DayOfWeek = c.DayOfWeek,
-                PeriodSortOrder = c.PeriodSort,
-                SubjectId = c.SubjectId,
-                TeacherId = c.TeacherId,
-                EntryText = c.EntryText
-            }).ToList()
+            PeriodNames = periodDtos.Select(p => $"{p.NameAr}\n{p.TimeSlot}").ToList(),
+            Periods = periodDtos,
+            Cells = cells
         };
     }
 
@@ -212,8 +232,10 @@ public class ScheduleAdminService : IScheduleAdminService
                 continue;
             }
 
-            var text = cell.EntryText?.Trim();
-            if (string.IsNullOrWhiteSpace(text) && !cell.SubjectId.HasValue && !cell.TeacherId.HasValue)
+            var lessonName = !string.IsNullOrWhiteSpace(cell.LessonName)
+                ? cell.LessonName.Trim()
+                : cell.EntryText?.Trim();
+            if (string.IsNullOrWhiteSpace(lessonName) && !cell.SubjectId.HasValue && !cell.TeacherId.HasValue)
             {
                 continue;
             }
@@ -226,8 +248,8 @@ public class ScheduleAdminService : IScheduleAdminService
                 TeachingPeriodId = periodId,
                 DayOfWeek = cell.DayOfWeek,
                 SubjectId = cell.SubjectId,
-                TeacherId = cell.TeacherId,
-                EntryText = text
+                TeacherId = cell.TeacherId is > 0 ? cell.TeacherId : null,
+                EntryText = lessonName
             });
         }
 

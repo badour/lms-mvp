@@ -1,22 +1,34 @@
 @model SchoolLMS.Application.DTOs.Schedules.ScheduleDetailsDto?
 @{
     var dayNames = ViewBag.DayNames as string[] ?? SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
-    var periodNames = Model?.PeriodNames?.Count == 8
-        ? Model.PeriodNames
-        : Enumerable.Range(1, 8).Select(i => $"الحصة {i}").ToList();
+    var periods = Model?.Periods?.Count == 8
+        ? Model.Periods
+        : Enumerable.Range(1, 8).Select(i => new SchoolLMS.Application.DTOs.Schedules.SchedulePeriodDto
+        {
+            SortOrder = i,
+            NameAr = $"الحصة {i}",
+            TimeSlot = ""
+        }).ToList();
     var cellMap = (Model?.Cells ?? [])
         .GroupBy(c => (c.DayOfWeek, c.PeriodSortOrder))
-        .ToDictionary(g => g.Key, g => g.First().EntryText ?? string.Empty);
+        .ToDictionary(g => g.Key, g => g.First());
+    var teachers = (ViewBag.Teachers as IEnumerable<SelectListItem>)?.ToList() ?? [];
     var idx = 0;
 }
 <div class="table-responsive">
     <table class="table table-bordered align-middle schedule-grid text-center">
         <thead>
         <tr>
-            <th style="min-width:100px">اليوم / الحصة</th>
-            @for (var p = 1; p <= 8; p++)
+            <th style="min-width:90px">اليوم / الحصة</th>
+            @foreach (var period in periods)
             {
-                <th>@periodNames[p - 1]</th>
+                <th style="min-width:140px">
+                    <div>@period.NameAr</div>
+                    @if (!string.IsNullOrWhiteSpace(period.TimeSlot))
+                    {
+                        <div class="small text-muted fw-normal">@period.TimeSlot</div>
+                    }
+                </th>
             }
         </tr>
         </thead>
@@ -27,11 +39,29 @@
                 <th class="text-start">@dayNames[day]</th>
                 @for (var p = 1; p <= 8; p++)
                 {
-                    var text = cellMap.TryGetValue((day, p), out var value) ? value : string.Empty;
-                    <td>
+                    cellMap.TryGetValue((day, p), out var cell);
+                    var lesson = cell?.LessonName ?? cell?.EntryText ?? string.Empty;
+                    var teacherId = cell?.TeacherId?.ToString() ?? string.Empty;
+                    var timeSlot = periods.FirstOrDefault(x => x.SortOrder == p)?.TimeSlot ?? cell?.TimeSlot ?? string.Empty;
+                    <td class="schedule-cell">
                         <input type="hidden" name="Cells[@idx].DayOfWeek" value="@day" />
                         <input type="hidden" name="Cells[@idx].PeriodSortOrder" value="@p" />
-                        <input class="form-control form-control-sm" name="Cells[@idx].EntryText" value="@text" placeholder="—" />
+                        <div class="small text-muted mb-1 schedule-time-slot">@(string.IsNullOrWhiteSpace(timeSlot) ? "الفترة الزمنية" : timeSlot)</div>
+                        <input class="form-control form-control-sm mb-1" name="Cells[@idx].LessonName" value="@lesson" placeholder="اسم الدرس" />
+                        <select class="form-select form-select-sm schedule-teacher-select" name="Cells[@idx].TeacherId">
+                            <option value="">اسم المعلم</option>
+                            @foreach (var t in teachers)
+                            {
+                                if (teacherId == t.Value)
+                                {
+                                    <option value="@t.Value" selected>@t.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@t.Value">@t.Text</option>
+                                }
+                            }
+                        </select>
                     </td>
                     idx++;
                 }

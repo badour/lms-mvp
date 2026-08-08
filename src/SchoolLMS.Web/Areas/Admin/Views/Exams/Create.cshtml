@@ -3,9 +3,9 @@
     ViewData["Title"] = "إنشاء امتحان";
 }
 <div class="mb-4">
-    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الامتحانات</div>
-    <h1 class="h3 page-title mb-1">إنشاء امتحان للطالب</h1>
-    <p class="text-muted mb-0">اختر المعلم والمرحلة والشعبة ثم حدد التاريخ والوقت والتعليمات</p>
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
+    <h1 class="h3 page-title mb-1">إنشاء امتحان</h1>
+    <p class="text-muted mb-0">يظهر الامتحان لجميع طلاب المدرسة والمرحلة واسم الصف المحددين</p>
 </div>
 
 <form method="post">
@@ -16,6 +16,27 @@
         <h2>بيانات الامتحان</h2>
         <div class="row g-3">
             <div class="col-md-4">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+                <span asp-validation-for="SchoolId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="TeachingPeriodId" class="form-label"></label>
+                <select asp-for="TeachingPeriodId" class="form-select" asp-items="ViewBag.Periods" id="TeachingPeriodId">
+                    <option value="">اختر الفترة الزمنية</option>
+                </select>
+                <span asp-validation-for="TeachingPeriodId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="SubjectId" class="form-label"></label>
+                <select asp-for="SubjectId" class="form-select" asp-items="ViewBag.Subjects" id="SubjectId">
+                    <option value="">اختر اسم الدرس</option>
+                </select>
+                <span asp-validation-for="SubjectId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
                 <label asp-for="TeacherId" class="form-label"></label>
                 <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.Teachers" id="TeacherId">
                     <option value="">اختر المعلم</option>
@@ -24,39 +45,39 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="AcademicStageId" class="form-label"></label>
-                <select asp-for="AcademicStageId" class="form-select" id="AcademicStageId">
+                <select asp-for="AcademicStageId" class="form-select" asp-items="ViewBag.Stages" id="AcademicStageId">
                     <option value="">اختر المرحلة</option>
                 </select>
                 <span asp-validation-for="AcademicStageId" class="text-danger"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="ClassSectionId" class="form-label"></label>
-                <select asp-for="ClassSectionId" class="form-select" id="ClassSectionId">
-                    <option value="">اختر الشعبة</option>
+                <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionId">
+                    <option value="">اختر اسم الصف</option>
                 </select>
                 <span asp-validation-for="ClassSectionId" class="text-danger"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="ExamDateTime" class="form-label"></label>
-                <input asp-for="ExamDateTime" class="form-control" type="datetime-local" />
-                <span asp-validation-for="ExamDateTime" class="text-danger"></span>
+                <label asp-for="ExamDate" class="form-label"></label>
+                <input asp-for="ExamDate" class="form-control" type="date" />
+                <span asp-validation-for="ExamDate" class="text-danger"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Status" class="form-label"></label>
                 <select asp-for="Status" class="form-select">
-                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Draft)">مسودة</option>
                     <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Published)">منشور</option>
+                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Draft)">مسودة</option>
                     <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Archived)">مؤرشف</option>
                     <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Cancelled)">ملغى</option>
                 </select>
             </div>
             <div class="col-12">
                 <label asp-for="Notes" class="form-label"></label>
-                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="ملاحظات الامتحان"></textarea>
             </div>
             <div class="col-12">
                 <label asp-for="Instructions" class="form-label"></label>
-                <textarea asp-for="Instructions" class="form-control" rows="4" placeholder="تعليمات الامتحان للطلاب..."></textarea>
+                <textarea asp-for="Instructions" class="form-control" rows="3" placeholder="تعليمات الامتحان للطلاب (اختياري)"></textarea>
             </div>
         </div>
     </section>
@@ -70,13 +91,16 @@
 @section Scripts {
 <script>
 (() => {
+  const school = document.getElementById('SchoolId');
+  const period = document.getElementById('TeachingPeriodId');
+  const subject = document.getElementById('SubjectId');
   const teacher = document.getElementById('TeacherId');
   const stage = document.getElementById('AcademicStageId');
   const section = document.getElementById('ClassSectionId');
 
   function fill(select, items, placeholder) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
-    for (const item of items) {
+    for (const item of items || []) {
       const opt = document.createElement('option');
       opt.value = item.id;
       opt.textContent = item.name;
@@ -84,25 +108,37 @@
     }
   }
 
-  async function loadStages() {
-    stage.innerHTML = '<option value="">اختر المرحلة</option>';
-    section.innerHTML = '<option value="">اختر الشعبة</option>';
-    if (!teacher.value) return;
-    const res = await fetch('@Url.Action("Stages")?teacherId=' + encodeURIComponent(teacher.value));
-    if (!res.ok) return;
-    fill(stage, await res.json(), 'اختر المرحلة');
+  async function onSchoolChanged() {
+    fill(period, [], 'اختر الفترة الزمنية');
+    fill(subject, [], 'اختر اسم الدرس');
+    fill(teacher, [], 'اختر المعلم');
+    fill(stage, [], 'اختر المرحلة');
+    fill(section, [], 'اختر اسم الصف');
+    if (!school.value) return;
+
+    const [periodsRes, subjectsRes, teachersRes, stagesRes] = await Promise.all([
+      fetch('@Url.Action("Periods")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Subjects")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value))
+    ]);
+
+    if (periodsRes.ok) fill(period, await periodsRes.json(), 'اختر الفترة الزمنية');
+    if (subjectsRes.ok) fill(subject, await subjectsRes.json(), 'اختر اسم الدرس');
+    if (teachersRes.ok) fill(teacher, await teachersRes.json(), 'اختر المعلم');
+    if (stagesRes.ok) fill(stage, await stagesRes.json(), 'اختر المرحلة');
   }
 
-  async function loadSections() {
-    section.innerHTML = '<option value="">اختر الشعبة</option>';
-    if (!teacher.value || !stage.value) return;
-    const res = await fetch('@Url.Action("Sections")?teacherId=' + encodeURIComponent(teacher.value) + '&stageId=' + encodeURIComponent(stage.value));
+  async function onStageChanged() {
+    fill(section, [], 'اختر اسم الصف');
+    if (!school.value || !stage.value) return;
+    const res = await fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value) + '&stageId=' + encodeURIComponent(stage.value));
     if (!res.ok) return;
-    fill(section, await res.json(), 'اختر الشعبة');
+    fill(section, await res.json(), 'اختر اسم الصف');
   }
 
-  teacher.addEventListener('change', loadStages);
-  stage.addEventListener('change', loadSections);
+  school.addEventListener('change', onSchoolChanged);
+  stage.addEventListener('change', onStageChanged);
 })();
 </script>
 }
