@@ -39,8 +39,15 @@ public class CreateQimamCertificateRequest
     [DataType(DataType.Date)]
     public DateOnly? CertificateDate { get; set; }
 
+    [Display(Name = "الصف / المرحلة")]
+    [Required(ErrorMessage = "اختر الصف من قائمة المراحل")]
+    public int GradeLevelId { get; set; }
+
+    [Display(Name = "الشعبة")]
+    [Required(ErrorMessage = "اختر الشعبة")]
+    public int ClassSectionId { get; set; }
+
     [Display(Name = "اسم الصف")]
-    [Required(ErrorMessage = "اسم الصف مطلوب")]
     [MaxLength(150)]
     public string ClassName { get; set; } = string.Empty;
 

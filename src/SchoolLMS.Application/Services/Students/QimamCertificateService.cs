@@ -159,6 +159,38 @@ public class QimamCertificateService : IQimamCertificateService
             return ServiceResult<int>.Failure("غير مصرح بالإضافة إلى هذه المدرسة.");
         }
 
+        var grade = await (
+            from g in _db.GradeLevels.AsNoTracking()
+            join stage in _db.AcademicStages.AsNoTracking() on g.AcademicStageId equals stage.Id
+            where g.Id == request.GradeLevelId
+                  && g.SchoolId == student.SchoolId
+                  && !g.IsDeleted
+                  && g.IsActive
+                  && !stage.IsDeleted
+                  && stage.IsActive
+            select g
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        if (grade is null)
+        {
+            return ServiceResult<int>.Failure("الصف المختار غير متاح لهذه المدرسة.");
+        }
+
+        var section = await _db.ClassSections.AsNoTracking()
+            .FirstOrDefaultAsync(x =>
+                x.Id == request.ClassSectionId
+                && x.GradeLevelId == grade.Id
+                && x.SchoolId == student.SchoolId
+                && !x.IsDeleted
+                && x.IsActive, cancellationToken);
+
+        if (section is null)
+        {
+            return ServiceResult<int>.Failure("الشعبة المختارة غير متاحة لهذا الصف.");
+        }
+
+        var className = $"{grade.NameAr} / {section.NameAr}";
+
         var imageValidation = ValidateUpload(request.Image, ImageExtensions, MaxImageBytes, "صورة الشهادة");
         if (imageValidation is not null)
         {
@@ -204,7 +236,7 @@ public class QimamCertificateService : IQimamCertificateService
                 StudentId = student.Id,
                 CertificateName = request.CertificateName.Trim(),
                 CertificateDate = request.CertificateDate!.Value,
-                ClassName = request.ClassName.Trim(),
+                ClassName = className,
                 ImagePath = imagePath,
                 ImageOriginalName = imageOriginalName,
                 DocumentPath = documentPath,

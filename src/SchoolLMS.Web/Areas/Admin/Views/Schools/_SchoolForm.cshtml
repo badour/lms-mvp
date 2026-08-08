@@ -9,7 +9,7 @@
     <div class="row g-3">
         <div class="col-md-6">
             <label asp-for="NameAr" class="form-label"></label>
-            <input asp-for="NameAr" class="form-control" />
+            <input asp-for="NameAr" class="form-control" id="SchoolNameAr" />
             <span asp-validation-for="NameAr" class="text-danger"></span>
         </div>
         <div class="col-md-6">
@@ -80,7 +80,9 @@
             <thead>
             <tr>
                 <th>اسم المرحلة</th>
-                <th>الصف</th>
+                <th>اسم الصف</th>
+                <th>الشعبة</th>
+                <th>اسم المدرسة</th>
                 <th>اسم السنة</th>
                 <th>الحالة</th>
                 <th></th>
@@ -94,9 +96,11 @@
                         <input type="hidden" name="Stages[@i].Id" value="@Model.Stages[i].Id" />
                         <input type="hidden" name="Stages[@i].GradeLevelId" value="@Model.Stages[i].GradeLevelId" />
                         <input type="hidden" name="Stages[@i].ClassSectionId" value="@Model.Stages[i].ClassSectionId" />
-                        <input class="form-control" name="Stages[@i].StageName" value="@Model.Stages[i].StageName" required />
+                        <input class="form-control" name="Stages[@i].StageName" value="@Model.Stages[i].StageName" placeholder="ابتدائية / متوسطة / ثانوية" required />
                     </td>
-                    <td><input class="form-control" name="Stages[@i].ClassName" value="@Model.Stages[i].ClassName" required /></td>
+                    <td><input class="form-control" name="Stages[@i].ClassName" value="@Model.Stages[i].ClassName" placeholder="الأول ابتدائي" required /></td>
+                    <td><input class="form-control" name="Stages[@i].SectionName" value="@(string.IsNullOrWhiteSpace(Model.Stages[i].SectionName) ? "أ" : Model.Stages[i].SectionName)" placeholder="أ / ب / ت" required /></td>
+                    <td><input class="form-control school-name-mirror" value="@Model.NameAr" readonly tabindex="-1" /></td>
                     <td><input class="form-control" name="Stages[@i].YearName" value="@(Model.Stages[i].YearName ?? Model.YearName)" /></td>
                     <td>
                         <select class="form-select" name="Stages[@i].IsActive">
@@ -118,5 +122,5 @@
             </tbody>
         </table>
     </div>
-    <div class="small text-muted">المراحل غير النشطة تُخفى تلقائياً من قوائم الحضور والجداول والامتحانات.</div>
+    <div class="small text-muted">أدخل اسم المرحلة (ابتدائية / متوسطة / ثانوية) واسم الصف (مثل الأول ابتدائي) والشعبة (أ / ب / ت). المراحل غير النشطة تُخفى من قوائم الحضور والجداول والامتحانات.</div>
 </section>

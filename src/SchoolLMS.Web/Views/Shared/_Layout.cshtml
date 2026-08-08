@@ -55,15 +55,23 @@
                             <i class="bi bi-pencil-square"></i><span>عرض / تعديل / حذف</span>
                         </a>
                     </div>
-                    <a class="nav-link @(area == "Admin" && controller == "Students" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Index">
-                        <i class="bi bi-people"></i><span>الطلاب</span>
-                    </a>
-                    <a class="nav-link sub @(area == "Admin" && controller == "Students" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Create">
-                        <i class="bi bi-person-plus"></i><span>إضافة طالب جديد</span>
-                    </a>
-                    <a class="nav-link sub @(area == "Admin" && controller == "QimamCertificates" ? "active" : "")" asp-area="Admin" asp-controller="QimamCertificates" asp-action="Index">
-                        <i class="bi bi-award"></i><span>شهادات تطبيق قمم</span>
-                    </a>
+                    <button class="nav-link nav-toggle @(area == "Admin" && (controller == "Students" || controller == "QimamCertificates") ? "active open" : "")" type="button" data-submenu-toggle="students-menu" aria-expanded="@(area == "Admin" && (controller == "Students" || controller == "QimamCertificates") ? "true" : "false")">
+                        <span class="nav-toggle__main">
+                            <i class="bi bi-people"></i><span>الطلاب</span>
+                        </span>
+                        <i class="bi bi-chevron-down nav-toggle__chevron"></i>
+                    </button>
+                    <div class="submenu @(area == "Admin" && (controller == "Students" || controller == "QimamCertificates") ? "show" : "")" id="students-menu">
+                        <a class="nav-link sub @(area == "Admin" && controller == "Students" && action == "Index" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Index">
+                            <i class="bi bi-list-ul"></i><span>قائمة الطلاب</span>
+                        </a>
+                        <a class="nav-link sub @(area == "Admin" && controller == "Students" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Students" asp-action="Create">
+                            <i class="bi bi-person-plus"></i><span>إضافة طالب جديد</span>
+                        </a>
+                        <a class="nav-link sub @(area == "Admin" && controller == "QimamCertificates" ? "active" : "")" asp-area="Admin" asp-controller="QimamCertificates" asp-action="Index">
+                            <i class="bi bi-award"></i><span>شهادات تطبيق قمم</span>
+                        </a>
+                    </div>
 
                     <div class="nav-group-label mt-3">وضع المعلم</div>
                     <button class="nav-link nav-toggle @(area == "Admin" && controller == "Teachers" ? "active open" : "")" type="button" data-submenu-toggle="teachers-menu" aria-expanded="@(area == "Admin" && controller == "Teachers" ? "true" : "false")">

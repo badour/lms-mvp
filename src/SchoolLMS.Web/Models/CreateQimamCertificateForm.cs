@@ -18,9 +18,15 @@ public class CreateQimamCertificateForm
     [DataType(DataType.Date)]
     public DateOnly? CertificateDate { get; set; }
 
-    [Display(Name = "اسم الصف")]
-    [Required(ErrorMessage = "اسم الصف مطلوب")]
-    [MaxLength(150)]
+    [Display(Name = "الصف / المرحلة")]
+    [Required(ErrorMessage = "اختر الصف من قائمة المراحل")]
+    public int GradeLevelId { get; set; }
+
+    [Display(Name = "الشعبة")]
+    [Required(ErrorMessage = "اختر الشعبة")]
+    public int ClassSectionId { get; set; }
+
+    /// <summary>Resolved display value saved to the certificate (grade / section).</summary>
     public string ClassName { get; set; } = string.Empty;
 
     [Display(Name = "صورة الشهادة")]

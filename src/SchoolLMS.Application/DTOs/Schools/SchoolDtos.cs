@@ -30,10 +30,15 @@ public class SchoolStageItemDto
     [MaxLength(200)]
     public string StageName { get; set; } = string.Empty;
 
-    [Display(Name = "الصف")]
+    [Display(Name = "اسم الصف")]
     [Required(ErrorMessage = "اسم الصف مطلوب")]
     [MaxLength(200)]
     public string ClassName { get; set; } = string.Empty;
+
+    [Display(Name = "الشعبة")]
+    [Required(ErrorMessage = "الشعبة مطلوبة")]
+    [MaxLength(50)]
+    public string SectionName { get; set; } = "أ";
 
     [Display(Name = "اسم السنة")]
     [MaxLength(100)]

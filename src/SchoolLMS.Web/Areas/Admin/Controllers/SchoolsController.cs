@@ -52,7 +52,8 @@ public class SchoolsController : Controller
                 new SchoolStageItemDto
                 {
                     StageName = "المرحلة الابتدائية",
-                    ClassName = "الصف الأول",
+                    ClassName = "الأول ابتدائي",
+                    SectionName = "أ",
                     YearName = $"{DateTime.Today.Year}-{DateTime.Today.Year + 1}",
                     IsActive = true
                 }
@@ -105,7 +106,7 @@ public class SchoolsController : Controller
             IsActive = school.IsActive,
             Stages = school.Stages.Count > 0
                 ? school.Stages
-                : [new SchoolStageItemDto { IsActive = true, YearName = school.YearName }]
+                : [new SchoolStageItemDto { IsActive = true, YearName = school.YearName, SectionName = "أ" }]
         });
     }
 

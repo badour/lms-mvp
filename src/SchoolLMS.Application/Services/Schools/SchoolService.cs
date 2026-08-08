@@ -97,6 +97,7 @@ public class SchoolService : ISchoolService
                 Id = stage.Id,
                 StageName = stage.NameAr,
                 ClassName = grade != null ? grade.NameAr : string.Empty,
+                SectionName = section != null ? section.NameAr : "أ",
                 YearName = stage.YearName ?? yearName,
                 IsActive = stage.IsActive,
                 GradeLevelId = grade != null ? grade.Id : null,
@@ -104,11 +105,8 @@ public class SchoolService : ISchoolService
             }
         ).ToListAsync(cancellationToken);
 
-        // Collapse duplicate stage rows if multiple sections — keep first grade/section per stage for edit form simplicity
-        stages = stages
-            .GroupBy(x => x.Id)
-            .Select(g => g.First())
-            .ToList();
+        var distinctStageIds = stages.Select(x => x.Id).Where(x => x.HasValue).Select(x => x!.Value).Distinct().ToList();
+        var activeStageIds = stages.Where(x => x.IsActive && x.Id.HasValue).Select(x => x.Id!.Value).Distinct().ToList();
 
         return new SchoolDetailsDto
         {
@@ -127,8 +125,8 @@ public class SchoolService : ISchoolService
             IsActive = school.IsActive,
             BranchCount = await _db.SchoolBranches.CountAsync(b => b.SchoolId == id && !b.IsDeleted, cancellationToken),
             StudentCount = await _db.Students.CountAsync(s => s.SchoolId == id && !s.IsDeleted, cancellationToken),
-            StageCount = stages.Count,
-            ActiveStageCount = stages.Count(x => x.IsActive),
+            StageCount = distinctStageIds.Count,
+            ActiveStageCount = activeStageIds.Count,
             Stages = stages
         };
     }
@@ -319,7 +317,9 @@ public class SchoolService : ISchoolService
     private async Task SyncStagesAsync(int schoolId, string schoolYearName, List<SchoolStageItemDto> stages, CancellationToken cancellationToken)
     {
         var incoming = (stages ?? [])
-            .Where(x => !string.IsNullOrWhiteSpace(x.StageName) && !string.IsNullOrWhiteSpace(x.ClassName))
+            .Where(x => !string.IsNullOrWhiteSpace(x.StageName)
+                        && !string.IsNullOrWhiteSpace(x.ClassName)
+                        && !string.IsNullOrWhiteSpace(x.SectionName))
             .ToList();
 
         var existingStages = await _db.AcademicStages
@@ -332,40 +332,63 @@ public class SchoolService : ISchoolService
             .Where(x => x.SchoolId == schoolId && !x.IsDeleted)
             .ToListAsync(cancellationToken);
 
+        var stagesByName = existingStages
+            .GroupBy(x => x.NameAr.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
         var keepStageIds = new HashSet<int>();
+        var keepGradeIds = new HashSet<int>();
+        var keepSectionIds = new HashSet<int>();
         var sort = 1;
+
         foreach (var item in incoming)
         {
-            AcademicStage stage;
+            var stageName = item.StageName.Trim();
+            var className = item.ClassName.Trim();
+            var sectionName = item.SectionName.Trim();
+            var yearName = string.IsNullOrWhiteSpace(item.YearName) ? schoolYearName.Trim() : item.YearName.Trim();
+
+            AcademicStage? stage = null;
             if (item.Id.HasValue)
             {
-                stage = existingStages.FirstOrDefault(x => x.Id == item.Id.Value)
-                        ?? new AcademicStage { SchoolId = schoolId };
-                if (stage.Id == 0)
-                {
-                    _db.AcademicStages.Add(stage);
-                }
+                stage = existingStages.FirstOrDefault(x => x.Id == item.Id.Value);
             }
-            else
+
+            if (stage is null)
+            {
+                stagesByName.TryGetValue(stageName, out stage);
+            }
+
+            if (stage is null)
             {
                 stage = new AcademicStage { SchoolId = schoolId };
                 _db.AcademicStages.Add(stage);
+                existingStages.Add(stage);
             }
 
-            stage.NameAr = item.StageName.Trim();
-            stage.NameEn = item.StageName.Trim();
-            stage.YearName = string.IsNullOrWhiteSpace(item.YearName) ? schoolYearName.Trim() : item.YearName.Trim();
-            stage.IsActive = item.IsActive;
-            stage.SortOrder = sort++;
+            stage.NameAr = stageName;
+            stage.NameEn = stageName;
+            stage.YearName = yearName;
+            stage.IsActive = keepStageIds.Contains(stage.Id) ? stage.IsActive || item.IsActive : item.IsActive;
+            if (!keepStageIds.Contains(stage.Id))
+            {
+                stage.SortOrder = sort++;
+            }
+
             stage.IsDeleted = false;
             stage.DeletedAt = null;
 
             await _db.SaveChangesAsync(cancellationToken);
             keepStageIds.Add(stage.Id);
+            stagesByName[stageName] = stage;
 
             var grade = item.GradeLevelId.HasValue
                 ? existingGrades.FirstOrDefault(x => x.Id == item.GradeLevelId.Value)
-                : existingGrades.FirstOrDefault(x => x.AcademicStageId == stage.Id);
+                : null;
+
+            grade ??= existingGrades.FirstOrDefault(x =>
+                x.AcademicStageId == stage.Id &&
+                string.Equals(x.NameAr.Trim(), className, StringComparison.OrdinalIgnoreCase));
 
             if (grade is null)
             {
@@ -375,20 +398,26 @@ public class SchoolService : ISchoolService
                     AcademicStageId = stage.Id
                 };
                 _db.GradeLevels.Add(grade);
+                existingGrades.Add(grade);
             }
 
             grade.AcademicStageId = stage.Id;
-            grade.NameAr = item.ClassName.Trim();
-            grade.NameEn = item.ClassName.Trim();
-            grade.SortOrder = sort;
-            grade.IsActive = item.IsActive;
+            grade.NameAr = className;
+            grade.NameEn = className;
+            grade.SortOrder = keepGradeIds.Contains(grade.Id) ? grade.SortOrder : sort;
+            grade.IsActive = keepGradeIds.Contains(grade.Id) ? grade.IsActive || item.IsActive : item.IsActive;
             grade.IsDeleted = false;
             grade.DeletedAt = null;
             await _db.SaveChangesAsync(cancellationToken);
+            keepGradeIds.Add(grade.Id);
 
             var section = item.ClassSectionId.HasValue
                 ? existingSections.FirstOrDefault(x => x.Id == item.ClassSectionId.Value)
-                : existingSections.FirstOrDefault(x => x.GradeLevelId == grade.Id);
+                : null;
+
+            section ??= existingSections.FirstOrDefault(x =>
+                x.GradeLevelId == grade.Id &&
+                string.Equals(x.NameAr.Trim(), sectionName, StringComparison.OrdinalIgnoreCase));
 
             if (section is null)
             {
@@ -396,37 +425,42 @@ public class SchoolService : ISchoolService
                 {
                     SchoolId = schoolId,
                     GradeLevelId = grade.Id,
-                    NameAr = "أ",
-                    NameEn = "A",
                     Capacity = 30
                 };
                 _db.ClassSections.Add(section);
+                existingSections.Add(section);
             }
 
             section.GradeLevelId = grade.Id;
+            section.NameAr = sectionName;
+            section.NameEn = sectionName;
             section.IsActive = item.IsActive;
             section.IsDeleted = false;
             section.DeletedAt = null;
+            await _db.SaveChangesAsync(cancellationToken);
+            keepSectionIds.Add(section.Id);
         }
 
-        foreach (var stage in existingStages.Where(x => !keepStageIds.Contains(x.Id)))
+        var now = DateTime.UtcNow;
+        foreach (var section in existingSections.Where(x => x.Id > 0 && !keepSectionIds.Contains(x.Id)))
+        {
+            section.IsDeleted = true;
+            section.DeletedAt = now;
+            section.IsActive = false;
+        }
+
+        foreach (var grade in existingGrades.Where(x => x.Id > 0 && !keepGradeIds.Contains(x.Id)))
+        {
+            grade.IsDeleted = true;
+            grade.DeletedAt = now;
+            grade.IsActive = false;
+        }
+
+        foreach (var stage in existingStages.Where(x => x.Id > 0 && !keepStageIds.Contains(x.Id)))
         {
             stage.IsDeleted = true;
-            stage.DeletedAt = DateTime.UtcNow;
+            stage.DeletedAt = now;
             stage.IsActive = false;
-
-            foreach (var grade in existingGrades.Where(g => g.AcademicStageId == stage.Id))
-            {
-                grade.IsDeleted = true;
-                grade.DeletedAt = DateTime.UtcNow;
-                grade.IsActive = false;
-                foreach (var section in existingSections.Where(s => s.GradeLevelId == grade.Id))
-                {
-                    section.IsDeleted = true;
-                    section.DeletedAt = DateTime.UtcNow;
-                    section.IsActive = false;
-                }
-            }
         }
     }
 

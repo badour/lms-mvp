@@ -3,6 +3,19 @@
   const addBtn = document.getElementById('addStageRow');
   if (!body || !addBtn) return;
 
+  function schoolName() {
+    return document.getElementById('SchoolNameAr')?.value
+      || document.querySelector('[name="NameAr"]')?.value
+      || '';
+  }
+
+  function syncSchoolNameMirrors() {
+    const name = schoolName();
+    body.querySelectorAll('.school-name-mirror').forEach((el) => {
+      el.value = name;
+    });
+  }
+
   function reindex() {
     [...body.querySelectorAll('tr.stage-row')].forEach((row, i) => {
       row.querySelectorAll('input, select').forEach((el) => {
@@ -22,9 +35,11 @@
         <input type="hidden" name="Stages[${i}].Id" value="" />
         <input type="hidden" name="Stages[${i}].GradeLevelId" value="" />
         <input type="hidden" name="Stages[${i}].ClassSectionId" value="" />
-        <input class="form-control" name="Stages[${i}].StageName" required />
+        <input class="form-control" name="Stages[${i}].StageName" placeholder="ابتدائية / متوسطة / ثانوية" required />
       </td>
-      <td><input class="form-control" name="Stages[${i}].ClassName" required /></td>
+      <td><input class="form-control" name="Stages[${i}].ClassName" placeholder="الأول ابتدائي" required /></td>
+      <td><input class="form-control" name="Stages[${i}].SectionName" value="أ" placeholder="أ / ب / ت" required /></td>
+      <td><input class="form-control school-name-mirror" value="${schoolName()}" readonly tabindex="-1" /></td>
       <td><input class="form-control" name="Stages[${i}].YearName" value="${year}" /></td>
       <td>
         <select class="form-select" name="Stages[${i}].IsActive">
@@ -45,4 +60,8 @@
     btn.closest('tr')?.remove();
     reindex();
   });
+
+  const nameInput = document.getElementById('SchoolNameAr') || document.querySelector('[name="NameAr"]');
+  nameInput?.addEventListener('input', syncSchoolNameMirrors);
+  syncSchoolNameMirrors();
 })();

@@ -26,7 +26,7 @@ public class QimamCertificatesController : Controller
     public async Task<IActionResult> Index(QimamCertificateSearchRequest request, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "شهادات تطبيق قمم";
-        await LoadLookupsAsync(request.SchoolId, request.StudentId, cancellationToken);
+        await LoadLookupsAsync(request.SchoolId, request.StudentId, null, null, cancellationToken);
         var result = await _certificateService.SearchAsync(request, cancellationToken);
         return View(result);
     }
@@ -35,12 +35,13 @@ public class QimamCertificatesController : Controller
     public async Task<IActionResult> Create(int? studentId, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "إضافة شهادة قمم";
-        await LoadLookupsAsync(null, studentId, cancellationToken);
-        return View(new CreateQimamCertificateForm
+        var form = new CreateQimamCertificateForm
         {
             StudentId = studentId ?? 0,
             CertificateDate = DateOnly.FromDateTime(DateTime.Today)
-        });
+        };
+        await LoadLookupsAsync(null, form.StudentId > 0 ? form.StudentId : null, form.GradeLevelId, form.ClassSectionId, cancellationToken);
+        return View(form);
     }
 
     [HttpPost]
@@ -56,6 +57,8 @@ public class QimamCertificatesController : Controller
             StudentId = form.StudentId,
             CertificateName = form.CertificateName,
             CertificateDate = form.CertificateDate,
+            GradeLevelId = form.GradeLevelId,
+            ClassSectionId = form.ClassSectionId,
             ClassName = form.ClassName,
             Notes = form.Notes,
             Description = form.Description,
@@ -71,7 +74,7 @@ public class QimamCertificatesController : Controller
                 ModelState.AddModelError(string.Empty, error);
             }
 
-            await LoadLookupsAsync(null, form.StudentId, cancellationToken);
+            await LoadLookupsAsync(null, form.StudentId > 0 ? form.StudentId : null, form.GradeLevelId, form.ClassSectionId, cancellationToken);
             return View(form);
         }
 
@@ -90,7 +93,49 @@ public class QimamCertificatesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task LoadLookupsAsync(int? schoolId, int? studentId, CancellationToken cancellationToken)
+    [HttpGet]
+    public async Task<IActionResult> GradesByStudent(int studentId, CancellationToken cancellationToken)
+    {
+        var student = await _db.Students.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted, cancellationToken);
+        if (student is null)
+        {
+            return Json(Array.Empty<object>());
+        }
+
+        var grades = await (
+            from grade in _db.GradeLevels.AsNoTracking()
+            join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
+            where grade.SchoolId == student.SchoolId
+                  && !grade.IsDeleted
+                  && grade.IsActive
+                  && !stage.IsDeleted
+                  && stage.IsActive
+            orderby stage.SortOrder, grade.SortOrder, grade.NameAr
+            select new { id = grade.Id, name = grade.NameAr }
+        ).ToListAsync(cancellationToken);
+
+        return Json(grades);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SectionsByGrade(int gradeLevelId, CancellationToken cancellationToken)
+    {
+        var sections = await _db.ClassSections.AsNoTracking()
+            .Where(x => x.GradeLevelId == gradeLevelId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.NameAr)
+            .Select(x => new { id = x.Id, name = x.NameAr })
+            .ToListAsync(cancellationToken);
+
+        return Json(sections);
+    }
+
+    private async Task LoadLookupsAsync(
+        int? schoolId,
+        int? studentId,
+        int? gradeLevelId,
+        int? classSectionId,
+        CancellationToken cancellationToken)
     {
         ViewBag.Schools = new SelectList(
             await _db.Schools.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.NameAr).ToListAsync(cancellationToken),
@@ -109,6 +154,44 @@ public class QimamCertificatesController : Controller
                 Name = x.FullNameAr + " (" + x.StudentNumber + ")"
             }).ToListAsync(cancellationToken),
             "Id", "Name", studentId);
+
+        var gradeItems = new List<LookupItem>();
+        var sectionItems = new List<LookupItem>();
+
+        if (studentId is > 0)
+        {
+            var studentSchoolId = await _db.Students.AsNoTracking()
+                .Where(x => x.Id == studentId.Value && !x.IsDeleted)
+                .Select(x => (int?)x.SchoolId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (studentSchoolId.HasValue)
+            {
+                gradeItems = await (
+                    from grade in _db.GradeLevels.AsNoTracking()
+                    join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
+                    where grade.SchoolId == studentSchoolId.Value
+                          && !grade.IsDeleted
+                          && grade.IsActive
+                          && !stage.IsDeleted
+                          && stage.IsActive
+                    orderby stage.SortOrder, grade.SortOrder, grade.NameAr
+                    select new LookupItem { Id = grade.Id, Name = grade.NameAr }
+                ).ToListAsync(cancellationToken);
+            }
+        }
+
+        if (gradeLevelId is > 0)
+        {
+            sectionItems = await _db.ClassSections.AsNoTracking()
+                .Where(x => x.GradeLevelId == gradeLevelId.Value && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.NameAr)
+                .Select(x => new LookupItem { Id = x.Id, Name = x.NameAr })
+                .ToListAsync(cancellationToken);
+        }
+
+        ViewBag.Grades = new SelectList(gradeItems, nameof(LookupItem.Id), nameof(LookupItem.Name), gradeLevelId);
+        ViewBag.Sections = new SelectList(sectionItems, nameof(LookupItem.Id), nameof(LookupItem.Name), classSectionId);
     }
 
     private static FileUploadInput? ToUpload(IFormFile? file)
@@ -125,5 +208,11 @@ public class QimamCertificatesController : Controller
             Length = file.Length,
             Content = file.OpenReadStream()
         };
+    }
+
+    private sealed class LookupItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

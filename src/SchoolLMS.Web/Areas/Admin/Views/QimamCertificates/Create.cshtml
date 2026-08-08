@@ -5,7 +5,7 @@
 <div class="mb-4">
     <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
     <h1 class="h3 page-title mb-1">إضافة شهادة تطبيق قمم</h1>
-    <p class="text-muted mb-0">تسجيل اسم الشهادة والتاريخ واسم الصف مع رفع الصورة والمستند</p>
+    <p class="text-muted mb-0">اختر الطالب ثم الصف والشعبة من مراحل المدرسة، مع رفع صورة ومستند الشهادة</p>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="student-create-form">
@@ -17,7 +17,7 @@
         <div class="row g-3">
             <div class="col-md-6">
                 <label asp-for="StudentId" class="form-label"></label>
-                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.Students">
+                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.Students" id="StudentId">
                     <option value="">اختر الطالب</option>
                 </select>
                 <span asp-validation-for="StudentId" class="text-danger"></span>
@@ -33,9 +33,18 @@
                 <span asp-validation-for="CertificateDate" class="text-danger"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="ClassName" class="form-label"></label>
-                <input asp-for="ClassName" class="form-control" placeholder="اسم الصف" />
-                <span asp-validation-for="ClassName" class="text-danger"></span>
+                <label asp-for="GradeLevelId" class="form-label"></label>
+                <select asp-for="GradeLevelId" class="form-select" asp-items="ViewBag.Grades" id="GradeLevelId">
+                    <option value="">اختر الصف (مثل الأول ابتدائي)</option>
+                </select>
+                <span asp-validation-for="GradeLevelId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionId">
+                    <option value="">اختر الشعبة (أ / ب / ت)</option>
+                </select>
+                <span asp-validation-for="ClassSectionId" class="text-danger"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Image" class="form-label"></label>
@@ -65,3 +74,62 @@
         <a class="btn btn-outline-secondary" asp-action="Index">رجوع للقائمة</a>
     </div>
 </form>
+
+@section Scripts {
+<script>
+(() => {
+  const studentSelect = document.getElementById('StudentId');
+  const gradeSelect = document.getElementById('GradeLevelId');
+  const sectionSelect = document.getElementById('ClassSectionId');
+  if (!studentSelect || !gradeSelect || !sectionSelect) return;
+
+  const gradesUrl = '@Url.Action("GradesByStudent", "QimamCertificates", new { area = "Admin" })';
+  const sectionsUrl = '@Url.Action("SectionsByGrade", "QimamCertificates", new { area = "Admin" })';
+
+  function clearSelect(select, placeholder) {
+    select.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = placeholder;
+    select.appendChild(opt);
+  }
+
+  function fillSelect(select, items, placeholder, selectedId) {
+    clearSelect(select, placeholder);
+    (items || []).forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      if (selectedId && String(selectedId) === String(item.id)) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+  }
+
+  async function loadGrades(studentId, selectedGradeId) {
+    clearSelect(gradeSelect, 'اختر الصف (مثل الأول ابتدائي)');
+    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
+    if (!studentId) return;
+
+    const res = await fetch(`${gradesUrl}?studentId=${encodeURIComponent(studentId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(gradeSelect, items, 'اختر الصف (مثل الأول ابتدائي)', selectedGradeId);
+  }
+
+  async function loadSections(gradeLevelId, selectedSectionId) {
+    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
+    if (!gradeLevelId) return;
+
+    const res = await fetch(`${sectionsUrl}?gradeLevelId=${encodeURIComponent(gradeLevelId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(sectionSelect, items, 'اختر الشعبة (أ / ب / ت)', selectedSectionId);
+  }
+
+  studentSelect.addEventListener('change', () => loadGrades(studentSelect.value));
+  gradeSelect.addEventListener('change', () => loadSections(gradeSelect.value));
+})();
+</script>
+}
