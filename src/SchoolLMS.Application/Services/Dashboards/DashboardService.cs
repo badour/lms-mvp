@@ -153,12 +153,16 @@ public class DashboardService : IDashboardService
 
         var exams = await examsQuery
             .OrderBy(x => x.ExamDate)
+            .ThenBy(x => x.StartTime)
             .Take(5)
             .Select(x => new SimpleItemDto
             {
                 Title = _db.Subjects.Where(s => s.Id == x.SubjectId).Select(s => s.NameAr).FirstOrDefault() ?? "امتحان",
-                Subtitle = x.Notes ?? x.ExamType.ToString(),
-                Date = x.ExamDate.ToDateTime(TimeOnly.MinValue)
+                Subtitle = (x.StartTime.HasValue
+                               ? x.ExamDate.ToString("yyyy/MM/dd") + " · " + x.StartTime.Value.ToString("HH\\:mm")
+                               : x.ExamDate.ToString("yyyy/MM/dd"))
+                           + (string.IsNullOrWhiteSpace(x.Notes) ? string.Empty : " — " + x.Notes),
+                Date = x.ExamDate.ToDateTime(x.StartTime ?? TimeOnly.MinValue)
             })
             .ToListAsync(cancellationToken);
 
@@ -217,6 +221,28 @@ public class DashboardService : IDashboardService
             })
             .ToListAsync(cancellationToken);
 
+        var todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var upcomingExams = await _db.Exams.AsNoTracking()
+            .Where(x => !x.IsDeleted
+                        && x.IsPublished
+                        && x.TeacherId == teacherId
+                        && x.SchoolId == teacher.SchoolId
+                        && x.ExamDate >= todayDate)
+            .OrderBy(x => x.ExamDate)
+            .ThenBy(x => x.StartTime)
+            .Take(8)
+            .Select(x => new SimpleItemDto
+            {
+                Title = _db.Subjects.Where(s => s.Id == x.SubjectId).Select(s => s.NameAr).FirstOrDefault() ?? "امتحان",
+                Subtitle = (x.StartTime.HasValue
+                               ? x.ExamDate.ToString("yyyy/MM/dd") + " · " + x.StartTime.Value.ToString("HH\\:mm")
+                               : x.ExamDate.ToString("yyyy/MM/dd"))
+                           + " — "
+                           + (_db.ClassSections.Where(s => s.Id == x.ClassSectionId).Select(s => s.NameAr).FirstOrDefault() ?? "شعبة"),
+                Date = x.ExamDate.ToDateTime(x.StartTime ?? TimeOnly.MinValue)
+            })
+            .ToListAsync(cancellationToken);
+
         return new TeacherDashboardDto
         {
             TeacherNameAr = teacher.FullNameAr,
@@ -228,7 +254,8 @@ public class DashboardService : IDashboardService
                 x.Assignment!.TeacherId == teacherId, cancellationToken),
             UnreadMessages = await _db.MessageRecipients.CountAsync(x =>
                 x.RecipientUserId == _currentUser.UserId && x.ReadAt == null, cancellationToken),
-            TodaySchedule = schedule
+            TodaySchedule = schedule,
+            UpcomingExams = upcomingExams
         };
     }
 

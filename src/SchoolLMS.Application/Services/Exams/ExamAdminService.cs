@@ -188,7 +188,7 @@ public class ExamAdminService : IExamAdminService
         }
 
         var teacherOk = await _db.Teachers.AsNoTracking().AnyAsync(
-            x => x.Id == request.TeacherId && x.SchoolId == request.SchoolId && !x.IsDeleted,
+            x => x.Id == request.TeacherId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
             cancellationToken);
         if (!teacherOk)
         {
@@ -196,20 +196,11 @@ public class ExamAdminService : IExamAdminService
         }
 
         var subjectOk = await _db.Subjects.AsNoTracking().AnyAsync(
-            x => x.Id == request.SubjectId && x.SchoolId == request.SchoolId && !x.IsDeleted,
+            x => x.Id == request.SubjectId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
             cancellationToken);
         if (!subjectOk)
         {
             return ServiceResult<int>.Failure("اسم الدرس غير مرتبط بالمدرسة المختارة.");
-        }
-
-        var period = await _db.TeachingPeriods.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.TeachingPeriodId
-                                      && x.SchoolId == request.SchoolId
-                                      && !x.IsDeleted, cancellationToken);
-        if (period is null)
-        {
-            return ServiceResult<int>.Failure("الفترة الزمنية غير صالحة لهذه المدرسة.");
         }
 
         var sectionInfo = await (
@@ -217,15 +208,26 @@ public class ExamAdminService : IExamAdminService
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
             where section.Id == request.ClassSectionId
                   && !section.IsDeleted
+                  && section.IsActive
                   && section.SchoolId == request.SchoolId
-                  && grade.AcademicStageId == request.AcademicStageId
-            select new { SectionId = section.Id, GradeLevelId = grade.Id }
+                  && !grade.IsDeleted
+                  && grade.IsActive
+            select new
+            {
+                SectionId = section.Id,
+                GradeLevelId = grade.Id,
+                AcademicStageId = grade.AcademicStageId
+            }
         ).FirstOrDefaultAsync(cancellationToken);
 
         if (sectionInfo is null)
         {
-            return ServiceResult<int>.Failure("اسم الصف أو المرحلة غير صالح لهذه المدرسة.");
+            return ServiceResult<int>.Failure("الشعبة غير صالحة لهذه المدرسة.");
         }
+
+        var examDate = DateOnly.FromDateTime(request.ExamDateTime);
+        var startTime = TimeOnly.FromDateTime(request.ExamDateTime);
+        var endTime = startTime.AddHours(1);
 
         var yearId = await _db.AcademicYears.AsNoTracking()
             .Where(x => x.SchoolId == request.SchoolId && x.IsCurrent && !x.IsDeleted)
@@ -269,13 +271,13 @@ public class ExamAdminService : IExamAdminService
             ExamPeriodId = examPeriod.Id,
             SubjectId = request.SubjectId,
             TeacherId = request.TeacherId,
-            AcademicStageId = request.AcademicStageId,
+            AcademicStageId = sectionInfo.AcademicStageId,
             GradeLevelId = sectionInfo.GradeLevelId,
             ClassSectionId = request.ClassSectionId,
             ExamType = ExamType.DailyQuiz,
-            ExamDate = request.ExamDate,
-            StartTime = period.StartTime,
-            EndTime = period.EndTime,
+            ExamDate = examDate,
+            StartTime = startTime,
+            EndTime = endTime,
             Notes = request.Notes?.Trim(),
             Instructions = request.Instructions?.Trim(),
             Status = request.Status,

@@ -85,6 +85,10 @@ else
                         <div>
                             <strong>@e.Title</strong>
                             <div class="small text-muted">@e.Subtitle</div>
+                            @if (e.Date.HasValue)
+                            {
+                                <div class="small text-muted">@e.Date.Value.ToString("yyyy/MM/dd HH:mm")</div>
+                            }
                         </div>
                         <span class="pill pill-red">قادم</span>
                     </div>

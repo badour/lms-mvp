@@ -10,7 +10,37 @@ else
         <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">حصص اليوم</div><div class="stat-value">@Model.TodayClasses</div></div></div>
         <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">المواد</div><div class="stat-value">@Model.AssignedSubjects</div></div></div>
         <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">واجبات للمراجعة</div><div class="stat-value">@Model.PendingHomeworkReviews</div></div></div>
-        <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">رسائل غير مقروءة</div><div class="stat-value">@Model.UnreadMessages</div></div></div>
+        <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">امتحانات قادمة</div><div class="stat-value">@Model.UpcomingExams.Count</div></div></div>
     </div>
-    <div class="card stat-card p-3"><h5>جدول اليوم</h5>@foreach (var item in Model.TodaySchedule){<div class="py-2 border-bottom">@item.Title — @item.Subtitle</div>}</div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card stat-card p-3 h-100">
+                <h5>جدول اليوم</h5>
+                @if (!Model.TodaySchedule.Any())
+                {
+                    <div class="text-muted">لا توجد حصص اليوم.</div>
+                }
+                @foreach (var item in Model.TodaySchedule)
+                {
+                    <div class="py-2 border-bottom">@item.Title — @item.Subtitle</div>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card stat-card p-3 h-100">
+                <h5>الامتحانات القادمة</h5>
+                @if (!Model.UpcomingExams.Any())
+                {
+                    <div class="text-muted">لا توجد امتحانات قادمة.</div>
+                }
+                @foreach (var item in Model.UpcomingExams)
+                {
+                    <div class="py-2 border-bottom">
+                        <div class="fw-semibold">@item.Title</div>
+                        <div class="small text-muted">@item.Subtitle</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 }

@@ -43,6 +43,7 @@ public class TeacherDashboardDto
     public int PendingHomeworkReviews { get; set; }
     public int UnreadMessages { get; set; }
     public IReadOnlyList<SimpleItemDto> TodaySchedule { get; set; } = Array.Empty<SimpleItemDto>();
+    public IReadOnlyList<SimpleItemDto> UpcomingExams { get; set; } = Array.Empty<SimpleItemDto>();
 }
 
 public class ParentDashboardDto
