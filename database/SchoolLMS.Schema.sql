@@ -1,17 +1,4 @@
-/*
-  School LMS — SQL Server schema (EF Core idempotent script)
-  Generated from migration: 20260809101118_InitialCreate
-  Target: Microsoft SQL Server 2019+
-
-  Prerequisites:
-    1) Run database/00-CreateDatabase.sql (or create DB SchoolLMS manually)
-    2) Connect to [SchoolLMS] and run this script
-
-  After schema:
-    Start SchoolLMS.Web with Database:Provider=SqlServer so seed data is applied.
-*/
-
-IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -26,7 +13,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AcademicStages] (
@@ -52,7 +39,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AcademicYears] (
@@ -79,7 +66,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Announcements] (
@@ -112,11 +99,11 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetRoles] (
-        [Id] nvarchar(450) NOT NULL,
+        [Id] nvarchar(128) NOT NULL,
         [Name] nvarchar(256) NULL,
         [NormalizedName] nvarchar(256) NULL,
         [ConcurrencyStamp] nvarchar(max) NULL,
@@ -127,11 +114,11 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetUsers] (
-        [Id] nvarchar(450) NOT NULL,
+        [Id] nvarchar(128) NOT NULL,
         [FullNameAr] nvarchar(max) NOT NULL,
         [FullNameEn] nvarchar(max) NULL,
         [ProfileImagePath] nvarchar(max) NULL,
@@ -161,7 +148,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Assignments] (
@@ -199,7 +186,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AttendanceExcuses] (
@@ -226,7 +213,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AttendanceSessions] (
@@ -252,7 +239,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AuditLogs] (
@@ -278,7 +265,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Badges] (
@@ -307,7 +294,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [BehaviourCategories] (
@@ -333,7 +320,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Books] (
@@ -361,7 +348,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Classrooms] (
@@ -387,7 +374,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [CourseUnits] (
@@ -414,7 +401,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Employees] (
@@ -443,7 +430,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ExamPeriods] (
@@ -469,7 +456,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [FeeTypes] (
@@ -493,7 +480,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [FileAttachments] (
@@ -521,7 +508,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [GradeCategories] (
@@ -546,7 +533,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Guardians] (
@@ -578,7 +565,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [LoginHistories] (
@@ -599,7 +586,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Notifications] (
@@ -629,7 +616,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [NotificationTemplates] (
@@ -655,7 +642,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Payments] (
@@ -684,7 +671,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Permissions] (
@@ -708,7 +695,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Questions] (
@@ -738,7 +725,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Quizzes] (
@@ -776,7 +763,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [SchoolEvents] (
@@ -806,7 +793,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Schools] (
@@ -837,7 +824,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Students] (
@@ -883,7 +870,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Subjects] (
@@ -908,7 +895,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [TeacherAssignments] (
@@ -934,7 +921,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [TeachingPeriods] (
@@ -961,7 +948,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [UserSchoolRoles] (
@@ -977,7 +964,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Vehicles] (
@@ -1004,7 +991,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [GradeLevels] (
@@ -1024,14 +1011,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_GradeLevels] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_GradeLevels_AcademicStages_AcademicStageId] FOREIGN KEY ([AcademicStageId]) REFERENCES [AcademicStages] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_GradeLevels_AcademicStages_AcademicStageId] FOREIGN KEY ([AcademicStageId]) REFERENCES [AcademicStages] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Semesters] (
@@ -1052,14 +1039,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_Semesters] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Semesters_AcademicYears_AcademicYearId] FOREIGN KEY ([AcademicYearId]) REFERENCES [AcademicYears] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_Semesters_AcademicYears_AcademicYearId] FOREIGN KEY ([AcademicYearId]) REFERENCES [AcademicYears] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AnnouncementTargets] (
@@ -1070,98 +1057,98 @@ BEGIN
         [GradeLevelId] int NULL,
         [ClassSectionId] int NULL,
         CONSTRAINT [PK_AnnouncementTargets] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_AnnouncementTargets_Announcements_AnnouncementId] FOREIGN KEY ([AnnouncementId]) REFERENCES [Announcements] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AnnouncementTargets_Announcements_AnnouncementId] FOREIGN KEY ([AnnouncementId]) REFERENCES [Announcements] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetRoleClaims] (
         [Id] int NOT NULL IDENTITY,
-        [RoleId] nvarchar(450) NOT NULL,
+        [RoleId] nvarchar(128) NOT NULL,
         [ClaimType] nvarchar(max) NULL,
         [ClaimValue] nvarchar(max) NULL,
         CONSTRAINT [PK_AspNetRoleClaims] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [AspNetRoles] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [AspNetRoles] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetUserClaims] (
         [Id] int NOT NULL IDENTITY,
-        [UserId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
         [ClaimType] nvarchar(max) NULL,
         [ClaimValue] nvarchar(max) NULL,
         CONSTRAINT [PK_AspNetUserClaims] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_AspNetUserClaims_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AspNetUserClaims_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetUserLogins] (
-        [LoginProvider] nvarchar(450) NOT NULL,
-        [ProviderKey] nvarchar(450) NOT NULL,
+        [LoginProvider] nvarchar(128) NOT NULL,
+        [ProviderKey] nvarchar(128) NOT NULL,
         [ProviderDisplayName] nvarchar(max) NULL,
-        [UserId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
         CONSTRAINT [PK_AspNetUserLogins] PRIMARY KEY ([LoginProvider], [ProviderKey]),
-        CONSTRAINT [FK_AspNetUserLogins_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AspNetUserLogins_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetUserRoles] (
-        [UserId] nvarchar(450) NOT NULL,
-        [RoleId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
+        [RoleId] nvarchar(128) NOT NULL,
         CONSTRAINT [PK_AspNetUserRoles] PRIMARY KEY ([UserId], [RoleId]),
-        CONSTRAINT [FK_AspNetUserRoles_AspNetRoles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [AspNetRoles] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_AspNetUserRoles_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AspNetUserRoles_AspNetRoles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [AspNetRoles] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_AspNetUserRoles_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AspNetUserTokens] (
-        [UserId] nvarchar(450) NOT NULL,
-        [LoginProvider] nvarchar(450) NOT NULL,
-        [Name] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
+        [LoginProvider] nvarchar(128) NOT NULL,
+        [Name] nvarchar(128) NOT NULL,
         [Value] nvarchar(max) NULL,
         CONSTRAINT [PK_AspNetUserTokens] PRIMARY KEY ([UserId], [LoginProvider], [Name]),
-        CONSTRAINT [FK_AspNetUserTokens_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AspNetUserTokens_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [RefreshTokens] (
         [Id] int NOT NULL IDENTITY,
-        [UserId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
         [Token] nvarchar(450) NOT NULL,
         [ExpiresAt] datetime2 NOT NULL,
         [CreatedAt] datetime2 NOT NULL,
@@ -1169,14 +1156,14 @@ BEGIN
         [ReplacedByToken] nvarchar(max) NULL,
         [CreatedByIp] nvarchar(max) NULL,
         CONSTRAINT [PK_RefreshTokens] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_RefreshTokens_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_RefreshTokens_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [AssignmentSubmissions] (
@@ -1202,14 +1189,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_AssignmentSubmissions] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_AssignmentSubmissions_Assignments_AssignmentId] FOREIGN KEY ([AssignmentId]) REFERENCES [Assignments] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_AssignmentSubmissions_Assignments_AssignmentId] FOREIGN KEY ([AssignmentId]) REFERENCES [Assignments] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentAttendances] (
@@ -1230,14 +1217,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentAttendances] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentAttendances_AttendanceSessions_AttendanceSessionId] FOREIGN KEY ([AttendanceSessionId]) REFERENCES [AttendanceSessions] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentAttendances_AttendanceSessions_AttendanceSessionId] FOREIGN KEY ([AttendanceSessionId]) REFERENCES [AttendanceSessions] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentBadges] (
@@ -1260,14 +1247,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentBadges] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentBadges_Badges_BadgeId] FOREIGN KEY ([BadgeId]) REFERENCES [Badges] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentBadges_Badges_BadgeId] FOREIGN KEY ([BadgeId]) REFERENCES [Badges] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [BehaviourRecords] (
@@ -1294,14 +1281,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_BehaviourRecords] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_BehaviourRecords_BehaviourCategories_BehaviourCategoryId] FOREIGN KEY ([BehaviourCategoryId]) REFERENCES [BehaviourCategories] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_BehaviourRecords_BehaviourCategories_BehaviourCategoryId] FOREIGN KEY ([BehaviourCategoryId]) REFERENCES [BehaviourCategories] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [BookCopies] (
@@ -1319,14 +1306,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_BookCopies] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_BookCopies_Books_BookId] FOREIGN KEY ([BookId]) REFERENCES [Books] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_BookCopies_Books_BookId] FOREIGN KEY ([BookId]) REFERENCES [Books] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Teachers] (
@@ -1363,14 +1350,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_Teachers] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Teachers_Employees_EmployeeId] FOREIGN KEY ([EmployeeId]) REFERENCES [Employees] ([Id])
+        CONSTRAINT [FK_Teachers_Employees_EmployeeId] FOREIGN KEY ([EmployeeId]) REFERENCES [Employees] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Exams] (
@@ -1404,14 +1391,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_Exams] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Exams_ExamPeriods_ExamPeriodId] FOREIGN KEY ([ExamPeriodId]) REFERENCES [ExamPeriods] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_Exams_ExamPeriods_ExamPeriodId] FOREIGN KEY ([ExamPeriodId]) REFERENCES [ExamPeriods] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [FeePlans] (
@@ -1432,14 +1419,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_FeePlans] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_FeePlans_FeeTypes_FeeTypeId] FOREIGN KEY ([FeeTypeId]) REFERENCES [FeeTypes] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_FeePlans_FeeTypes_FeeTypeId] FOREIGN KEY ([FeeTypeId]) REFERENCES [FeeTypes] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [GradeItems] (
@@ -1461,44 +1448,44 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_GradeItems] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_GradeItems_GradeCategories_GradeCategoryId] FOREIGN KEY ([GradeCategoryId]) REFERENCES [GradeCategories] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_GradeItems_GradeCategories_GradeCategoryId] FOREIGN KEY ([GradeCategoryId]) REFERENCES [GradeCategories] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [RolePermissions] (
-        [RoleId] nvarchar(450) NOT NULL,
+        [RoleId] nvarchar(128) NOT NULL,
         [PermissionId] int NOT NULL,
         CONSTRAINT [PK_RolePermissions] PRIMARY KEY ([RoleId], [PermissionId]),
-        CONSTRAINT [FK_RolePermissions_Permissions_PermissionId] FOREIGN KEY ([PermissionId]) REFERENCES [Permissions] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_RolePermissions_Permissions_PermissionId] FOREIGN KEY ([PermissionId]) REFERENCES [Permissions] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [UserPermissions] (
-        [UserId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
         [PermissionId] int NOT NULL,
         [IsGranted] bit NOT NULL,
         CONSTRAINT [PK_UserPermissions] PRIMARY KEY ([UserId], [PermissionId]),
-        CONSTRAINT [FK_UserPermissions_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_UserPermissions_Permissions_PermissionId] FOREIGN KEY ([PermissionId]) REFERENCES [Permissions] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_UserPermissions_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_UserPermissions_Permissions_PermissionId] FOREIGN KEY ([PermissionId]) REFERENCES [Permissions] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [QuestionOptions] (
@@ -1508,14 +1495,14 @@ BEGIN
         [IsCorrect] bit NOT NULL,
         [SortOrder] int NOT NULL,
         CONSTRAINT [PK_QuestionOptions] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_QuestionOptions_Questions_QuestionId] FOREIGN KEY ([QuestionId]) REFERENCES [Questions] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_QuestionOptions_Questions_QuestionId] FOREIGN KEY ([QuestionId]) REFERENCES [Questions] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [QuizAttempts] (
@@ -1539,14 +1526,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_QuizAttempts] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_QuizAttempts_Quizzes_QuizId] FOREIGN KEY ([QuizId]) REFERENCES [Quizzes] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_QuizAttempts_Quizzes_QuizId] FOREIGN KEY ([QuizId]) REFERENCES [Quizzes] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [QuizQuestions] (
@@ -1555,15 +1542,15 @@ BEGIN
         [Marks] decimal(18,2) NOT NULL,
         [SortOrder] int NOT NULL,
         CONSTRAINT [PK_QuizQuestions] PRIMARY KEY ([QuizId], [QuestionId]),
-        CONSTRAINT [FK_QuizQuestions_Questions_QuestionId] FOREIGN KEY ([QuestionId]) REFERENCES [Questions] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_QuizQuestions_Quizzes_QuizId] FOREIGN KEY ([QuizId]) REFERENCES [Quizzes] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_QuizQuestions_Questions_QuestionId] FOREIGN KEY ([QuestionId]) REFERENCES [Questions] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_QuizQuestions_Quizzes_QuizId] FOREIGN KEY ([QuizId]) REFERENCES [Quizzes] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [SchoolBranches] (
@@ -1583,14 +1570,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_SchoolBranches] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_SchoolBranches_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_SchoolBranches_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [SchoolSettings] (
@@ -1613,14 +1600,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_SchoolSettings] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_SchoolSettings_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_SchoolSettings_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [EmergencyContacts] (
@@ -1641,14 +1628,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_EmergencyContacts] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_EmergencyContacts_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_EmergencyContacts_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentAddresses] (
@@ -1673,14 +1660,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentAddresses] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentAddresses_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentAddresses_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentDocuments] (
@@ -1702,14 +1689,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentDocuments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentDocuments_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentDocuments_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentEducationalProfiles] (
@@ -1733,14 +1720,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentEducationalProfiles] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentEducationalProfiles_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentEducationalProfiles_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentGuardians] (
@@ -1752,15 +1739,15 @@ BEGIN
         [CanReceiveNotifications] bit NOT NULL,
         [CanCollectStudent] bit NOT NULL,
         CONSTRAINT [PK_StudentGuardians] PRIMARY KEY ([StudentId], [GuardianId]),
-        CONSTRAINT [FK_StudentGuardians_Guardians_GuardianId] FOREIGN KEY ([GuardianId]) REFERENCES [Guardians] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_StudentGuardians_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentGuardians_Guardians_GuardianId] FOREIGN KEY ([GuardianId]) REFERENCES [Guardians] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_StudentGuardians_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentHealthProfiles] (
@@ -1786,14 +1773,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentHealthProfiles] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentHealthProfiles_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentHealthProfiles_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentHobbies] (
@@ -1811,14 +1798,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentHobbies] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentHobbies_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentHobbies_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentNotes] (
@@ -1837,14 +1824,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentNotes] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentNotes_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentNotes_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentQimamCertificates] (
@@ -1869,14 +1856,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentQimamCertificates] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentQimamCertificates_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentQimamCertificates_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [TransportRoutes] (
@@ -1895,14 +1882,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_TransportRoutes] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_TransportRoutes_Vehicles_VehicleId] FOREIGN KEY ([VehicleId]) REFERENCES [Vehicles] ([Id])
+        CONSTRAINT [FK_TransportRoutes_Vehicles_VehicleId] FOREIGN KEY ([VehicleId]) REFERENCES [Vehicles] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ClassSections] (
@@ -1923,14 +1910,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_ClassSections] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_ClassSections_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_ClassSections_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [RoutineLessons] (
@@ -1948,14 +1935,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_RoutineLessons] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_RoutineLessons_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_RoutineLessons_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [SubjectGradeAssignments] (
@@ -1973,15 +1960,15 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_SubjectGradeAssignments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_SubjectGradeAssignments_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_SubjectGradeAssignments_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_SubjectGradeAssignments_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_SubjectGradeAssignments_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [LibraryLoans] (
@@ -2003,14 +1990,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_LibraryLoans] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_LibraryLoans_BookCopies_BookCopyId] FOREIGN KEY ([BookCopyId]) REFERENCES [BookCopies] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_LibraryLoans_BookCopies_BookCopyId] FOREIGN KEY ([BookCopyId]) REFERENCES [BookCopies] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Lessons] (
@@ -2048,16 +2035,16 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_Lessons] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Lessons_CourseUnits_CourseUnitId] FOREIGN KEY ([CourseUnitId]) REFERENCES [CourseUnits] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_Lessons_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_Lessons_Teachers_TeacherId] FOREIGN KEY ([TeacherId]) REFERENCES [Teachers] ([Id])
+        CONSTRAINT [FK_Lessons_CourseUnits_CourseUnitId] FOREIGN KEY ([CourseUnitId]) REFERENCES [CourseUnits] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_Lessons_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_Lessons_Teachers_TeacherId] FOREIGN KEY ([TeacherId]) REFERENCES [Teachers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Messages] (
@@ -2086,16 +2073,16 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_Messages] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Messages_Messages_ParentMessageId] FOREIGN KEY ([ParentMessageId]) REFERENCES [Messages] ([Id]),
-        CONSTRAINT [FK_Messages_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]),
-        CONSTRAINT [FK_Messages_Teachers_TeacherId] FOREIGN KEY ([TeacherId]) REFERENCES [Teachers] ([Id])
+        CONSTRAINT [FK_Messages_Messages_ParentMessageId] FOREIGN KEY ([ParentMessageId]) REFERENCES [Messages] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_Messages_Students_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Students] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_Messages_Teachers_TeacherId] FOREIGN KEY ([TeacherId]) REFERENCES [Teachers] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentFees] (
@@ -2117,14 +2104,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentFees] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentFees_FeePlans_FeePlanId] FOREIGN KEY ([FeePlanId]) REFERENCES [FeePlans] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentFees_FeePlans_FeePlanId] FOREIGN KEY ([FeePlanId]) REFERENCES [FeePlans] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentGrades] (
@@ -2144,19 +2131,19 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentGrades] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentGrades_GradeItems_GradeItemId] FOREIGN KEY ([GradeItemId]) REFERENCES [GradeItems] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentGrades_GradeItems_GradeItemId] FOREIGN KEY ([GradeItemId]) REFERENCES [GradeItems] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [UserSchoolAssignments] (
         [Id] int NOT NULL IDENTITY,
-        [UserId] nvarchar(450) NOT NULL,
+        [UserId] nvarchar(128) NOT NULL,
         [SchoolId] int NOT NULL,
         [SchoolBranchId] int NULL,
         [IsActive] bit NOT NULL,
@@ -2169,16 +2156,16 @@ BEGIN
         [DeletedByUserId] nvarchar(max) NULL,
         [RowVersion] rowversion NOT NULL,
         CONSTRAINT [PK_UserSchoolAssignments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_UserSchoolAssignments_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_UserSchoolAssignments_SchoolBranches_SchoolBranchId] FOREIGN KEY ([SchoolBranchId]) REFERENCES [SchoolBranches] ([Id]),
-        CONSTRAINT [FK_UserSchoolAssignments_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_UserSchoolAssignments_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_UserSchoolAssignments_SchoolBranches_SchoolBranchId] FOREIGN KEY ([SchoolBranchId]) REFERENCES [SchoolBranches] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_UserSchoolAssignments_Schools_SchoolId] FOREIGN KEY ([SchoolId]) REFERENCES [Schools] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentTransportAssignments] (
@@ -2199,14 +2186,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentTransportAssignments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentTransportAssignments_TransportRoutes_TransportRouteId] FOREIGN KEY ([TransportRouteId]) REFERENCES [TransportRoutes] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentTransportAssignments_TransportRoutes_TransportRouteId] FOREIGN KEY ([TransportRouteId]) REFERENCES [TransportRoutes] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ClassSchedules] (
@@ -2229,17 +2216,17 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_ClassSchedules] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_ClassSchedules_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_ClassSchedules_Classrooms_ClassroomId] FOREIGN KEY ([ClassroomId]) REFERENCES [Classrooms] ([Id]),
-        CONSTRAINT [FK_ClassSchedules_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]),
-        CONSTRAINT [FK_ClassSchedules_TeachingPeriods_TeachingPeriodId] FOREIGN KEY ([TeachingPeriodId]) REFERENCES [TeachingPeriods] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_ClassSchedules_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_ClassSchedules_Classrooms_ClassroomId] FOREIGN KEY ([ClassroomId]) REFERENCES [Classrooms] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_ClassSchedules_Subjects_SubjectId] FOREIGN KEY ([SubjectId]) REFERENCES [Subjects] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_ClassSchedules_TeachingPeriods_TeachingPeriodId] FOREIGN KEY ([TeachingPeriodId]) REFERENCES [TeachingPeriods] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentEnrollments] (
@@ -2262,31 +2249,31 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_StudentEnrollments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_StudentEnrollments_AcademicYears_AcademicYearId] FOREIGN KEY ([AcademicYearId]) REFERENCES [AcademicYears] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_StudentEnrollments_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_StudentEnrollments_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_StudentEnrollments_AcademicYears_AcademicYearId] FOREIGN KEY ([AcademicYearId]) REFERENCES [AcademicYears] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_StudentEnrollments_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_StudentEnrollments_GradeLevels_GradeLevelId] FOREIGN KEY ([GradeLevelId]) REFERENCES [GradeLevels] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [LessonClassSections] (
         [LessonId] int NOT NULL,
         [ClassSectionId] int NOT NULL,
         CONSTRAINT [PK_LessonClassSections] PRIMARY KEY ([LessonId], [ClassSectionId]),
-        CONSTRAINT [FK_LessonClassSections_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_LessonClassSections_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_LessonClassSections_ClassSections_ClassSectionId] FOREIGN KEY ([ClassSectionId]) REFERENCES [ClassSections] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_LessonClassSections_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [LessonProgresses] (
@@ -2312,14 +2299,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_LessonProgresses] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_LessonProgresses_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_LessonProgresses_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [LessonResources] (
@@ -2343,14 +2330,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_LessonResources] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_LessonResources_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_LessonResources_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [MessageAttachments] (
@@ -2371,14 +2358,14 @@ BEGIN
         [RowVersion] rowversion NOT NULL,
         [SchoolId] int NOT NULL,
         CONSTRAINT [PK_MessageAttachments] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_MessageAttachments_Messages_MessageId] FOREIGN KEY ([MessageId]) REFERENCES [Messages] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_MessageAttachments_Messages_MessageId] FOREIGN KEY ([MessageId]) REFERENCES [Messages] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [MessageRecipients] (
@@ -2387,14 +2374,14 @@ BEGIN
         [RecipientUserId] nvarchar(450) NOT NULL,
         [ReadAt] datetime2 NULL,
         CONSTRAINT [PK_MessageRecipients] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_MessageRecipients_Messages_MessageId] FOREIGN KEY ([MessageId]) REFERENCES [Messages] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_MessageRecipients_Messages_MessageId] FOREIGN KEY ([MessageId]) REFERENCES [Messages] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE TABLE [PaymentAllocations] (
@@ -2403,15 +2390,15 @@ BEGIN
         [StudentFeeId] int NOT NULL,
         [Amount] decimal(18,2) NOT NULL,
         CONSTRAINT [PK_PaymentAllocations] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_PaymentAllocations_Payments_PaymentId] FOREIGN KEY ([PaymentId]) REFERENCES [Payments] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_PaymentAllocations_StudentFees_StudentFeeId] FOREIGN KEY ([StudentFeeId]) REFERENCES [StudentFees] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_PaymentAllocations_Payments_PaymentId] FOREIGN KEY ([PaymentId]) REFERENCES [Payments] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_PaymentAllocations_StudentFees_StudentFeeId] FOREIGN KEY ([StudentFeeId]) REFERENCES [StudentFees] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AcademicStages_SchoolId_IsActive] ON [AcademicStages] ([SchoolId], [IsActive]);
@@ -2420,7 +2407,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AnnouncementTargets_AnnouncementId] ON [AnnouncementTargets] ([AnnouncementId]);
@@ -2429,7 +2416,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AspNetRoleClaims_RoleId] ON [AspNetRoleClaims] ([RoleId]);
@@ -2438,7 +2425,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [RoleNameIndex] ON [AspNetRoles] ([NormalizedName]) WHERE [NormalizedName] IS NOT NULL');
@@ -2447,7 +2434,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserClaims_UserId] ON [AspNetUserClaims] ([UserId]);
@@ -2456,7 +2443,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserLogins_UserId] ON [AspNetUserLogins] ([UserId]);
@@ -2465,7 +2452,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserRoles_RoleId] ON [AspNetUserRoles] ([RoleId]);
@@ -2474,7 +2461,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [EmailIndex] ON [AspNetUsers] ([NormalizedEmail]);
@@ -2483,7 +2470,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [UserNameIndex] ON [AspNetUsers] ([NormalizedUserName]) WHERE [NormalizedUserName] IS NOT NULL');
@@ -2492,7 +2479,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_AssignmentSubmissions_AssignmentId] ON [AssignmentSubmissions] ([AssignmentId]);
@@ -2501,7 +2488,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_BehaviourRecords_BehaviourCategoryId] ON [BehaviourRecords] ([BehaviourCategoryId]);
@@ -2510,7 +2497,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_BookCopies_BookId] ON [BookCopies] ([BookId]);
@@ -2519,7 +2506,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSchedules_ClassroomId] ON [ClassSchedules] ([ClassroomId]);
@@ -2528,7 +2515,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSchedules_ClassSectionId_DayOfWeek_TeachingPeriodId] ON [ClassSchedules] ([ClassSectionId], [DayOfWeek], [TeachingPeriodId]);
@@ -2537,7 +2524,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSchedules_SubjectId] ON [ClassSchedules] ([SubjectId]);
@@ -2546,7 +2533,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSchedules_TeacherId_DayOfWeek_TeachingPeriodId] ON [ClassSchedules] ([TeacherId], [DayOfWeek], [TeachingPeriodId]);
@@ -2555,7 +2542,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSchedules_TeachingPeriodId] ON [ClassSchedules] ([TeachingPeriodId]);
@@ -2564,7 +2551,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ClassSections_GradeLevelId] ON [ClassSections] ([GradeLevelId]);
@@ -2573,7 +2560,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_CourseUnits_SchoolId_SubjectId] ON [CourseUnits] ([SchoolId], [SubjectId]);
@@ -2582,7 +2569,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_EmergencyContacts_StudentId] ON [EmergencyContacts] ([StudentId]);
@@ -2591,7 +2578,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Exams_ClassSectionId] ON [Exams] ([ClassSectionId]);
@@ -2600,7 +2587,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Exams_ExamPeriodId] ON [Exams] ([ExamPeriodId]);
@@ -2609,7 +2596,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Exams_SchoolId_ExamDate] ON [Exams] ([SchoolId], [ExamDate]);
@@ -2618,7 +2605,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Exams_TeacherId] ON [Exams] ([TeacherId]);
@@ -2627,7 +2614,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_FeePlans_FeeTypeId] ON [FeePlans] ([FeeTypeId]);
@@ -2636,7 +2623,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_GradeItems_GradeCategoryId] ON [GradeItems] ([GradeCategoryId]);
@@ -2645,7 +2632,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_GradeLevels_AcademicStageId] ON [GradeLevels] ([AcademicStageId]);
@@ -2654,7 +2641,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_LessonClassSections_ClassSectionId] ON [LessonClassSections] ([ClassSectionId]);
@@ -2663,7 +2650,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_LessonProgresses_LessonId] ON [LessonProgresses] ([LessonId]);
@@ -2672,7 +2659,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_LessonResources_LessonId] ON [LessonResources] ([LessonId]);
@@ -2681,7 +2668,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Lessons_CourseUnitId] ON [Lessons] ([CourseUnitId]);
@@ -2690,7 +2677,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Lessons_SchoolId_SubjectId_Status] ON [Lessons] ([SchoolId], [SubjectId], [Status]);
@@ -2699,7 +2686,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Lessons_SubjectId] ON [Lessons] ([SubjectId]);
@@ -2708,7 +2695,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Lessons_TeacherId] ON [Lessons] ([TeacherId]);
@@ -2717,7 +2704,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_LibraryLoans_BookCopyId] ON [LibraryLoans] ([BookCopyId]);
@@ -2726,7 +2713,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_MessageAttachments_MessageId] ON [MessageAttachments] ([MessageId]);
@@ -2735,7 +2722,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_MessageRecipients_MessageId] ON [MessageRecipients] ([MessageId]);
@@ -2744,7 +2731,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_MessageRecipients_RecipientUserId] ON [MessageRecipients] ([RecipientUserId]);
@@ -2753,7 +2740,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Messages_ParentMessageId] ON [Messages] ([ParentMessageId]);
@@ -2762,7 +2749,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Messages_SchoolId_StudentId_CreatedAt] ON [Messages] ([SchoolId], [StudentId], [CreatedAt]);
@@ -2771,7 +2758,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Messages_SenderUserId] ON [Messages] ([SenderUserId]);
@@ -2780,7 +2767,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Messages_StudentId] ON [Messages] ([StudentId]);
@@ -2789,7 +2776,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Messages_TeacherId] ON [Messages] ([TeacherId]);
@@ -2798,7 +2785,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_PaymentAllocations_PaymentId] ON [PaymentAllocations] ([PaymentId]);
@@ -2807,7 +2794,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_PaymentAllocations_StudentFeeId] ON [PaymentAllocations] ([StudentFeeId]);
@@ -2816,7 +2803,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_Permissions_Key] ON [Permissions] ([Key]);
@@ -2825,7 +2812,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_QuestionOptions_QuestionId] ON [QuestionOptions] ([QuestionId]);
@@ -2834,7 +2821,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_QuizAttempts_QuizId] ON [QuizAttempts] ([QuizId]);
@@ -2843,7 +2830,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_QuizQuestions_QuestionId] ON [QuizQuestions] ([QuestionId]);
@@ -2852,7 +2839,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_RefreshTokens_Token] ON [RefreshTokens] ([Token]);
@@ -2861,7 +2848,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_RefreshTokens_UserId] ON [RefreshTokens] ([UserId]);
@@ -2870,7 +2857,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_RolePermissions_PermissionId] ON [RolePermissions] ([PermissionId]);
@@ -2879,7 +2866,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_RoutineLessons_GradeLevelId] ON [RoutineLessons] ([GradeLevelId]);
@@ -2888,7 +2875,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_RoutineLessons_SchoolId_GradeLevelId_LessonName] ON [RoutineLessons] ([SchoolId], [GradeLevelId], [LessonName]);
@@ -2897,7 +2884,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_SchoolBranches_SchoolId_NameAr] ON [SchoolBranches] ([SchoolId], [NameAr]);
@@ -2906,7 +2893,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Schools_NameAr] ON [Schools] ([NameAr]);
@@ -2915,7 +2902,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_SchoolSettings_SchoolId] ON [SchoolSettings] ([SchoolId]);
@@ -2924,7 +2911,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Semesters_AcademicYearId] ON [Semesters] ([AcademicYearId]);
@@ -2933,7 +2920,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentAddresses_StudentId] ON [StudentAddresses] ([StudentId]);
@@ -2942,7 +2929,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_StudentAttendances_AttendanceSessionId_StudentId] ON [StudentAttendances] ([AttendanceSessionId], [StudentId]);
@@ -2951,7 +2938,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentBadges_BadgeId] ON [StudentBadges] ([BadgeId]);
@@ -2960,7 +2947,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentDocuments_StudentId] ON [StudentDocuments] ([StudentId]);
@@ -2969,7 +2956,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_StudentEducationalProfiles_StudentId] ON [StudentEducationalProfiles] ([StudentId]);
@@ -2978,7 +2965,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentEnrollments_AcademicYearId] ON [StudentEnrollments] ([AcademicYearId]);
@@ -2987,7 +2974,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentEnrollments_ClassSectionId] ON [StudentEnrollments] ([ClassSectionId]);
@@ -2996,7 +2983,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentEnrollments_GradeLevelId] ON [StudentEnrollments] ([GradeLevelId]);
@@ -3005,7 +2992,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentEnrollments_SchoolId] ON [StudentEnrollments] ([SchoolId]);
@@ -3014,7 +3001,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentEnrollments_StudentId_AcademicYearId] ON [StudentEnrollments] ([StudentId], [AcademicYearId]);
@@ -3023,7 +3010,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentFees_FeePlanId] ON [StudentFees] ([FeePlanId]);
@@ -3032,7 +3019,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentGrades_GradeItemId] ON [StudentGrades] ([GradeItemId]);
@@ -3041,7 +3028,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentGuardians_GuardianId] ON [StudentGuardians] ([GuardianId]);
@@ -3050,7 +3037,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_StudentHealthProfiles_StudentId] ON [StudentHealthProfiles] ([StudentId]);
@@ -3059,7 +3046,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentHobbies_StudentId] ON [StudentHobbies] ([StudentId]);
@@ -3068,7 +3055,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentNotes_StudentId] ON [StudentNotes] ([StudentId]);
@@ -3077,7 +3064,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentQimamCertificates_SchoolId_CertificateDate] ON [StudentQimamCertificates] ([SchoolId], [CertificateDate]);
@@ -3086,7 +3073,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentQimamCertificates_StudentId] ON [StudentQimamCertificates] ([StudentId]);
@@ -3095,7 +3082,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Students_PassportOrCardId] ON [Students] ([PassportOrCardId]);
@@ -3104,7 +3091,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Students_SchoolId] ON [Students] ([SchoolId]);
@@ -3113,7 +3100,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE UNIQUE INDEX [IX_Students_SchoolId_StudentNumber] ON [Students] ([SchoolId], [StudentNumber]);
@@ -3122,7 +3109,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Students_Status] ON [Students] ([Status]);
@@ -3131,7 +3118,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentTransportAssignments_TransportRouteId] ON [StudentTransportAssignments] ([TransportRouteId]);
@@ -3140,7 +3127,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_SubjectGradeAssignments_GradeLevelId] ON [SubjectGradeAssignments] ([GradeLevelId]);
@@ -3149,7 +3136,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_SubjectGradeAssignments_SubjectId] ON [SubjectGradeAssignments] ([SubjectId]);
@@ -3158,7 +3145,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Teachers_DocumentId] ON [Teachers] ([DocumentId]);
@@ -3167,7 +3154,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Teachers_EmployeeId] ON [Teachers] ([EmployeeId]);
@@ -3176,7 +3163,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Teachers_SchoolId] ON [Teachers] ([SchoolId]);
@@ -3185,7 +3172,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_TransportRoutes_VehicleId] ON [TransportRoutes] ([VehicleId]);
@@ -3194,7 +3181,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_UserPermissions_PermissionId] ON [UserPermissions] ([PermissionId]);
@@ -3203,7 +3190,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_UserSchoolAssignments_SchoolBranchId] ON [UserSchoolAssignments] ([SchoolBranchId]);
@@ -3212,7 +3199,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_UserSchoolAssignments_SchoolId] ON [UserSchoolAssignments] ([SchoolId]);
@@ -3221,7 +3208,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_UserSchoolAssignments_UserId_SchoolId] ON [UserSchoolAssignments] ([UserId], [SchoolId]);
@@ -3230,11 +3217,11 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260809101118_InitialCreate'
+    WHERE [MigrationId] = N'20260809105916_InitialCreate'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20260809101118_InitialCreate', N'8.0.11');
+    VALUES (N'20260809105916_InitialCreate', N'8.0.11');
 END;
 GO
 

@@ -7,15 +7,21 @@ Use these scripts to run the system against **SQL Server** instead of SQLite.
 | File | Purpose |
 |------|---------|
 | `00-CreateDatabase.sql` | Creates empty database `SchoolLMS` |
+| `00-DropAndRecreateDatabase.sql` | Drops a broken/partial DB and recreates it |
 | `SchoolLMS.Schema.sql` | Idempotent EF Core schema (tables, indexes, FKs, `__EFMigrationsHistory`) |
 
 Schema source of truth: EF migration  
-`src/SchoolLMS.Infrastructure/Persistence/Migrations/20260809101118_InitialCreate.cs`
+`src/SchoolLMS.Infrastructure/Persistence/Migrations/*_InitialCreate.cs`
+
+> If SSMS showed `multiple cascade paths` or many `Cannot find the object` errors after a failed run, the DB is half-created. Run **`00-DropAndRecreateDatabase.sql`** first, then apply the schema again.
 
 ## Option A — run SQL scripts (SSMS / Azure Data Studio / sqlcmd)
 
 ```bash
-# 1) Create database
+# 0) Only if a previous apply failed
+sqlcmd -S . -E -i database/00-DropAndRecreateDatabase.sql
+
+# 1) Create database (skip if you just ran drop/recreate)
 sqlcmd -S . -E -i database/00-CreateDatabase.sql
 
 # 2) Apply schema

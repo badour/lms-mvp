@@ -12,7 +12,7 @@ using SchoolLMS.Infrastructure.Persistence;
 namespace SchoolLMS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260809101118_InitialCreate")]
+    [Migration("20260809105916_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -28,7 +28,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -68,7 +69,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -93,7 +95,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -105,17 +108,20 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -127,10 +133,12 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -142,13 +150,16 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -2151,7 +2162,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SchoolLMS.Domain.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -2424,7 +2436,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -2439,7 +2452,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SchoolLMS.Domain.Entities.Identity.RolePermission", b =>
                 {
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("PermissionId")
                         .HasColumnType("int");
@@ -2454,7 +2468,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SchoolLMS.Domain.Entities.Identity.UserPermission", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("PermissionId")
                         .HasColumnType("int");
@@ -2515,7 +2530,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -5545,7 +5561,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -5554,7 +5570,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -5563,7 +5579,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -5572,13 +5588,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -5587,7 +5603,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -5596,21 +5612,23 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.ClassSection", "ClassSection")
                         .WithMany()
                         .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.Classroom", "Classroom")
                         .WithMany()
-                        .HasForeignKey("ClassroomId");
+                        .HasForeignKey("ClassroomId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.Subject", "Subject")
                         .WithMany()
-                        .HasForeignKey("SubjectId");
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.TeachingPeriod", "TeachingPeriod")
                         .WithMany()
                         .HasForeignKey("TeachingPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ClassSection");
@@ -5627,7 +5645,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.GradeLevel", "GradeLevel")
                         .WithMany("Sections")
                         .HasForeignKey("GradeLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("GradeLevel");
@@ -5638,7 +5656,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.AcademicStage", "AcademicStage")
                         .WithMany("GradeLevels")
                         .HasForeignKey("AcademicStageId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AcademicStage");
@@ -5649,7 +5667,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.GradeLevel", "GradeLevel")
                         .WithMany()
                         .HasForeignKey("GradeLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("GradeLevel");
@@ -5660,7 +5678,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.AcademicYear", "AcademicYear")
                         .WithMany("Semesters")
                         .HasForeignKey("AcademicYearId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AcademicYear");
@@ -5671,19 +5689,19 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.AcademicYear", "AcademicYear")
                         .WithMany()
                         .HasForeignKey("AcademicYearId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.ClassSection", "ClassSection")
                         .WithMany()
                         .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.GradeLevel", "GradeLevel")
                         .WithMany()
                         .HasForeignKey("GradeLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AcademicYear");
@@ -5698,13 +5716,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.GradeLevel", "GradeLevel")
                         .WithMany()
                         .HasForeignKey("GradeLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("GradeLevel");
@@ -5717,7 +5735,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.Announcement", "Announcement")
                         .WithMany("Targets")
                         .HasForeignKey("AnnouncementId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Announcement");
@@ -5728,7 +5746,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.BehaviourCategory", "BehaviourCategory")
                         .WithMany()
                         .HasForeignKey("BehaviourCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("BehaviourCategory");
@@ -5738,15 +5756,18 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.Message", "ParentMessage")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentMessageId");
+                        .HasForeignKey("ParentMessageId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany()
-                        .HasForeignKey("StudentId");
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolLMS.Domain.Entities.People.Teacher", "Teacher")
                         .WithMany()
-                        .HasForeignKey("TeacherId");
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentMessage");
 
@@ -5760,7 +5781,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.Message", "Message")
                         .WithMany("Attachments")
                         .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Message");
@@ -5771,7 +5792,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.Message", "Message")
                         .WithMany("Recipients")
                         .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Message");
@@ -5782,7 +5803,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Communication.Badge", "Badge")
                         .WithMany()
                         .HasForeignKey("BadgeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Badge");
@@ -5793,7 +5814,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Finance.FeeType", "FeeType")
                         .WithMany()
                         .HasForeignKey("FeeTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("FeeType");
@@ -5804,13 +5825,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Finance.Payment", "Payment")
                         .WithMany("Allocations")
                         .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Finance.StudentFee", "StudentFee")
                         .WithMany()
                         .HasForeignKey("StudentFeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Payment");
@@ -5823,7 +5844,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Finance.FeePlan", "FeePlan")
                         .WithMany()
                         .HasForeignKey("FeePlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("FeePlan");
@@ -5834,7 +5855,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -5845,7 +5866,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.Permission", "Permission")
                         .WithMany()
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Permission");
@@ -5856,13 +5877,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.Permission", "Permission")
                         .WithMany()
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Permission");
@@ -5874,18 +5895,19 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SchoolLMS.Domain.Entities.Tenancy.SchoolBranch", "SchoolBranch")
                         .WithMany()
-                        .HasForeignKey("SchoolBranchId");
+                        .HasForeignKey("SchoolBranchId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolLMS.Domain.Entities.Tenancy.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany("SchoolAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("School");
@@ -5900,7 +5922,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Library.Book", "Book")
                         .WithMany()
                         .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Book");
@@ -5911,7 +5933,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Library.BookCopy", "BookCopy")
                         .WithMany()
                         .HasForeignKey("BookCopyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("BookCopy");
@@ -5922,7 +5944,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Assignment", "Assignment")
                         .WithMany("Submissions")
                         .HasForeignKey("AssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Assignment");
@@ -5933,18 +5955,19 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.CourseUnit", "CourseUnit")
                         .WithMany("Lessons")
                         .HasForeignKey("CourseUnitId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.People.Teacher", "Teacher")
                         .WithMany()
-                        .HasForeignKey("TeacherId");
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CourseUnit");
 
@@ -5958,13 +5981,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Academic.ClassSection", "ClassSection")
                         .WithMany()
                         .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Lesson", "Lesson")
                         .WithMany("IncludedClasses")
                         .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ClassSection");
@@ -5977,7 +6000,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Lesson", "Lesson")
                         .WithMany()
                         .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Lesson");
@@ -5988,7 +6011,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Lesson", "Lesson")
                         .WithMany("Resources")
                         .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Lesson");
@@ -5999,7 +6022,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Question", "Question")
                         .WithMany("Options")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -6010,7 +6033,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Quiz", "Quiz")
                         .WithMany("Attempts")
                         .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Quiz");
@@ -6021,13 +6044,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.Lms.Quiz", "Quiz")
                         .WithMany("Questions")
                         .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -6040,7 +6063,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Operations.ExamPeriod", "ExamPeriod")
                         .WithMany()
                         .HasForeignKey("ExamPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ExamPeriod");
@@ -6051,7 +6074,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Operations.GradeCategory", "GradeCategory")
                         .WithMany()
                         .HasForeignKey("GradeCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("GradeCategory");
@@ -6062,7 +6085,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Operations.AttendanceSession", "AttendanceSession")
                         .WithMany("Records")
                         .HasForeignKey("AttendanceSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AttendanceSession");
@@ -6073,7 +6096,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Operations.GradeItem", "GradeItem")
                         .WithMany()
                         .HasForeignKey("GradeItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("GradeItem");
@@ -6084,7 +6107,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("EmergencyContacts")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6095,7 +6118,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("Addresses")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6106,7 +6129,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("Documents")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6117,7 +6140,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithOne("EducationalProfile")
                         .HasForeignKey("SchoolLMS.Domain.Entities.People.StudentEducationalProfile", "StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6128,13 +6151,13 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Guardian", "Guardian")
                         .WithMany("Students")
                         .HasForeignKey("GuardianId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("Guardians")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Guardian");
@@ -6147,7 +6170,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithOne("HealthProfile")
                         .HasForeignKey("SchoolLMS.Domain.Entities.People.StudentHealthProfile", "StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6158,7 +6181,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("Hobbies")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6169,7 +6192,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("StudentNotes")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6180,7 +6203,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.People.Student", "Student")
                         .WithMany("QimamCertificates")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -6190,7 +6213,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SchoolLMS.Domain.Entities.People.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("EmployeeId");
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Employee");
                 });
@@ -6200,7 +6224,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Tenancy.School", "School")
                         .WithMany("Branches")
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("School");
@@ -6211,7 +6235,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Tenancy.School", "School")
                         .WithOne("Settings")
                         .HasForeignKey("SchoolLMS.Domain.Entities.Tenancy.SchoolSettings", "SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("School");
@@ -6222,7 +6246,7 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                     b.HasOne("SchoolLMS.Domain.Entities.Transport.TransportRoute", "TransportRoute")
                         .WithMany()
                         .HasForeignKey("TransportRouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("TransportRoute");
@@ -6232,7 +6256,8 @@ namespace SchoolLMS.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("SchoolLMS.Domain.Entities.Transport.Vehicle", "Vehicle")
                         .WithMany()
-                        .HasForeignKey("VehicleId");
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Vehicle");
                 });

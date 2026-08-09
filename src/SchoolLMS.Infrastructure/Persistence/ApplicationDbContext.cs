@@ -122,6 +122,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     {
         base.OnModelCreating(builder);
 
+        // Keep Identity/composite string keys under SQL Server's 900-byte clustered index limit.
+        const int identityKeyLength = 128;
+        builder.Entity<ApplicationUser>(e =>
+        {
+            e.Property(x => x.Id).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityRole>(e =>
+        {
+            e.Property(x => x.Id).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityUserLogin<string>>(e =>
+        {
+            e.Property(x => x.LoginProvider).HasMaxLength(identityKeyLength);
+            e.Property(x => x.ProviderKey).HasMaxLength(identityKeyLength);
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityUserRole<string>>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
+            e.Property(x => x.RoleId).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityUserToken<string>>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
+            e.Property(x => x.LoginProvider).HasMaxLength(identityKeyLength);
+            e.Property(x => x.Name).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityUserClaim<string>>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
+        });
+        builder.Entity<IdentityRoleClaim<string>>(e =>
+        {
+            e.Property(x => x.RoleId).HasMaxLength(identityKeyLength);
+        });
+
         builder.Entity<School>(e =>
         {
             e.Property(x => x.NameAr).HasMaxLength(200).IsRequired();
@@ -145,12 +181,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<RolePermission>(e =>
         {
             e.HasKey(x => new { x.RoleId, x.PermissionId });
+            e.Property(x => x.RoleId).HasMaxLength(identityKeyLength);
             e.HasOne(x => x.Permission).WithMany().HasForeignKey(x => x.PermissionId);
         });
 
         builder.Entity<UserPermission>(e =>
         {
             e.HasKey(x => new { x.UserId, x.PermissionId });
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
             e.HasOne(x => x.Permission).WithMany().HasForeignKey(x => x.PermissionId);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
@@ -158,6 +196,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<UserSchoolAssignment>(e =>
         {
             e.HasIndex(x => new { x.UserId, x.SchoolId });
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
             e.HasOne(x => x.User).WithMany(x => x.SchoolAssignments).HasForeignKey(x => x.UserId);
             e.HasOne(x => x.School).WithMany().HasForeignKey(x => x.SchoolId);
         });
@@ -165,6 +204,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<RefreshToken>(e =>
         {
             e.HasIndex(x => x.Token).IsUnique();
+            e.Property(x => x.UserId).HasMaxLength(identityKeyLength);
             e.HasOne(x => x.User).WithMany(x => x.RefreshTokens).HasForeignKey(x => x.UserId);
         });
 
@@ -426,6 +466,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
             {
                 property.IsRowVersion().IsConcurrencyToken();
             }
+        }
+
+        // SQL Server rejects multiple cascade paths (e.g. StudentEnrollments → GradeLevels
+        // and StudentEnrollments → ClassSections → GradeLevels). Soft-delete is used app-wide,
+        // so Restrict is the safe default for all relationships.
+        foreach (var relationship in builder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+        {
+            relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
     }
 
