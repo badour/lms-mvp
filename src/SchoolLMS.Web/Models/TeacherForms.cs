@@ -141,6 +141,8 @@ public class AttendanceMarkInput
 
 public class ExamCreateForm
 {
+    public int? Id { get; set; }
+
     [Required(ErrorMessage = "المدرسة مطلوبة")]
     [Display(Name = "اسم المدرسة")]
     public int SchoolId { get; set; }

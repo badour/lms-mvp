@@ -146,9 +146,8 @@ public class CreateStudentRequest
     public string? EmergencyContactPhone { get; set; }
 
     [Display(Name = "فصيلة الدم")]
-    [Required(ErrorMessage = "فصيلة الدم مطلوبة")]
     [MaxLength(10)]
-    public string BloodType { get; set; } = string.Empty;
+    public string? BloodType { get; set; }
 
     [Display(Name = "التاريخ المرضي")]
     [MaxLength(2000)]

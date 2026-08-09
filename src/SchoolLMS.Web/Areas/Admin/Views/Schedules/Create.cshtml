@@ -81,6 +81,27 @@
     });
   }
 
+  function fillLessonSelects(lessons) {
+    document.querySelectorAll('.schedule-lesson-select').forEach((select) => {
+      const current = select.value;
+      select.innerHTML = '<option value="">اسم الدرس</option>';
+      (lessons || []).forEach((l) => {
+        const opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = l.name;
+        if (String(current) === String(l.id)) opt.selected = true;
+        select.appendChild(opt);
+      });
+      if (current && ![...(select.options)].some(o => o.value === current)) {
+        const opt = document.createElement('option');
+        opt.value = current;
+        opt.textContent = current;
+        opt.selected = true;
+        select.appendChild(opt);
+      }
+    });
+  }
+
   async function loadTeachers() {
     if (!school.value) {
       fillTeacherSelects([]);
@@ -89,6 +110,18 @@
     const res = await fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value));
     if (!res.ok) return;
     fillTeacherSelects(await res.json());
+  }
+
+  async function loadLessons() {
+    if (!school.value) {
+      fillLessonSelects([]);
+      return;
+    }
+    let url = '@Url.Action("Lessons")?schoolId=' + encodeURIComponent(school.value);
+    if (section.value) url += '&classSectionId=' + encodeURIComponent(section.value);
+    const res = await fetch(url);
+    if (!res.ok) return;
+    fillLessonSelects(await res.json());
   }
 
   async function loadPeriods() {
@@ -115,7 +148,7 @@
     const res = await fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value));
     if (!res.ok) return;
     fill(stage, await res.json(), 'اختر المرحلة');
-    await Promise.all([loadTeachers(), loadPeriods()]);
+    await Promise.all([loadTeachers(), loadPeriods(), loadLessons()]);
   }
 
   async function loadSections() {
@@ -124,10 +157,12 @@
     const res = await fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value) + '&stageId=' + encodeURIComponent(stage.value));
     if (!res.ok) return;
     fill(section, await res.json(), 'اختر الشعبة');
+    await loadLessons();
   }
 
   school.addEventListener('change', loadStages);
   stage.addEventListener('change', loadSections);
+  section.addEventListener('change', loadLessons);
 })();
 </script>
 }

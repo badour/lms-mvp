@@ -156,7 +156,7 @@
         <div class="col-md-4">
             <label asp-for="BloodType" class="form-label"></label>
             <select asp-for="BloodType" class="form-select">
-                <option value="">اختر فصيلة الدم</option>
+                <option value="">اختياري — اختر فصيلة الدم</option>
                 @foreach (var type in bloodTypes)
                 {
                     if (string.Equals(Model.BloodType, type, StringComparison.OrdinalIgnoreCase))

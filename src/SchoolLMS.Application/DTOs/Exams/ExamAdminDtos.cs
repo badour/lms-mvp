@@ -32,8 +32,31 @@ public class StudentExamItemDto
     public string? Instructions { get; set; }
 }
 
+public class ExamDetailsDto
+{
+    public int Id { get; set; }
+    public int SchoolId { get; set; }
+    public string SchoolNameAr { get; set; } = string.Empty;
+    public int SubjectId { get; set; }
+    public string LessonNameAr { get; set; } = string.Empty;
+    public int TeacherId { get; set; }
+    public string TeacherNameAr { get; set; } = string.Empty;
+    public int ClassSectionId { get; set; }
+    public string StageNameAr { get; set; } = string.Empty;
+    public string ClassNameAr { get; set; } = string.Empty;
+    public string TimeSlot { get; set; } = string.Empty;
+    public DateOnly ExamDate { get; set; }
+    public TimeOnly? StartTime { get; set; }
+    public DateTime ExamDateTime { get; set; }
+    public string? Notes { get; set; }
+    public string? Instructions { get; set; }
+    public PublicationStatus Status { get; set; }
+}
+
 public class CreateExamRequest
 {
+    public int? Id { get; set; }
+
     [Required(ErrorMessage = "المدرسة مطلوبة")]
     [Display(Name = "اسم المدرسة")]
     public int SchoolId { get; set; }

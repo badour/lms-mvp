@@ -37,6 +37,7 @@ public class SchedulesController : Controller
         ViewData["Title"] = "إضافة جدول مدرسي";
         await LoadSchoolsAsync(cancellationToken);
         await LoadTeachersAsync(null, cancellationToken);
+        await LoadLessonsAsync(null, null, cancellationToken);
         return View(new SaveScheduleRequest());
     }
 
@@ -50,6 +51,7 @@ public class SchedulesController : Controller
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
             await LoadSchoolsAsync(cancellationToken);
             await LoadTeachersAsync(request.SchoolId, cancellationToken);
+            await LoadLessonsAsync(request.SchoolId, request.ClassSectionId, cancellationToken);
             return View(request);
         }
 
@@ -85,6 +87,7 @@ public class SchedulesController : Controller
         ViewData["Title"] = "تعديل الجدول";
         await LoadSchoolsAsync(cancellationToken);
         await LoadTeachersAsync(schedule.SchoolId, cancellationToken);
+        await LoadLessonsAsync(schedule.SchoolId, schedule.ClassSectionId, cancellationToken);
         ViewBag.DayNames = ScheduleAdminService.DayNamesAr;
         ViewBag.Schedule = schedule;
         return View(new SaveScheduleRequest
@@ -110,6 +113,7 @@ public class SchedulesController : Controller
             ViewBag.DayNames = ScheduleAdminService.DayNamesAr;
             await LoadSchoolsAsync(cancellationToken);
             await LoadTeachersAsync(request.SchoolId, cancellationToken);
+            await LoadLessonsAsync(request.SchoolId, request.ClassSectionId, cancellationToken);
             return View(request);
         }
 
@@ -166,6 +170,13 @@ public class SchedulesController : Controller
             .Select(x => new { id = x.Id, name = x.FullNameAr })
             .ToListAsync(cancellationToken);
         return Json(teachers);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Lessons(int schoolId, int? classSectionId, CancellationToken cancellationToken)
+    {
+        var lessons = await GetLessonOptionsAsync(schoolId, classSectionId, cancellationToken);
+        return Json(lessons.Select(x => new { id = x.Value, name = x.Text }));
     }
 
     [HttpGet]
@@ -254,5 +265,56 @@ public class SchedulesController : Controller
         ViewBag.Teachers = new SelectList(
             await query.OrderBy(x => x.FullNameAr).Select(x => new { x.Id, Name = x.FullNameAr }).ToListAsync(cancellationToken),
             "Id", "Name");
+    }
+
+    private async Task LoadLessonsAsync(int? schoolId, int? classSectionId, CancellationToken cancellationToken)
+    {
+        if (schoolId is null or <= 0)
+        {
+            ViewBag.Lessons = new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text");
+            return;
+        }
+
+        ViewBag.Lessons = new SelectList(
+            await GetLessonOptionsAsync(schoolId.Value, classSectionId, cancellationToken),
+            "Value", "Text");
+    }
+
+    private async Task<List<SelectListItem>> GetLessonOptionsAsync(int schoolId, int? classSectionId, CancellationToken cancellationToken)
+    {
+        int? gradeLevelId = null;
+        if (classSectionId is > 0)
+        {
+            gradeLevelId = await _db.ClassSections.AsNoTracking()
+                .Where(x => x.Id == classSectionId.Value && !x.IsDeleted)
+                .Select(x => (int?)x.GradeLevelId)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        var routineQuery = _db.RoutineLessons.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted);
+
+        if (gradeLevelId.HasValue)
+        {
+            routineQuery = routineQuery.Where(x => x.GradeLevelId == gradeLevelId.Value);
+        }
+
+        var routineNames = await routineQuery
+            .Select(x => x.LessonName)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync(cancellationToken);
+
+        if (routineNames.Count > 0)
+        {
+            return routineNames.Select(x => new SelectListItem { Value = x, Text = x }).ToList();
+        }
+
+        // Fallback to school subjects when no routine lessons are defined yet.
+        return await _db.Subjects.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.NameAr)
+            .Select(x => new SelectListItem { Value = x.NameAr, Text = x.NameAr })
+            .ToListAsync(cancellationToken);
     }
 }

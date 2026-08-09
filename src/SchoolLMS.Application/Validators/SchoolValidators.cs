@@ -70,8 +70,7 @@ public class CreateStudentRequestValidator : AbstractValidator<CreateStudentRequ
         RuleFor(x => x.Region).NotEmpty().WithMessage("المنطقة مطلوبة.").MaximumLength(100);
         RuleFor(x => x.Address).NotEmpty().WithMessage("العنوان مطلوب.").MaximumLength(500);
         RuleFor(x => x.BloodType)
-            .NotEmpty().WithMessage("فصيلة الدم مطلوبة.")
-            .Must(x => AllowedBloodTypes.Contains(x.Trim()))
+            .Must(x => string.IsNullOrWhiteSpace(x) || AllowedBloodTypes.Contains(x.Trim()))
             .WithMessage("فصيلة الدم غير صالحة.");
         RuleFor(x => x.ClassClassification).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.ClassClassification));
         RuleFor(x => x.EmergencyContactName).MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.EmergencyContactName));

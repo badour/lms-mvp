@@ -51,19 +51,7 @@ public class ExamsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ExamCreateForm form, CancellationToken cancellationToken)
     {
-        var request = new CreateExamRequest
-        {
-            SchoolId = form.SchoolId,
-            SubjectId = form.SubjectId,
-            TeacherId = form.TeacherId,
-            ClassSectionId = form.ClassSectionId,
-            ExamDateTime = form.ExamDateTime,
-            Notes = form.Notes,
-            Instructions = form.Instructions,
-            Status = form.Status
-        };
-
-        var result = await _examService.CreateAsync(request, cancellationToken);
+        var result = await _examService.CreateAsync(ToRequest(form), cancellationToken);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
@@ -73,6 +61,81 @@ public class ExamsController : Controller
         }
 
         TempData["Success"] = "تم إنشاء الامتحان بنجاح. سيظهر للطلاب والمعلم المرتبطين عند تفعيله (منشور).";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
+    {
+        var detail = await _examService.GetByIdAsync(id, cancellationToken);
+        if (detail is null)
+        {
+            return NotFound();
+        }
+
+        ViewData["Title"] = "عرض الامتحان";
+        return View(detail);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+    {
+        var detail = await _examService.GetByIdAsync(id, cancellationToken);
+        if (detail is null)
+        {
+            return NotFound();
+        }
+
+        var form = new ExamCreateForm
+        {
+            Id = detail.Id,
+            SchoolId = detail.SchoolId,
+            SubjectId = detail.SubjectId,
+            TeacherId = detail.TeacherId,
+            ClassSectionId = detail.ClassSectionId,
+            ExamDateTime = detail.ExamDateTime,
+            Notes = detail.Notes,
+            Instructions = detail.Instructions,
+            Status = detail.Status
+        };
+
+        ViewData["Title"] = "تعديل الامتحان";
+        await LoadSchoolsAsync(cancellationToken);
+        await LoadSchoolLookupsAsync(form, cancellationToken);
+        return View(form);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(ExamCreateForm form, CancellationToken cancellationToken)
+    {
+        if (!form.Id.HasValue)
+        {
+            return BadRequest();
+        }
+
+        var result = await _examService.UpdateAsync(ToRequest(form), cancellationToken);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
+            await LoadSchoolsAsync(cancellationToken);
+            await LoadSchoolLookupsAsync(form, cancellationToken);
+            ViewData["Title"] = "تعديل الامتحان";
+            return View(form);
+        }
+
+        TempData["Success"] = "تم تحديث الامتحان بنجاح.";
+        return RedirectToAction(nameof(Details), new { id = form.Id.Value });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var result = await _examService.DeleteAsync(id, cancellationToken);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? "تم حذف الامتحان."
+            : result.Error;
         return RedirectToAction(nameof(Index));
     }
 
@@ -117,6 +180,19 @@ public class ExamsController : Controller
         ).ToListAsync(cancellationToken);
         return Json(sections);
     }
+
+    private static CreateExamRequest ToRequest(ExamCreateForm form) => new()
+    {
+        Id = form.Id,
+        SchoolId = form.SchoolId,
+        SubjectId = form.SubjectId,
+        TeacherId = form.TeacherId,
+        ClassSectionId = form.ClassSectionId,
+        ExamDateTime = form.ExamDateTime,
+        Notes = form.Notes,
+        Instructions = form.Instructions,
+        Status = form.Status
+    };
 
     private async Task LoadSchoolsAsync(CancellationToken cancellationToken)
     {

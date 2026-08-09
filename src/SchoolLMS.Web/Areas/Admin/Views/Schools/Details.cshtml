@@ -18,11 +18,27 @@
     <div class="col-lg-5">
         <section class="section-card mb-3">
             <h2>بيانات المدرسة</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.LogoPath))
+            {
+                <div class="mb-3">
+                    <img src="@Model.LogoPath" alt="@Model.NameAr" class="img-fluid rounded" style="max-height:96px;" />
+                </div>
+            }
+            <div class="mb-2"><div class="small text-muted">اسم المدرسة (عربي)</div><div class="fw-semibold">@Model.NameAr</div></div>
+            <div class="mb-2"><div class="small text-muted">اسم المدرسة (إنجليزي)</div><div class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.NameEn) ? "—" : Model.NameEn)</div></div>
+            <div class="mb-2"><div class="small text-muted">الهاتف</div><div class="fw-semibold">@(Model.Phone ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">هاتف إضافي</div><div class="fw-semibold">@(Model.SecondaryPhone ?? "—")</div></div>
             <div class="mb-2"><div class="small text-muted">البريد (للمراسلات)</div><div class="fw-semibold">@(Model.Email ?? "—")</div></div>
             <div class="mb-2"><div class="small text-muted">العنوان</div><div class="fw-semibold">@(Model.Address ?? "—")</div></div>
             <div class="mb-2"><div class="small text-muted">النوع / الجنس</div><div class="fw-semibold">@Model.SchoolType · @Model.GenderType</div></div>
             <div class="mb-2"><div class="small text-muted">العملة</div><div class="fw-semibold">@Model.Currency</div></div>
-            <div><div class="small text-muted">الحالة</div><div class="fw-semibold">@(Model.IsActive ? "نشطة" : "موقوفة")</div></div>
+            <div class="mb-2"><div class="small text-muted">اسم السنة</div><div class="fw-semibold">@(Model.YearName ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">الحالة</div><div class="fw-semibold">@(Model.IsActive ? "نشطة" : "موقوفة")</div></div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="pill pill-green">طلاب @Model.StudentCount</span>
+                <span class="pill pill-orange">مراحل @Model.StageCount</span>
+                <span class="pill">فروع @Model.BranchCount</span>
+            </div>
         </section>
     </div>
     <div class="col-lg-7">

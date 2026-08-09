@@ -295,6 +295,182 @@ public class ExamAdminService : IExamAdminService
         return ServiceResult<int>.Success(exam.Id);
     }
 
+    public async Task<ExamDetailsDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var row = await (
+            from exam in _db.Exams.AsNoTracking()
+            where exam.Id == id && !exam.IsDeleted
+            join school in _db.Schools.AsNoTracking() on exam.SchoolId equals school.Id
+            join subject in _db.Subjects.AsNoTracking() on exam.SubjectId equals subject.Id into sj
+            from subject in sj.DefaultIfEmpty()
+            join teacher in _db.Teachers.AsNoTracking() on exam.TeacherId equals teacher.Id into tg
+            from teacher in tg.DefaultIfEmpty()
+            join section in _db.ClassSections.AsNoTracking() on exam.ClassSectionId equals section.Id into sg
+            from section in sg.DefaultIfEmpty()
+            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id into gg
+            from grade in gg.DefaultIfEmpty()
+            join stage in _db.AcademicStages.AsNoTracking() on exam.AcademicStageId equals stage.Id into stg
+            from stage in stg.DefaultIfEmpty()
+            select new
+            {
+                exam,
+                SchoolNameAr = school.NameAr,
+                LessonNameAr = subject != null ? subject.NameAr : "—",
+                TeacherNameAr = teacher != null ? teacher.FullNameAr : "—",
+                StageNameAr = stage != null ? stage.NameAr : "—",
+                GradeName = grade != null ? grade.NameAr : null,
+                SectionName = section != null ? section.NameAr : null
+            }
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        if (row is null)
+        {
+            return null;
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(row.exam.SchoolId))
+        {
+            return null;
+        }
+
+        var start = row.exam.StartTime ?? TimeOnly.MinValue;
+        return new ExamDetailsDto
+        {
+            Id = row.exam.Id,
+            SchoolId = row.exam.SchoolId,
+            SchoolNameAr = row.SchoolNameAr,
+            SubjectId = row.exam.SubjectId,
+            LessonNameAr = row.LessonNameAr,
+            TeacherId = row.exam.TeacherId ?? 0,
+            TeacherNameAr = row.TeacherNameAr,
+            ClassSectionId = row.exam.ClassSectionId ?? 0,
+            StageNameAr = row.StageNameAr,
+            ClassNameAr = row.GradeName != null && row.SectionName != null
+                ? row.GradeName + " / " + row.SectionName
+                : (row.SectionName ?? "—"),
+            TimeSlot = FormatTimeSlot(row.exam.StartTime, row.exam.EndTime),
+            ExamDate = row.exam.ExamDate,
+            StartTime = row.exam.StartTime,
+            ExamDateTime = row.exam.ExamDate.ToDateTime(start),
+            Notes = row.exam.Notes,
+            Instructions = row.exam.Instructions,
+            Status = row.exam.Status
+        };
+    }
+
+    public async Task<ServiceResult> UpdateAsync(CreateExamRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!request.Id.HasValue || request.Id.Value <= 0)
+        {
+            return ServiceResult.Failure("معرف الامتحان غير صالح.");
+        }
+
+        var validation = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ServiceResult.Failure(validation.Errors.Select(e => e.ErrorMessage));
+        }
+
+        var exam = await _db.Exams.FirstOrDefaultAsync(x => x.Id == request.Id.Value && !x.IsDeleted, cancellationToken);
+        if (exam is null)
+        {
+            return ServiceResult.Failure("الامتحان غير موجود.");
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(exam.SchoolId))
+        {
+            return ServiceResult.Failure("غير مصرح بتعديل هذا الامتحان.");
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(request.SchoolId))
+        {
+            return ServiceResult.Failure("غير مصرح بهذه المدرسة.");
+        }
+
+        var teacherOk = await _db.Teachers.AsNoTracking().AnyAsync(
+            x => x.Id == request.TeacherId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
+            cancellationToken);
+        if (!teacherOk)
+        {
+            return ServiceResult.Failure("المعلم غير مرتبط بالمدرسة المختارة.");
+        }
+
+        var subjectOk = await _db.Subjects.AsNoTracking().AnyAsync(
+            x => x.Id == request.SubjectId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
+            cancellationToken);
+        if (!subjectOk)
+        {
+            return ServiceResult.Failure("اسم الدرس غير مرتبط بالمدرسة المختارة.");
+        }
+
+        var sectionInfo = await (
+            from section in _db.ClassSections.AsNoTracking()
+            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
+            where section.Id == request.ClassSectionId
+                  && !section.IsDeleted
+                  && section.IsActive
+                  && section.SchoolId == request.SchoolId
+                  && !grade.IsDeleted
+                  && grade.IsActive
+            select new
+            {
+                GradeLevelId = grade.Id,
+                AcademicStageId = grade.AcademicStageId
+            }
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        if (sectionInfo is null)
+        {
+            return ServiceResult.Failure("الشعبة غير صالحة لهذه المدرسة.");
+        }
+
+        var examDate = DateOnly.FromDateTime(request.ExamDateTime);
+        var startTime = TimeOnly.FromDateTime(request.ExamDateTime);
+
+        exam.SchoolId = request.SchoolId;
+        exam.SubjectId = request.SubjectId;
+        exam.TeacherId = request.TeacherId;
+        exam.AcademicStageId = sectionInfo.AcademicStageId;
+        exam.GradeLevelId = sectionInfo.GradeLevelId;
+        exam.ClassSectionId = request.ClassSectionId;
+        exam.ExamDate = examDate;
+        exam.StartTime = startTime;
+        exam.EndTime = startTime.AddHours(1);
+        exam.Notes = request.Notes?.Trim();
+        exam.Instructions = request.Instructions?.Trim();
+        exam.Status = request.Status;
+        exam.IsPublished = request.Status == PublicationStatus.Published;
+
+        await _db.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("Exams.Update", nameof(Exam), exam.Id.ToString(),
+            schoolId: exam.SchoolId, cancellationToken: cancellationToken);
+
+        return ServiceResult.Success();
+    }
+
+    public async Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        if (exam is null)
+        {
+            return ServiceResult.Failure("الامتحان غير موجود.");
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(exam.SchoolId))
+        {
+            return ServiceResult.Failure("غير مصرح بحذف هذا الامتحان.");
+        }
+
+        exam.IsDeleted = true;
+        exam.DeletedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("Exams.Delete", nameof(Exam), exam.Id.ToString(),
+            schoolId: exam.SchoolId, cancellationToken: cancellationToken);
+
+        return ServiceResult.Success();
+    }
+
     private static string FormatTimeSlot(TimeOnly? start, TimeOnly? end)
     {
         if (!start.HasValue)

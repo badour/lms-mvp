@@ -7,5 +7,8 @@ public interface IExamAdminService
 {
     Task<IReadOnlyList<ExamListItemDto>> ListRecentAsync(int? schoolId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<StudentExamItemDto>> GetForCurrentStudentAsync(CancellationToken cancellationToken = default);
+    Task<ExamDetailsDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<ServiceResult<int>> CreateAsync(CreateExamRequest request, CancellationToken cancellationToken = default);
+    Task<ServiceResult> UpdateAsync(CreateExamRequest request, CancellationToken cancellationToken = default);
+    Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

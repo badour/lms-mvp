@@ -230,7 +230,9 @@ public class StudentService : IStudentService
             HealthProfile = new StudentHealthProfile
             {
                 SchoolId = request.SchoolId,
-                BloodType = request.BloodType.Trim().ToUpperInvariant(),
+                BloodType = string.IsNullOrWhiteSpace(request.BloodType)
+                    ? null
+                    : request.BloodType.Trim().ToUpperInvariant(),
                 ChronicDiseases = request.DiseaseHistory?.Trim()
             }
         };
@@ -457,7 +459,9 @@ public class StudentService : IStudentService
         }
 
         health.SchoolId = student.SchoolId;
-        health.BloodType = request.BloodType.Trim().ToUpperInvariant();
+        health.BloodType = string.IsNullOrWhiteSpace(request.BloodType)
+            ? null
+            : request.BloodType.Trim().ToUpperInvariant();
         health.ChronicDiseases = request.DiseaseHistory?.Trim();
 
         if (request.GradeLevelId.HasValue && request.ClassSectionId.HasValue)
