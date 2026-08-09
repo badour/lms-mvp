@@ -24,15 +24,14 @@ public static class DatabaseSeeder
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
 
-        var applied = await db.Database.GetAppliedMigrationsAsync();
-        var pending = await db.Database.GetPendingMigrationsAsync();
-        if (applied.Any() || pending.Any())
+        // SQL Server uses EF migrations (see database/SchoolLMS.Schema.sql).
+        // SQLite keeps EnsureCreated for lightweight local/dev databases.
+        if (db.Database.IsSqlServer())
         {
             await db.Database.MigrateAsync();
         }
         else
         {
-            // Bootstrap schema when migrations have not been generated yet (dev/SQLite).
             await db.Database.EnsureCreatedAsync();
         }
 

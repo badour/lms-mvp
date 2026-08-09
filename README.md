@@ -50,13 +50,34 @@ dotnet run --project src/SchoolLMS.Web
 
 Open the site URL from the console (typically `https://localhost:7xxx` or `http://localhost:5xxx`).
 
-Default database provider is **SQLite** for local/dev. Switch to SQL Server in config:
+Default database provider is **SQLite** for local/dev.
+
+### SQL Server
+
+Schema scripts live in [`database/`](database/README.md):
+
+```bash
+sqlcmd -S . -E -i database/00-CreateDatabase.sql
+sqlcmd -S . -E -d SchoolLMS -i database/SchoolLMS.Schema.sql
+```
+
+Or apply EF migrations:
+
+```bash
+dotnet ef database update --project src/SchoolLMS.Infrastructure --startup-project src/SchoolLMS.Web
+```
+
+Switch the app to SQL Server (see also `src/SchoolLMS.Web/appsettings.SqlServer.json`):
 
 ```json
 "Database": { "Provider": "SqlServer" },
 "ConnectionStrings": {
-  "DefaultConnection": "Server=.;Database=SchoolLMS;Trusted_Connection=True;TrustServerCertificate=True"
+  "DefaultConnection": "Server=.;Database=SchoolLMS;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
 }
+```
+
+```bash
+dotnet run --project src/SchoolLMS.Web --environment SqlServer
 ```
 
 ### Demo accounts (seeded)

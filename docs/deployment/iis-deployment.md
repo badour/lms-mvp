@@ -34,11 +34,20 @@ Set in IIS environment variables or `appsettings.Production.json`:
 
 ## Database
 
+**Option 1 — SQL scripts** (see [`database/README.md`](../../database/README.md)):
+
+```bash
+sqlcmd -S SQLHOST -E -i database/00-CreateDatabase.sql
+sqlcmd -S SQLHOST -E -d SchoolLMS -i database/SchoolLMS.Schema.sql
+```
+
+**Option 2 — EF migrate:**
+
 ```bash
 dotnet ef database update --project src/SchoolLMS.Infrastructure --startup-project src/SchoolLMS.Web
 ```
 
-Or let the application seed/migrate on startup in controlled environments.
+Or let the application migrate + seed on startup in controlled environments (`MigrateAsync` when `Database:Provider=SqlServer`).
 
 ## IIS sites
 
