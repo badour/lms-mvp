@@ -290,9 +290,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
         builder.Entity<RoutineLesson>(e =>
         {
-            e.HasIndex(x => new { x.SchoolId, x.TeacherId, x.AcademicStageId });
-            e.HasOne(x => x.Teacher).WithMany().HasForeignKey(x => x.TeacherId);
-            e.HasOne(x => x.AcademicStage).WithMany().HasForeignKey(x => x.AcademicStageId);
+            e.Property(x => x.LessonName).HasMaxLength(200).IsRequired();
+            e.HasIndex(x => new { x.SchoolId, x.GradeLevelId, x.LessonName });
+            e.HasOne(x => x.GradeLevel).WithMany().HasForeignKey(x => x.GradeLevelId);
         });
 
         builder.Entity<Teacher>(e =>

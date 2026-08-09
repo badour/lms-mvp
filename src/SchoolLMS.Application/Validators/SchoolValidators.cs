@@ -213,8 +213,8 @@ public class CreateRoutineLessonRequestValidator : AbstractValidator<CreateRouti
     public CreateRoutineLessonRequestValidator()
     {
         RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
-        RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
-        RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
+        RuleFor(x => x.LessonName).NotEmpty().WithMessage("اسم الدرس مطلوب.").MaximumLength(200);
+        RuleFor(x => x.GradeLevelId).GreaterThan(0).WithMessage("اسم المرحلة مطلوب.");
         RuleFor(x => x.SessionsPerYear).InclusiveBetween(1, 500).WithMessage("عدد الحصص يجب أن يكون بين 1 و 500.");
     }
 }

@@ -5,7 +5,7 @@
 <div class="mb-4">
     <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
     <h1 class="h3 page-title mb-1">إضافة درس جديد</h1>
-    <p class="text-muted mb-0">ربط معلم بمرحلة دراسية مع تحديد عدد الحصص خلال السنة</p>
+    <p class="text-muted mb-0">تعريف درس للمدرسة والصف مع تحديد عدد الحصص خلال السنة</p>
 </div>
 
 <form method="post">
@@ -23,18 +23,16 @@
                 <span asp-validation-for="SchoolId" class="text-danger"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="TeacherId" class="form-label"></label>
-                <select asp-for="TeacherId" class="form-select" id="TeacherId">
-                    <option value="">اختر المعلم</option>
-                </select>
-                <span asp-validation-for="TeacherId" class="text-danger"></span>
+                <label asp-for="LessonName" class="form-label"></label>
+                <input asp-for="LessonName" class="form-control" placeholder="مثال: الرياضيات" />
+                <span asp-validation-for="LessonName" class="text-danger"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="AcademicStageId" class="form-label"></label>
-                <select asp-for="AcademicStageId" class="form-select" id="AcademicStageId">
-                    <option value="">اختر المرحلة</option>
+                <label asp-for="GradeLevelId" class="form-label">اسم المرحلة</label>
+                <select asp-for="GradeLevelId" class="form-select" id="GradeLevelId">
+                    <option value="">اختر الصف (مثل: صف اول ابتدائي)</option>
                 </select>
-                <span asp-validation-for="AcademicStageId" class="text-danger"></span>
+                <span asp-validation-for="GradeLevelId" class="text-danger"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="SessionsPerYear" class="form-label"></label>
@@ -54,32 +52,39 @@
 <script>
 (() => {
   const school = document.getElementById('SchoolId');
-  const teacher = document.getElementById('TeacherId');
-  const stage = document.getElementById('AcademicStageId');
+  const grade = document.getElementById('GradeLevelId');
+  const selectedGradeId = '@Model.GradeLevelId';
 
-  function fill(select, items, placeholder) {
+  function fill(select, items, placeholder, selectedId) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
     for (const item of items || []) {
       const opt = document.createElement('option');
       opt.value = item.id;
       opt.textContent = item.name;
+      if (selectedId && String(selectedId) === String(item.id) && selectedId !== '0') {
+        opt.selected = true;
+      }
       select.appendChild(opt);
     }
   }
 
-  async function loadLookups() {
-    teacher.innerHTML = '<option value="">اختر المعلم</option>';
-    stage.innerHTML = '<option value="">اختر المرحلة</option>';
+  async function loadGrades() {
+    grade.innerHTML = '<option value="">اختر الصف (مثل: صف اول ابتدائي)</option>';
     if (!school.value) return;
-    const [teachersRes, stagesRes] = await Promise.all([
-      fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value)),
-      fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value))
-    ]);
-    if (teachersRes.ok) fill(teacher, await teachersRes.json(), 'اختر المعلم');
-    if (stagesRes.ok) fill(stage, await stagesRes.json(), 'اختر المرحلة');
+    const res = await fetch('@Url.Action("Grades")?schoolId=' + encodeURIComponent(school.value));
+    if (res.ok) fill(grade, await res.json(), 'اختر الصف (مثل: صف اول ابتدائي)', selectedGradeId);
   }
 
-  school.addEventListener('change', loadLookups);
+  school.addEventListener('change', async () => {
+    grade.innerHTML = '<option value="">اختر الصف (مثل: صف اول ابتدائي)</option>';
+    if (!school.value) return;
+    const res = await fetch('@Url.Action("Grades")?schoolId=' + encodeURIComponent(school.value));
+    if (res.ok) fill(grade, await res.json(), 'اختر الصف (مثل: صف اول ابتدائي)', null);
+  });
+
+  if (school.value) {
+    loadGrades();
+  }
 })();
 </script>
 }

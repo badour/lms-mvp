@@ -7,7 +7,7 @@ public class RoutineLessonListItemDto
     public int Id { get; set; }
     public int SchoolId { get; set; }
     public string SchoolNameAr { get; set; } = string.Empty;
-    public string TeacherNameAr { get; set; } = string.Empty;
+    public string LessonName { get; set; } = string.Empty;
     public string StageNameAr { get; set; } = string.Empty;
     public int SessionsPerYear { get; set; }
 }
@@ -18,13 +18,14 @@ public class CreateRoutineLessonRequest
     [Display(Name = "اسم المدرسة")]
     public int SchoolId { get; set; }
 
-    [Required(ErrorMessage = "المعلم مطلوب")]
-    [Display(Name = "اسم المعلم")]
-    public int TeacherId { get; set; }
+    [Required(ErrorMessage = "اسم الدرس مطلوب")]
+    [Display(Name = "اسم الدرس")]
+    [MaxLength(200)]
+    public string LessonName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "المرحلة مطلوبة")]
+    [Required(ErrorMessage = "اسم المرحلة مطلوب")]
     [Display(Name = "اسم المرحلة")]
-    public int AcademicStageId { get; set; }
+    public int GradeLevelId { get; set; }
 
     [Required(ErrorMessage = "عدد الحصص خلال السنة مطلوب")]
     [Display(Name = "عدد الحصص خلال السنة")]

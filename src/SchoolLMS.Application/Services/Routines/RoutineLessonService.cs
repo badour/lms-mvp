@@ -32,9 +32,8 @@ public class RoutineLessonService : IRoutineLessonService
             from lesson in _db.RoutineLessons.AsNoTracking()
             where !lesson.IsDeleted
             join school in _db.Schools.AsNoTracking() on lesson.SchoolId equals school.Id
-            join teacher in _db.Teachers.AsNoTracking() on lesson.TeacherId equals teacher.Id
-            join stage in _db.AcademicStages.AsNoTracking() on lesson.AcademicStageId equals stage.Id
-            select new { lesson, school, teacher, stage };
+            join grade in _db.GradeLevels.AsNoTracking() on lesson.GradeLevelId equals grade.Id
+            select new { lesson, school, grade };
 
         if (!_currentUser.IsSuperAdmin)
         {
@@ -49,15 +48,15 @@ public class RoutineLessonService : IRoutineLessonService
 
         return await query
             .OrderBy(x => x.school.NameAr)
-            .ThenBy(x => x.stage.SortOrder)
-            .ThenBy(x => x.teacher.FullNameAr)
+            .ThenBy(x => x.grade.SortOrder)
+            .ThenBy(x => x.lesson.LessonName)
             .Select(x => new RoutineLessonListItemDto
             {
                 Id = x.lesson.Id,
                 SchoolId = x.school.Id,
                 SchoolNameAr = x.school.NameAr,
-                TeacherNameAr = x.teacher.FullNameAr,
-                StageNameAr = x.stage.NameAr,
+                LessonName = x.lesson.LessonName,
+                StageNameAr = x.grade.NameAr,
                 SessionsPerYear = x.lesson.SessionsPerYear
             })
             .ToListAsync(cancellationToken);
@@ -76,27 +75,22 @@ public class RoutineLessonService : IRoutineLessonService
             return ServiceResult<int>.Failure("غير مصرح بهذه المدرسة.");
         }
 
-        var teacherOk = await _db.Teachers.AsNoTracking().AnyAsync(
-            x => x.Id == request.TeacherId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
+        var gradeOk = await _db.GradeLevels.AsNoTracking().AnyAsync(
+            x => x.Id == request.GradeLevelId
+                 && x.SchoolId == request.SchoolId
+                 && !x.IsDeleted
+                 && x.IsActive,
             cancellationToken);
-        if (!teacherOk)
+        if (!gradeOk)
         {
-            return ServiceResult<int>.Failure("المعلم غير مرتبط بالمدرسة المختارة.");
-        }
-
-        var stageOk = await _db.AcademicStages.AsNoTracking().AnyAsync(
-            x => x.Id == request.AcademicStageId && x.SchoolId == request.SchoolId && !x.IsDeleted && x.IsActive,
-            cancellationToken);
-        if (!stageOk)
-        {
-            return ServiceResult<int>.Failure("المرحلة غير مرتبطة بالمدرسة المختارة أو غير نشطة.");
+            return ServiceResult<int>.Failure("اسم المرحلة غير مرتبط بالمدرسة المختارة أو غير نشط.");
         }
 
         var entity = new RoutineLesson
         {
             SchoolId = request.SchoolId,
-            TeacherId = request.TeacherId,
-            AcademicStageId = request.AcademicStageId,
+            LessonName = request.LessonName.Trim(),
+            GradeLevelId = request.GradeLevelId,
             SessionsPerYear = request.SessionsPerYear
         };
 

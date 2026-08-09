@@ -71,25 +71,15 @@ public class RoutineLessonsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Teachers(int schoolId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Grades(int schoolId, CancellationToken cancellationToken)
     {
-        var teachers = await _db.Teachers.AsNoTracking()
-            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
-            .OrderBy(x => x.FullNameAr)
-            .Select(x => new { id = x.Id, name = x.FullNameAr })
-            .ToListAsync(cancellationToken);
-        return Json(teachers);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Stages(int schoolId, CancellationToken cancellationToken)
-    {
-        var stages = await _db.AcademicStages.AsNoTracking()
+        var grades = await _db.GradeLevels.AsNoTracking()
             .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
             .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.NameAr)
             .Select(x => new { id = x.Id, name = x.NameAr })
             .ToListAsync(cancellationToken);
-        return Json(stages);
+        return Json(grades);
     }
 
     private async Task LoadSchoolsAsync(CancellationToken cancellationToken)
