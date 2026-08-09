@@ -105,12 +105,18 @@ public class TeacherForm
 
 public class AttendanceCreateForm
 {
+    public int? SessionId { get; set; }
+
+    [Required(ErrorMessage = "المدرسة مطلوبة")]
+    [Display(Name = "اسم المدرسة")]
+    public int SchoolId { get; set; }
+
     [Required(ErrorMessage = "المعلم مطلوب")]
-    [Display(Name = "المعلم")]
+    [Display(Name = "اسم المعلم")]
     public int TeacherId { get; set; }
 
     [Required(ErrorMessage = "المرحلة مطلوبة")]
-    [Display(Name = "المرحلة")]
+    [Display(Name = "اسم المرحلة")]
     public int AcademicStageId { get; set; }
 
     [Required(ErrorMessage = "الشعبة مطلوبة")]

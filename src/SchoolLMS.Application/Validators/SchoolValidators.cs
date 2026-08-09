@@ -184,6 +184,7 @@ public class SaveAttendanceRequestValidator : AbstractValidator<SaveAttendanceRe
 {
     public SaveAttendanceRequestValidator()
     {
+        RuleFor(x => x.SchoolId).GreaterThan(0).WithMessage("المدرسة مطلوبة.");
         RuleFor(x => x.TeacherId).GreaterThan(0).WithMessage("المعلم مطلوب.");
         RuleFor(x => x.AcademicStageId).GreaterThan(0).WithMessage("المرحلة مطلوبة.");
         RuleFor(x => x.ClassSectionId).GreaterThan(0).WithMessage("الشعبة مطلوبة.");

@@ -22,13 +22,19 @@ public class AttendanceController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index(int? schoolId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(int? schoolId, int? teacherId, DateOnly? attendanceDate, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "حضور الصفوف";
-        ViewBag.Schools = new SelectList(
-            await _db.Schools.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.NameAr).ToListAsync(cancellationToken),
-            "Id", "NameAr", schoolId);
-        var items = await _attendanceService.ListRecentAsync(schoolId, cancellationToken);
+        await LoadFilterLookupsAsync(schoolId, teacherId, cancellationToken);
+
+        var items = await _attendanceService.ListAsync(new AttendanceSessionFilter
+        {
+            SchoolId = schoolId,
+            TeacherId = teacherId,
+            AttendanceDate = attendanceDate
+        }, cancellationToken);
+
+        ViewBag.AttendanceDate = attendanceDate?.ToString("yyyy-MM-dd");
         return View(items);
     }
 
@@ -36,7 +42,8 @@ public class AttendanceController : Controller
     public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "تسجيل حضور صف";
-        await LoadTeachersAsync(cancellationToken);
+        await LoadSchoolsAsync(cancellationToken);
+        ClearLookups();
         return View(new AttendanceCreateForm());
     }
 
@@ -44,24 +51,12 @@ public class AttendanceController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(AttendanceCreateForm form, CancellationToken cancellationToken)
     {
-        var request = new SaveAttendanceRequest
-        {
-            TeacherId = form.TeacherId,
-            AcademicStageId = form.AcademicStageId,
-            ClassSectionId = form.ClassSectionId,
-            AttendanceDate = form.AttendanceDate,
-            Students = (form.Students ?? []).Select(x => new AttendanceStudentMarkDto
-            {
-                StudentId = x.StudentId,
-                IsPresent = x.IsPresent
-            }).ToList()
-        };
-
-        var result = await _attendanceService.SaveAsync(request, cancellationToken);
+        var result = await _attendanceService.SaveAsync(ToRequest(form), cancellationToken);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
-            await LoadTeachersAsync(cancellationToken);
+            await LoadSchoolsAsync(cancellationToken);
+            await LoadSchoolLookupsAsync(form, cancellationToken);
             return View(form);
         }
 
@@ -70,79 +65,122 @@ public class AttendanceController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Stages(int teacherId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
-        var teacher = await _db.Teachers.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == teacherId && !x.IsDeleted, cancellationToken);
-        if (teacher is null)
+        var detail = await _attendanceService.GetByIdAsync(id, cancellationToken);
+        if (detail is null)
         {
-            return Json(Array.Empty<object>());
+            return NotFound();
         }
 
-        var stages = await (
-            from assignment in _db.TeacherAssignments.AsNoTracking()
-            join section in _db.ClassSections.AsNoTracking() on assignment.ClassSectionId equals section.Id
-            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            where assignment.TeacherId == teacherId
-                  && assignment.IsActive
-                  && !assignment.IsDeleted
-                  && stage.IsActive
-                  && !stage.IsDeleted
-            select new { id = stage.Id, name = stage.NameAr }
-        ).Distinct().OrderBy(x => x.name).ToListAsync(cancellationToken);
+        ViewData["Title"] = "عرض سجل الحضور";
+        return View(detail);
+    }
 
-        if (stages.Count == 0)
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+    {
+        var detail = await _attendanceService.GetByIdAsync(id, cancellationToken);
+        if (detail is null)
         {
-            stages = await _db.AcademicStages.AsNoTracking()
-                .Where(x => x.SchoolId == teacher.SchoolId && !x.IsDeleted && x.IsActive)
-                .OrderBy(x => x.SortOrder)
-                .Select(x => new { id = x.Id, name = x.NameAr })
-                .ToListAsync(cancellationToken);
+            return NotFound();
         }
 
+        var form = new AttendanceCreateForm
+        {
+            SessionId = detail.Id,
+            SchoolId = detail.SchoolId,
+            TeacherId = detail.TeacherId,
+            AcademicStageId = detail.AcademicStageId,
+            ClassSectionId = detail.ClassSectionId,
+            AttendanceDate = detail.AttendanceDate,
+            Students = detail.Students.Select(x => new AttendanceMarkInput
+            {
+                StudentId = x.StudentId,
+                StudentNumber = x.StudentNumber,
+                FullNameAr = x.FullNameAr,
+                IsPresent = x.IsPresent
+            }).ToList()
+        };
+
+        ViewData["Title"] = "تعديل سجل الحضور";
+        await LoadSchoolsAsync(cancellationToken);
+        await LoadSchoolLookupsAsync(form, cancellationToken);
+        return View("Edit", form);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(AttendanceCreateForm form, CancellationToken cancellationToken)
+    {
+        if (!form.SessionId.HasValue)
+        {
+            return BadRequest();
+        }
+
+        var result = await _attendanceService.SaveAsync(ToRequest(form), cancellationToken);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error);
+            await LoadSchoolsAsync(cancellationToken);
+            await LoadSchoolLookupsAsync(form, cancellationToken);
+            ViewData["Title"] = "تعديل سجل الحضور";
+            return View(form);
+        }
+
+        TempData["Success"] = "تم تحديث سجل الحضور بنجاح.";
+        return RedirectToAction(nameof(Details), new { id = form.SessionId.Value });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var result = await _attendanceService.DeleteAsync(id, cancellationToken);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? "تم حذف سجل الحضور."
+            : result.Error;
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Teachers(int schoolId, CancellationToken cancellationToken)
+    {
+        var teachers = await _db.Teachers.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.FullNameAr)
+            .Select(x => new { id = x.Id, name = x.FullNameAr })
+            .ToListAsync(cancellationToken);
+        return Json(teachers);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Stages(int schoolId, CancellationToken cancellationToken)
+    {
+        var stages = await _db.AcademicStages.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new { id = x.Id, name = x.NameAr })
+            .ToListAsync(cancellationToken);
         return Json(stages);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Sections(int teacherId, int stageId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Sections(int schoolId, int stageId, CancellationToken cancellationToken)
     {
-        var assigned = await (
-            from assignment in _db.TeacherAssignments.AsNoTracking()
-            join section in _db.ClassSections.AsNoTracking() on assignment.ClassSectionId equals section.Id
-            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            where assignment.TeacherId == teacherId
-                  && assignment.IsActive
-                  && !assignment.IsDeleted
-                  && grade.AcademicStageId == stageId
-                  && !section.IsDeleted
-            orderby grade.SortOrder, section.NameAr
-            select new { id = section.Id, name = grade.NameAr + " / " + section.NameAr }
-        ).Distinct().ToListAsync(cancellationToken);
-
-        if (assigned.Count > 0)
-        {
-            return Json(assigned);
-        }
-
-        var teacher = await _db.Teachers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == teacherId && !x.IsDeleted, cancellationToken);
-        if (teacher is null)
-        {
-            return Json(Array.Empty<object>());
-        }
-
-        var all = await (
+        var sections = await (
             from section in _db.ClassSections.AsNoTracking()
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
-            where section.SchoolId == teacher.SchoolId
+            where section.SchoolId == schoolId
                   && grade.AcademicStageId == stageId
                   && !section.IsDeleted
                   && section.IsActive
+                  && grade.IsActive
+                  && !grade.IsDeleted
             orderby grade.SortOrder, section.NameAr
             select new { id = section.Id, name = grade.NameAr + " / " + section.NameAr }
         ).ToListAsync(cancellationToken);
-
-        return Json(all);
+        return Json(sections);
     }
 
     [HttpGet]
@@ -158,14 +196,95 @@ public class AttendanceController : Controller
         return Json(rows);
     }
 
-    private async Task LoadTeachersAsync(CancellationToken cancellationToken)
+    private static SaveAttendanceRequest ToRequest(AttendanceCreateForm form) => new()
     {
+        SessionId = form.SessionId,
+        SchoolId = form.SchoolId,
+        TeacherId = form.TeacherId,
+        AcademicStageId = form.AcademicStageId,
+        ClassSectionId = form.ClassSectionId,
+        AttendanceDate = form.AttendanceDate,
+        Students = (form.Students ?? []).Select(x => new AttendanceStudentMarkDto
+        {
+            StudentId = x.StudentId,
+            IsPresent = x.IsPresent
+        }).ToList()
+    };
+
+    private async Task LoadSchoolsAsync(CancellationToken cancellationToken)
+    {
+        ViewBag.Schools = new SelectList(
+            await _db.Schools.AsNoTracking().Where(x => !x.IsDeleted && x.IsActive).OrderBy(x => x.NameAr).ToListAsync(cancellationToken),
+            "Id", "NameAr");
+    }
+
+    private void ClearLookups()
+    {
+        ViewBag.Teachers = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+        ViewBag.Stages = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+        ViewBag.Sections = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+    }
+
+    private async Task LoadSchoolLookupsAsync(AttendanceCreateForm form, CancellationToken cancellationToken)
+    {
+        if (form.SchoolId <= 0)
+        {
+            ClearLookups();
+            return;
+        }
+
         ViewBag.Teachers = new SelectList(
             await _db.Teachers.AsNoTracking()
-                .Where(x => !x.IsDeleted && x.IsActive)
+                .Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted && x.IsActive)
                 .OrderBy(x => x.FullNameAr)
                 .Select(x => new { x.Id, Name = x.FullNameAr })
                 .ToListAsync(cancellationToken),
-            "Id", "Name");
+            "Id", "Name", form.TeacherId);
+
+        ViewBag.Stages = new SelectList(
+            await _db.AcademicStages.AsNoTracking()
+                .Where(x => x.SchoolId == form.SchoolId && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.SortOrder)
+                .Select(x => new { x.Id, Name = x.NameAr })
+                .ToListAsync(cancellationToken),
+            "Id", "Name", form.AcademicStageId);
+
+        if (form.AcademicStageId > 0)
+        {
+            var sections = await (
+                from section in _db.ClassSections.AsNoTracking()
+                join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
+                where section.SchoolId == form.SchoolId
+                      && grade.AcademicStageId == form.AcademicStageId
+                      && !section.IsDeleted
+                      && section.IsActive
+                orderby grade.SortOrder, section.NameAr
+                select new { section.Id, Name = grade.NameAr + " / " + section.NameAr }
+            ).ToListAsync(cancellationToken);
+            ViewBag.Sections = new SelectList(sections, "Id", "Name", form.ClassSectionId);
+        }
+        else
+        {
+            ViewBag.Sections = new SelectList(Enumerable.Empty<object>(), "Id", "Name");
+        }
+    }
+
+    private async Task LoadFilterLookupsAsync(int? schoolId, int? teacherId, CancellationToken cancellationToken)
+    {
+        ViewBag.Schools = new SelectList(
+            await _db.Schools.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.NameAr).ToListAsync(cancellationToken),
+            "Id", "NameAr", schoolId);
+
+        var teachersQuery = _db.Teachers.AsNoTracking().Where(x => !x.IsDeleted && x.IsActive);
+        if (schoolId.HasValue)
+        {
+            teachersQuery = teachersQuery.Where(x => x.SchoolId == schoolId.Value);
+        }
+
+        ViewBag.Teachers = new SelectList(
+            await teachersQuery.OrderBy(x => x.FullNameAr)
+                .Select(x => new { x.Id, Name = x.FullNameAr })
+                .ToListAsync(cancellationToken),
+            "Id", "Name", teacherId);
     }
 }

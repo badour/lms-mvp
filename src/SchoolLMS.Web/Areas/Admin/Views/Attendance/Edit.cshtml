@@ -1,15 +1,16 @@
 @model SchoolLMS.Web.Models.AttendanceCreateForm
 @{
-    ViewData["Title"] = "تسجيل حضور صف";
+    ViewData["Title"] = "تعديل سجل الحضور";
 }
 <div class="mb-4">
     <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الحضور</div>
-    <h1 class="h3 page-title mb-1">تسجيل حضور صف</h1>
-    <p class="text-muted mb-0">اختر المدرسة ثم المعلم والمرحلة والشعبة والتاريخ، ثم حدّد حضور أو غياب كل طالب</p>
+    <h1 class="h3 page-title mb-1">تعديل سجل الحضور</h1>
+    <p class="text-muted mb-0">عدّل بيانات الصف أو علامات حضور الطلاب ثم احفظ</p>
 </div>
 
 <form method="post" id="attendanceForm">
     @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="SessionId" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
     <section class="section-card mb-3">
@@ -55,12 +56,12 @@
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h2 class="mb-0">قائمة الطلاب</h2>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-success" id="markAllPresent">✓ الكل حاضر (داخل)</button>
-                <button type="button" class="btn btn-sm btn-outline-danger" id="markAllAbsent">✗ الكل غائب (خارج)</button>
+                <button type="button" class="btn btn-sm btn-outline-success" id="markAllPresent">✓ الكل حاضر</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" id="markAllAbsent">✗ الكل غائب</button>
             </div>
         </div>
-        <div id="rosterEmpty" class="text-muted">اختر المدرسة والمعلم والمرحلة والشعبة والتاريخ لعرض الطلاب.</div>
-        <div class="table-responsive d-none" id="rosterWrap">
+        <div id="rosterEmpty" class="text-muted d-none">لا يوجد طلاب.</div>
+        <div class="table-responsive" id="rosterWrap">
             <table class="table align-middle mb-0">
                 <thead>
                 <tr>
@@ -69,14 +70,45 @@
                     <th style="width:220px">الحضور (داخل / خارج)</th>
                 </tr>
                 </thead>
-                <tbody id="rosterBody"></tbody>
+                <tbody id="rosterBody">
+                @for (var i = 0; i < Model.Students.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input type="hidden" name="Students[@i].StudentId" value="@Model.Students[i].StudentId" />
+                            <input type="hidden" name="Students[@i].StudentNumber" value="@Model.Students[i].StudentNumber" />
+                            <input type="hidden" name="Students[@i].FullNameAr" value="@Model.Students[i].FullNameAr" />
+                            @Model.Students[i].StudentNumber
+                        </td>
+                        <td class="fw-semibold">@Model.Students[i].FullNameAr</td>
+                        <td>
+                            <div class="btn-group attendance-toggle" role="group">
+                                @if (Model.Students[i].IsPresent)
+                                {
+                                    <input type="radio" class="btn-check" name="Students[@i].IsPresent" id="present_@i" value="true" checked />
+                                    <label class="btn btn-outline-success" for="present_@i">✓ حاضر</label>
+                                    <input type="radio" class="btn-check" name="Students[@i].IsPresent" id="absent_@i" value="false" />
+                                    <label class="btn btn-outline-danger" for="absent_@i">✗ غائب</label>
+                                }
+                                else
+                                {
+                                    <input type="radio" class="btn-check" name="Students[@i].IsPresent" id="present_@i" value="true" />
+                                    <label class="btn btn-outline-success" for="present_@i">✓ حاضر</label>
+                                    <input type="radio" class="btn-check" name="Students[@i].IsPresent" id="absent_@i" value="false" checked />
+                                    <label class="btn btn-outline-danger" for="absent_@i">✗ غائب</label>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
             </table>
         </div>
     </section>
 
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" id="saveBtn" disabled><i class="bi bi-check2"></i> حفظ الحضور</button>
-        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+        <button type="submit" class="btn btn-primary" id="saveBtn"><i class="bi bi-check2"></i> حفظ التعديلات</button>
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.SessionId">إلغاء</a>
     </div>
 </form>
 
@@ -92,13 +124,17 @@
   const wrap = document.getElementById('rosterWrap');
   const empty = document.getElementById('rosterEmpty');
   const saveBtn = document.getElementById('saveBtn');
+  const selectedTeacher = '@Model.TeacherId';
+  const selectedStage = '@Model.AcademicStageId';
+  const selectedSection = '@Model.ClassSectionId';
 
-  function fill(select, items, placeholder) {
+  function fill(select, items, placeholder, selectedId) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
     for (const item of items || []) {
       const opt = document.createElement('option');
       opt.value = item.id;
       opt.textContent = item.name;
+      if (selectedId && String(selectedId) === String(item.id) && selectedId !== '0') opt.selected = true;
       select.appendChild(opt);
     }
   }
@@ -107,7 +143,6 @@
     body.innerHTML = '';
     wrap.classList.add('d-none');
     empty.classList.remove('d-none');
-    empty.textContent = 'اختر المدرسة والمعلم والمرحلة والشعبة والتاريخ لعرض الطلاب.';
     saveBtn.disabled = true;
   }
 
@@ -116,7 +151,6 @@
     if (!rows.length) {
       clearRoster();
       empty.textContent = 'لا يوجد طلاب في هذه الشعبة.';
-      empty.classList.remove('d-none');
       return;
     }
     empty.classList.add('d-none');
@@ -144,32 +178,16 @@
     });
   }
 
-  async function onSchoolChanged() {
-    fill(teacher, [], 'اختر المعلم');
-    fill(stage, [], 'اختر المرحلة');
-    fill(section, [], 'اختر الشعبة');
-    clearRoster();
-    if (!school.value) return;
-
-    const [teachersRes, stagesRes] = await Promise.all([
-      fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value)),
-      fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value))
-    ]);
-    if (teachersRes.ok) fill(teacher, await teachersRes.json(), 'اختر المعلم');
-    if (stagesRes.ok) fill(stage, await stagesRes.json(), 'اختر المرحلة');
-  }
-
-  async function onStageChanged() {
-    fill(section, [], 'اختر الشعبة');
-    clearRoster();
+  async function loadSections(preserveSelection) {
+    const keep = preserveSelection ? selectedSection : null;
+    fill(section, [], 'اختر الشعبة', null);
     if (!school.value || !stage.value) return;
     const res = await fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value) + '&stageId=' + encodeURIComponent(stage.value));
     if (!res.ok) return;
-    fill(section, await res.json(), 'اختر الشعبة');
+    fill(section, await res.json(), 'اختر الشعبة', keep);
   }
 
   async function loadRoster() {
-    clearRoster();
     if (!teacher.value || !stage.value || !section.value || !date.value) return;
     const url = '@Url.Action("Roster")'
       + '?teacherId=' + encodeURIComponent(teacher.value)
@@ -181,18 +199,34 @@
     renderRoster(await res.json());
   }
 
+  school.addEventListener('change', async () => {
+    fill(teacher, [], 'اختر المعلم', null);
+    fill(stage, [], 'اختر المرحلة', null);
+    fill(section, [], 'اختر الشعبة', null);
+    clearRoster();
+    if (!school.value) return;
+    const [teachersRes, stagesRes] = await Promise.all([
+      fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value))
+    ]);
+    if (teachersRes.ok) fill(teacher, await teachersRes.json(), 'اختر المعلم', null);
+    if (stagesRes.ok) fill(stage, await stagesRes.json(), 'اختر المرحلة', null);
+  });
+
+  stage.addEventListener('change', async () => {
+    await loadSections(false);
+    await loadRoster();
+  });
+  teacher.addEventListener('change', loadRoster);
+  section.addEventListener('change', loadRoster);
+  date.addEventListener('change', loadRoster);
+
   document.getElementById('markAllPresent').addEventListener('click', () => {
     body.querySelectorAll('input[id^="present_"]').forEach(el => el.checked = true);
   });
   document.getElementById('markAllAbsent').addEventListener('click', () => {
     body.querySelectorAll('input[id^="absent_"]').forEach(el => el.checked = true);
   });
-
-  school.addEventListener('change', onSchoolChanged);
-  stage.addEventListener('change', onStageChanged);
-  teacher.addEventListener('change', loadRoster);
-  section.addEventListener('change', loadRoster);
-  date.addEventListener('change', loadRoster);
 })();
 </script>
 }

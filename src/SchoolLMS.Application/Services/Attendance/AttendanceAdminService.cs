@@ -28,17 +28,20 @@ public class AttendanceAdminService : IAttendanceAdminService
         _validator = validator;
     }
 
-    public async Task<IReadOnlyList<AttendanceSessionListItemDto>> ListRecentAsync(int? schoolId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AttendanceSessionListItemDto>> ListAsync(
+        AttendanceSessionFilter filter,
+        CancellationToken cancellationToken = default)
     {
         var query =
             from session in _db.AttendanceSessions.AsNoTracking()
             where !session.IsDeleted
+            join school in _db.Schools.AsNoTracking() on session.SchoolId equals school.Id
             join teacher in _db.Teachers.AsNoTracking() on session.TeacherId equals teacher.Id into tg
             from teacher in tg.DefaultIfEmpty()
             join section in _db.ClassSections.AsNoTracking() on session.ClassSectionId equals section.Id
             join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
             join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
-            select new { session, teacher, section, stage };
+            select new { session, school, teacher, section, grade, stage };
 
         if (!_currentUser.IsSuperAdmin)
         {
@@ -46,21 +49,33 @@ public class AttendanceAdminService : IAttendanceAdminService
             query = query.Where(x => schoolIds.Contains(x.session.SchoolId));
         }
 
-        if (schoolId.HasValue)
+        if (filter.SchoolId.HasValue)
         {
-            query = query.Where(x => x.session.SchoolId == schoolId.Value);
+            query = query.Where(x => x.session.SchoolId == filter.SchoolId.Value);
+        }
+
+        if (filter.TeacherId.HasValue)
+        {
+            query = query.Where(x => x.session.TeacherId == filter.TeacherId.Value);
+        }
+
+        if (filter.AttendanceDate.HasValue)
+        {
+            query = query.Where(x => x.session.AttendanceDate == filter.AttendanceDate.Value);
         }
 
         return await query
             .OrderByDescending(x => x.session.AttendanceDate)
             .ThenByDescending(x => x.session.Id)
-            .Take(50)
             .Select(x => new AttendanceSessionListItemDto
             {
                 Id = x.session.Id,
+                SchoolId = x.session.SchoolId,
+                SchoolNameAr = x.school.NameAr,
+                TeacherId = x.session.TeacherId,
                 TeacherNameAr = x.teacher != null ? x.teacher.FullNameAr : "—",
                 StageNameAr = x.stage.NameAr,
-                SectionNameAr = x.section.NameAr,
+                SectionNameAr = x.grade.NameAr + " / " + x.section.NameAr,
                 AttendanceDate = x.session.AttendanceDate,
                 PresentCount = _db.StudentAttendances.Count(r =>
                     r.AttendanceSessionId == x.session.Id && !r.IsDeleted && r.Status == AttendanceStatus.Present),
@@ -71,7 +86,79 @@ public class AttendanceAdminService : IAttendanceAdminService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<AttendanceStudentRowDto>> GetRosterAsync(AttendanceRosterRequest request, CancellationToken cancellationToken = default)
+    public async Task<AttendanceSessionDetailDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var meta = await (
+            from session in _db.AttendanceSessions.AsNoTracking()
+            where session.Id == id && !session.IsDeleted
+            join school in _db.Schools.AsNoTracking() on session.SchoolId equals school.Id
+            join teacher in _db.Teachers.AsNoTracking() on session.TeacherId equals teacher.Id into tg
+            from teacher in tg.DefaultIfEmpty()
+            join section in _db.ClassSections.AsNoTracking() on session.ClassSectionId equals section.Id
+            join grade in _db.GradeLevels.AsNoTracking() on section.GradeLevelId equals grade.Id
+            join stage in _db.AcademicStages.AsNoTracking() on grade.AcademicStageId equals stage.Id
+            select new
+            {
+                session.Id,
+                session.SchoolId,
+                SchoolNameAr = school.NameAr,
+                TeacherId = session.TeacherId ?? 0,
+                TeacherNameAr = teacher != null ? teacher.FullNameAr : "—",
+                AcademicStageId = stage.Id,
+                StageNameAr = stage.NameAr,
+                ClassSectionId = section.Id,
+                SectionNameAr = grade.NameAr + " / " + section.NameAr,
+                session.AttendanceDate,
+                session.Status
+            }
+        ).FirstOrDefaultAsync(cancellationToken);
+
+        if (meta is null)
+        {
+            return null;
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(meta.SchoolId))
+        {
+            return null;
+        }
+
+        var students = await (
+            from record in _db.StudentAttendances.AsNoTracking()
+            join student in _db.Students.AsNoTracking() on record.StudentId equals student.Id
+            where record.AttendanceSessionId == id && !record.IsDeleted && !student.IsDeleted
+            orderby student.FullNameAr
+            select new AttendanceStudentRowDto
+            {
+                StudentId = student.Id,
+                StudentNumber = student.StudentNumber,
+                FullNameAr = student.FullNameAr,
+                IsPresent = record.Status == AttendanceStatus.Present
+            }
+        ).ToListAsync(cancellationToken);
+
+        return new AttendanceSessionDetailDto
+        {
+            Id = meta.Id,
+            SchoolId = meta.SchoolId,
+            SchoolNameAr = meta.SchoolNameAr,
+            TeacherId = meta.TeacherId,
+            TeacherNameAr = meta.TeacherNameAr,
+            AcademicStageId = meta.AcademicStageId,
+            StageNameAr = meta.StageNameAr,
+            ClassSectionId = meta.ClassSectionId,
+            SectionNameAr = meta.SectionNameAr,
+            AttendanceDate = meta.AttendanceDate,
+            Status = meta.Status,
+            PresentCount = students.Count(x => x.IsPresent),
+            AbsentCount = students.Count(x => !x.IsPresent),
+            Students = students
+        };
+    }
+
+    public async Task<IReadOnlyList<AttendanceStudentRowDto>> GetRosterAsync(
+        AttendanceRosterRequest request,
+        CancellationToken cancellationToken = default)
     {
         if (request.TeacherId <= 0 || request.ClassSectionId <= 0)
         {
@@ -163,20 +250,24 @@ public class AttendanceAdminService : IAttendanceAdminService
             return ServiceResult<int>.Failure(validation.Errors.Select(e => e.ErrorMessage));
         }
 
-        var section = await _db.ClassSections.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.ClassSectionId && !x.IsDeleted, cancellationToken);
-        if (section is null)
-        {
-            return ServiceResult<int>.Failure("الشعبة غير موجودة.");
-        }
-
-        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(section.SchoolId))
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(request.SchoolId))
         {
             return ServiceResult<int>.Failure("غير مصرح بهذه المدرسة.");
         }
 
+        var section = await _db.ClassSections.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == request.ClassSectionId
+                                      && x.SchoolId == request.SchoolId
+                                      && !x.IsDeleted, cancellationToken);
+        if (section is null)
+        {
+            return ServiceResult<int>.Failure("الشعبة غير موجودة لهذه المدرسة.");
+        }
+
         var teacher = await _db.Teachers.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.TeacherId && x.SchoolId == section.SchoolId && !x.IsDeleted, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.TeacherId
+                                      && x.SchoolId == request.SchoolId
+                                      && !x.IsDeleted, cancellationToken);
         if (teacher is null)
         {
             return ServiceResult<int>.Failure("المعلم غير موجود في هذه المدرسة.");
@@ -215,19 +306,38 @@ public class AttendanceAdminService : IAttendanceAdminService
             marks[studentId] = true;
         }
 
-        var session = await _db.AttendanceSessions
-            .Include(x => x.Records)
-            .FirstOrDefaultAsync(x =>
-                x.ClassSectionId == request.ClassSectionId
-                && x.TeacherId == request.TeacherId
-                && x.AttendanceDate == request.AttendanceDate
-                && !x.IsDeleted, cancellationToken);
+        AttendanceSession? session = null;
+        if (request.SessionId.HasValue)
+        {
+            session = await _db.AttendanceSessions
+                .Include(x => x.Records)
+                .FirstOrDefaultAsync(x => x.Id == request.SessionId.Value && !x.IsDeleted, cancellationToken);
+            if (session is null)
+            {
+                return ServiceResult<int>.Failure("سجل الحضور غير موجود.");
+            }
+
+            if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(session.SchoolId))
+            {
+                return ServiceResult<int>.Failure("غير مصرح بتعديل هذا السجل.");
+            }
+        }
+        else
+        {
+            session = await _db.AttendanceSessions
+                .Include(x => x.Records)
+                .FirstOrDefaultAsync(x =>
+                    x.ClassSectionId == request.ClassSectionId
+                    && x.TeacherId == request.TeacherId
+                    && x.AttendanceDate == request.AttendanceDate
+                    && !x.IsDeleted, cancellationToken);
+        }
 
         if (session is null)
         {
             session = new AttendanceSession
             {
-                SchoolId = section.SchoolId,
+                SchoolId = request.SchoolId,
                 ClassSectionId = request.ClassSectionId,
                 TeacherId = request.TeacherId,
                 AttendanceDate = request.AttendanceDate,
@@ -237,6 +347,10 @@ public class AttendanceAdminService : IAttendanceAdminService
         }
         else
         {
+            session.SchoolId = request.SchoolId;
+            session.ClassSectionId = request.ClassSectionId;
+            session.TeacherId = request.TeacherId;
+            session.AttendanceDate = request.AttendanceDate;
             session.Status = PublicationStatus.Published;
         }
 
@@ -248,7 +362,7 @@ public class AttendanceAdminService : IAttendanceAdminService
             {
                 session.Records.Add(new StudentAttendance
                 {
-                    SchoolId = section.SchoolId,
+                    SchoolId = request.SchoolId,
                     StudentId = studentId,
                     Status = present ? AttendanceStatus.Present : AttendanceStatus.Absent
                 });
@@ -256,7 +370,14 @@ public class AttendanceAdminService : IAttendanceAdminService
             else
             {
                 record.Status = present ? AttendanceStatus.Present : AttendanceStatus.Absent;
+                record.IsDeleted = false;
             }
+        }
+
+        foreach (var leftover in session.Records.Where(x => !x.IsDeleted && !rosterIds.Contains(x.StudentId)))
+        {
+            leftover.IsDeleted = true;
+            leftover.DeletedAt = DateTime.UtcNow;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -264,5 +385,42 @@ public class AttendanceAdminService : IAttendanceAdminService
             schoolId: session.SchoolId, cancellationToken: cancellationToken);
 
         return ServiceResult<int>.Success(session.Id);
+    }
+
+    public async Task<ServiceResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (!_currentUser.HasPermission(PermissionNames.AttendanceRecord)
+            && !_currentUser.HasPermission(PermissionNames.AttendanceEdit)
+            && !_currentUser.IsSuperAdmin)
+        {
+            return ServiceResult.Failure("ليس لديك صلاحية حذف الحضور.");
+        }
+
+        var session = await _db.AttendanceSessions
+            .Include(x => x.Records)
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        if (session is null)
+        {
+            return ServiceResult.Failure("سجل الحضور غير موجود.");
+        }
+
+        if (!_currentUser.IsSuperAdmin && !_currentUser.CanAccessSchool(session.SchoolId))
+        {
+            return ServiceResult.Failure("غير مصرح بحذف هذا السجل.");
+        }
+
+        session.IsDeleted = true;
+        session.DeletedAt = DateTime.UtcNow;
+        foreach (var record in session.Records.Where(x => !x.IsDeleted))
+        {
+            record.IsDeleted = true;
+            record.DeletedAt = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("Attendance.Delete", nameof(AttendanceSession), session.Id.ToString(),
+            schoolId: session.SchoolId, cancellationToken: cancellationToken);
+
+        return ServiceResult.Success();
     }
 }

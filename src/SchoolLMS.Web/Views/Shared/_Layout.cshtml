@@ -90,7 +90,7 @@
                     </div>
 
                     <div class="nav-group-label mt-3">الحضور</div>
-                    <a class="nav-link @(area == "Admin" && controller == "Attendance" ? "active" : "")" asp-area="Admin" asp-controller="Attendance" asp-action="Index">
+                    <a class="nav-link @(area == "Admin" && controller == "Attendance" && action != "Create" ? "active" : "")" asp-area="Admin" asp-controller="Attendance" asp-action="Index">
                         <i class="bi bi-calendar2-check"></i><span>حضور الصفوف</span>
                     </a>
                     <a class="nav-link sub @(area == "Admin" && controller == "Attendance" && action == "Create" ? "active" : "")" asp-area="Admin" asp-controller="Attendance" asp-action="Create">
