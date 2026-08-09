@@ -1,4 +1,22 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+/*
+  School LMS — SQL Server schema (EF Core idempotent script)
+  Generated from migration: 20260809105916_InitialCreate
+  Target: Microsoft SQL Server 2019+
+
+  Fixes included:
+    - All FKs use ON DELETE NO ACTION (avoids SQL Server multiple cascade path errors)
+    - Identity / RolePermission string keys limited to nvarchar(128) (avoids 900-byte index warnings)
+
+  Prerequisites:
+    1) If a previous failed run left a partial DB, DROP DATABASE SchoolLMS and recreate it
+    2) Run database/00-CreateDatabase.sql
+    3) Connect to [SchoolLMS] and run this script
+
+  After schema:
+    Start SchoolLMS.Web with Database:Provider=SqlServer so seed data is applied.
+*/
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
