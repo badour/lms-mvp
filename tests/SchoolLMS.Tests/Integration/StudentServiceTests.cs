@@ -43,7 +43,12 @@ public class StudentServiceTests
         audit.Setup(x => x.LogAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<int?>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var service = new StudentService(db, currentUser.Object, audit.Object, new CreateStudentRequestValidator());
+        var users = new Mock<IUserDirectory>();
+        users.Setup(x => x.CreateSchoolUserAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, Guid.NewGuid().ToString(), (IReadOnlyList<string>)Array.Empty<string>()));
+
+        var service = new StudentService(db, currentUser.Object, audit.Object, users.Object, new CreateStudentRequestValidator());
 
         var request = new CreateStudentRequest
         {
