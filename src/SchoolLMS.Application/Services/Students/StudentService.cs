@@ -15,17 +15,20 @@ public class StudentService : IStudentService
     private readonly IApplicationDbContext _db;
     private readonly ICurrentUserContext _currentUser;
     private readonly IAuditService _audit;
+    private readonly IUserDirectory _userDirectory;
     private readonly IValidator<CreateStudentRequest> _createValidator;
 
     public StudentService(
         IApplicationDbContext db,
         ICurrentUserContext currentUser,
         IAuditService audit,
+        IUserDirectory userDirectory,
         IValidator<CreateStudentRequest> createValidator)
     {
         _db = db;
         _currentUser = currentUser;
         _audit = audit;
+        _userDirectory = userDirectory;
         _createValidator = createValidator;
     }
 
@@ -364,6 +367,38 @@ public class StudentService : IStudentService
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(student.UserId))
+        {
+            var userName = $"student{student.Id}";
+            var created = await _userDirectory.CreateSchoolUserAsync(
+                userName,
+                $"{userName}@schoollms.local",
+                student.FullNameAr,
+                "Student@12345",
+                AppRoles.Student,
+                student.SchoolId,
+                cancellationToken);
+
+            if (!created.Succeeded)
+            {
+                var suffix = Guid.NewGuid().ToString("N")[..8];
+                created = await _userDirectory.CreateSchoolUserAsync(
+                    $"{userName}_{suffix}",
+                    $"student{student.Id}_{suffix}@schoollms.local",
+                    student.FullNameAr,
+                    "Student@12345",
+                    AppRoles.Student,
+                    student.SchoolId,
+                    cancellationToken);
+            }
+
+            if (created.Succeeded && !string.IsNullOrWhiteSpace(created.UserId))
+            {
+                student.UserId = created.UserId;
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+        }
 
         await _audit.LogAsync("Student.Create", nameof(Student), student.Id.ToString(),
             newValues: request, schoolId: student.SchoolId, cancellationToken: cancellationToken);

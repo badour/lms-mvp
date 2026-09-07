@@ -1,9 +1,11 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using SchoolLMS.Application.Authorization;
 using SchoolLMS.Application.Common;
 using SchoolLMS.Application.DTOs.Common;
 using SchoolLMS.Application.DTOs.Messages;
 using SchoolLMS.Domain.Entities.Communication;
+using SchoolLMS.Domain.Entities.People;
 using SchoolLMS.Domain.Enums;
 using SchoolLMS.Domain.Interfaces;
 
@@ -274,13 +276,13 @@ public class AdminMessagingService : IAdminMessagingService
                 return ServiceResult<int>.Failure("اختر الطالب المستلم.");
             }
 
-            // Prefer DB primary key; also accept الرقم (StudentNumber) from the Students grid first column.
-            var student = await _db.Students.AsNoTracking()
+            // Tracked so we can link a login account when UserId is missing.
+            var student = await _db.Students
                 .FirstOrDefaultAsync(x => x.Id == request.StudentId.Value && x.SchoolId == request.SchoolId && !x.IsDeleted, cancellationToken);
             if (student is null)
             {
                 var studentNumber = request.StudentId.Value.ToString();
-                student = await _db.Students.AsNoTracking()
+                student = await _db.Students
                     .FirstOrDefaultAsync(x => x.StudentNumber == studentNumber && x.SchoolId == request.SchoolId && !x.IsDeleted, cancellationToken);
             }
 
@@ -289,14 +291,15 @@ public class AdminMessagingService : IAdminMessagingService
                 return ServiceResult<int>.Failure("الطالب غير موجود في هذه المدرسة.");
             }
 
-            if (string.IsNullOrWhiteSpace(student.UserId))
+            var linkedUserId = await EnsureStudentUserIdAsync(student, cancellationToken);
+            if (string.IsNullOrWhiteSpace(linkedUserId))
             {
-                return ServiceResult<int>.Failure("حساب الطالب غير مرتبط بمستخدم.");
+                return ServiceResult<int>.Failure("تعذر إنشاء حساب دخول للطالب. حاول مرة أخرى أو اربط حساب المستخدم من بيانات الطالب.");
             }
 
             studentId = student.Id;
             targetDisplay = student.FullNameAr;
-            recipientIds.Add(student.UserId);
+            recipientIds.Add(linkedUserId);
         }
         else if (request.RecipientKind == StudentMessageTargetType.SchoolManagement)
         {
@@ -644,5 +647,45 @@ public class AdminMessagingService : IAdminMessagingService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Students created from Admin often have no Identity user. Create and link one so messaging works.
+    /// </summary>
+    private async Task<string?> EnsureStudentUserIdAsync(Student student, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(student.UserId))
+        {
+            return student.UserId;
+        }
+
+        async Task<(bool Succeeded, string? UserId, IReadOnlyList<string> Errors)> TryCreateAsync(string userName, string email)
+        {
+            return await _userDirectory.CreateSchoolUserAsync(
+                userName,
+                email,
+                student.FullNameAr,
+                "Student@12345",
+                AppRoles.Student,
+                student.SchoolId,
+                cancellationToken);
+        }
+
+        var userName = $"student{student.Id}";
+        var created = await TryCreateAsync(userName, $"{userName}@schoollms.local");
+        if (!created.Succeeded)
+        {
+            var suffix = Guid.NewGuid().ToString("N")[..8];
+            created = await TryCreateAsync($"{userName}_{suffix}", $"student{student.Id}_{suffix}@schoollms.local");
+        }
+
+        if (!created.Succeeded || string.IsNullOrWhiteSpace(created.UserId))
+        {
+            return null;
+        }
+
+        student.UserId = created.UserId;
+        await _db.SaveChangesAsync(cancellationToken);
+        return student.UserId;
     }
 }
