@@ -57,15 +57,17 @@ public class MessagingController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create(int? schoolId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(int? schoolId, StudentMessageTargetType? recipientKind, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "رسالة جديدة";
         var form = new AdminSendMessageForm
         {
             SchoolId = schoolId ?? 0,
-            RecipientKind = StudentMessageTargetType.Student
+            RecipientKind = recipientKind is StudentMessageTargetType.Student or StudentMessageTargetType.SchoolManagement
+                ? recipientKind.Value
+                : StudentMessageTargetType.Student
         };
-        await LoadCreateLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, cancellationToken);
+        await LoadCreateLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, form.StudentId, form.ManagementUserId, cancellationToken);
         return View(form);
     }
 
@@ -77,6 +79,9 @@ public class MessagingController : Controller
         var uploads = ToUploads(form.Attachments);
         try
         {
+            // Resolve numeric الرقم (Students grid first column) when the posted value is not a PK.
+            form.StudentId = await ResolveStudentIdAsync(form.SchoolId, form.StudentId, cancellationToken);
+
             var request = new AdminSendMessageRequest
             {
                 SchoolId = form.SchoolId,
@@ -96,7 +101,7 @@ public class MessagingController : Controller
                     ModelState.AddModelError(string.Empty, error);
                 }
 
-                await LoadCreateLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, cancellationToken);
+                await LoadCreateLookupsAsync(form.SchoolId > 0 ? form.SchoolId : null, form.StudentId, form.ManagementUserId, cancellationToken);
                 return View(form);
             }
 
@@ -170,7 +175,11 @@ public class MessagingController : Controller
         ViewBag.Schools = schools;
     }
 
-    private async Task LoadCreateLookupsAsync(int? schoolId, CancellationToken cancellationToken)
+    private async Task LoadCreateLookupsAsync(
+        int? schoolId,
+        int? selectedStudentId,
+        string? selectedManagementUserId,
+        CancellationToken cancellationToken)
     {
         await LoadSchoolFilterAsync(schoolId, cancellationToken);
         ViewBag.RecipientKinds = new SelectList(new[]
@@ -189,17 +198,47 @@ public class MessagingController : Controller
                     // Match Students Index first column: الرقم ثم الاسم
                     Name = string.IsNullOrWhiteSpace(x.Extra) ? x.Name : $"{x.Extra} — {x.Name}"
                 }),
-                "Id", "Name");
+                "Id",
+                "Name",
+                selectedStudentId?.ToString());
 
             ViewBag.ManagementAccounts = new SelectList(
                 await _messagingService.GetManagementAccountsAsync(schoolId.Value, cancellationToken),
-                "Id", "Name");
+                "Id",
+                "Name",
+                selectedManagementUserId);
         }
         else
         {
             ViewBag.Students = new SelectList(Enumerable.Empty<SelectListItem>());
             ViewBag.ManagementAccounts = new SelectList(Enumerable.Empty<SelectListItem>());
         }
+    }
+
+    /// <summary>
+    /// Accepts either Students.Id or numeric StudentNumber (الرقم from the Students grid).
+    /// </summary>
+    private async Task<int?> ResolveStudentIdAsync(int schoolId, int? postedValue, CancellationToken cancellationToken)
+    {
+        if (schoolId <= 0 || !postedValue.HasValue || postedValue.Value <= 0)
+        {
+            return postedValue;
+        }
+
+        var byId = await _db.Students.AsNoTracking()
+            .AnyAsync(x => x.Id == postedValue.Value && x.SchoolId == schoolId && !x.IsDeleted, cancellationToken);
+        if (byId)
+        {
+            return postedValue;
+        }
+
+        var number = postedValue.Value.ToString();
+        var byNumber = await _db.Students.AsNoTracking()
+            .Where(x => x.SchoolId == schoolId && x.StudentNumber == number && !x.IsDeleted)
+            .Select(x => (int?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return byNumber ?? postedValue;
     }
 
     private static List<FileUploadInput> ToUploads(List<IFormFile>? files)

@@ -137,9 +137,10 @@ public class AdminSendMessageRequestValidator : AbstractValidator<AdminSendMessa
 
         When(x => x.RecipientKind == StudentMessageTargetType.Student, () =>
         {
+            // Single rule so FluentValidation never falls back to English "'Student Id' must not be empty".
             RuleFor(x => x.StudentId)
-                .NotNull().WithMessage("اختر الطالب.")
-                .GreaterThan(0).WithMessage("اختر الطالب.");
+                .Must(id => id is > 0)
+                .WithMessage("اختر الطالب.");
         });
 
         When(x => x.RecipientKind == StudentMessageTargetType.SchoolManagement, () =>
