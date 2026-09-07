@@ -1,0 +1,45 @@
+@model SchoolLMS.Application.DTOs.Dashboards.AdminDashboardDto
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 page-title mb-0">لوحة تحكم الإدارة</h1>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">المدارس</div><div class="stat-value">@Model.TotalSchools</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">الطلاب</div><div class="stat-value">@Model.TotalStudents</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">المعلمون</div><div class="stat-value">@Model.TotalTeachers</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">المستخدمون النشطون</div><div class="stat-value">@Model.ActiveUsers</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">حضور اليوم</div><div class="stat-value">@Model.PresentToday</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">غياب اليوم</div><div class="stat-value">@Model.AbsentToday</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">الرسوم المحصلة</div><div class="stat-value">@Model.CollectedFees.ToString("N0")</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-3"><div class="stat-label">المتبقي</div><div class="stat-value">@Model.OutstandingFees.ToString("N0")</div></div></div>
+</div>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card stat-card p-3">
+            <h5 class="mb-3">الطلاب حسب المدرسة</h5>
+            <canvas id="studentsChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card stat-card p-3">
+            <h5 class="mb-3">أحدث الإعلانات</h5>
+            @foreach (var item in Model.Announcements)
+            {
+                <div class="border-bottom py-2">
+                    <div class="fw-semibold">@item.TitleAr</div>
+                    <div class="small text-muted">@item.PublishAt.ToLocalTime().ToString("yyyy/MM/dd") · @item.Priority</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+<script>
+const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StudentsPerSchool.Select(x => x.Label)));
+const values = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StudentsPerSchool.Select(x => x.Value)));
+new Chart(document.getElementById('studentsChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'الطلاب', data: values, backgroundColor: '#148f8a' }] },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+}

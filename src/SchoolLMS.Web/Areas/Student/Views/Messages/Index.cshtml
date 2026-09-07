@@ -1,0 +1,87 @@
+@model IReadOnlyList<SchoolLMS.Application.DTOs.Messages.StudentInboxMessageDto>
+@{
+    ViewData["Title"] = "صندوق الرسائل";
+}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">بوابة الطالب</div>
+        <h1 class="h3 page-title mb-1">صندوق الرسائل</h1>
+        <p class="text-muted mb-0">أرسل رسائل إلى إدارة النظام أو إدارة المدرسة أو المعلم، وتابع الوارد والردود</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Compose"><i class="bi bi-pencil-square"></i> رسالة جديدة</a>
+</div>
+
+@if (!Model.Any())
+{
+    <section class="section-card">
+        <h2>لا توجد رسائل بعد</h2>
+        <p class="text-muted mb-3">ابدأ بإرسال طلب أو شكوى أو استفسار إلى الجهة المناسبة.</p>
+        <a class="btn btn-outline-primary" asp-action="Compose">إرسال أول رسالة</a>
+    </section>
+}
+else
+{
+    <div class="card stat-card p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>الموضوع</th>
+                    <th>الجهة</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsIncoming && !item.IsRead ? "table-warning" : null)">
+                        <td class="fw-semibold">@item.Subject</td>
+                        <td>
+                            @if (item.IsIncoming)
+                            {
+                                <div>وارد</div>
+                                <div class="small text-muted">@(item.SenderDisplayName ?? "الإدارة")</div>
+                            }
+                            else
+                            {
+                                <div>@item.TargetTypeNameAr</div>
+                                @if (!string.IsNullOrWhiteSpace(item.TargetDisplayName))
+                                {
+                                    <div class="small text-muted">@item.TargetDisplayName</div>
+                                }
+                            }
+                        </td>
+                        <td>@item.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            @if (item.IsIncoming)
+                            {
+                                @if (item.IsRead)
+                                {
+                                    <span class="pill pill-green">مقروءة</span>
+                                }
+                                else
+                                {
+                                    <span class="pill pill-orange">جديدة</span>
+                                }
+                            }
+                            else if (item.HasReply)
+                            {
+                                <span class="pill pill-green">تم الرد</span>
+                            }
+                            else
+                            {
+                                <span class="pill pill-blue">مرسلة</span>
+                            }
+                        </td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id">عرض</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

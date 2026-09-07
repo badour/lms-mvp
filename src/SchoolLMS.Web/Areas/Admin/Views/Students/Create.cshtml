@@ -1,0 +1,22 @@
+@model SchoolLMS.Application.DTOs.Students.CreateStudentRequest
+@{
+    ViewData["Title"] = "إضافة طالب جديد";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+    <h1 class="h3 page-title mb-1">إضافة طالب جديد</h1>
+    <p class="text-muted mb-0">تسجيل بيانات الطالب وولي الأمر والعنوان والصحة والهوايات</p>
+</div>
+
+<form method="post" class="student-create-form" id="createStudentForm">
+    @Html.AntiForgeryToken()
+    <partial name="_StudentForm" model="Model" />
+    <div class="d-flex gap-2 justify-content-end">
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+        <button class="btn btn-primary px-4" type="submit">حفظ الطالب</button>
+    </div>
+</form>
+
+@section Scripts {
+<script src="~/js/student-form.js"></script>
+}

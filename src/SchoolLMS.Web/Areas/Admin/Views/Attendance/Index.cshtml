@@ -1,0 +1,132 @@
+@model IReadOnlyList<SchoolLMS.Application.DTOs.Attendance.AttendanceSessionListItemDto>
+@{
+    ViewData["Title"] = "حضور الصفوف";
+}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الحضور</div>
+        <h1 class="h3 page-title mb-1">حضور الصفوف</h1>
+        <p class="text-muted mb-0">جميع سجلات الحضور المضافة مع إمكانية التصفية والعرض والتعديل والحذف</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> تسجيل حضور</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<form method="get" class="card stat-card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">اسم المدرسة</label>
+            <select name="schoolId" class="form-select" asp-items="ViewBag.Schools" id="filterSchoolId">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">اسم المعلم</label>
+            <select name="teacherId" class="form-select" asp-items="ViewBag.Teachers" id="filterTeacherId">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">التاريخ</label>
+            <input type="date" name="attendanceDate" class="form-control" value="@ViewBag.AttendanceDate" />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button class="btn btn-outline-primary flex-grow-1" type="submit">تصفية</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">إعادة</a>
+        </div>
+    </div>
+</form>
+
+<div class="card stat-card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>التاريخ</th>
+                <th>المدرسة</th>
+                <th>المعلم</th>
+                <th>المرحلة</th>
+                <th>الشعبة</th>
+                <th>حاضر</th>
+                <th>غائب</th>
+                <th>الحالة</th>
+                <th style="width:160px">إجراءات</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">لا توجد سجلات حضور مطابقة.</td></tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.AttendanceDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.SchoolNameAr</td>
+                    <td>@item.TeacherNameAr</td>
+                    <td>@item.StageNameAr</td>
+                    <td>@item.SectionNameAr</td>
+                    <td><span class="pill pill-green">@item.PresentCount</span></td>
+                    <td><span class="pill pill-orange">@item.AbsentCount</span></td>
+                    <td>@(item.Status == SchoolLMS.Domain.Enums.PublicationStatus.Published ? "منشور" : "مسودة")</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" asp-action="Delete" asp-route-id="@item.Id" onsubmit="return confirm('حذف سجل الحضور هذا؟');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+  const school = document.getElementById('filterSchoolId');
+  const teacher = document.getElementById('filterTeacherId');
+  const selectedTeacher = '@(Context.Request.Query["teacherId"])';
+
+  async function reloadTeachers() {
+    const current = teacher.value || selectedTeacher;
+    teacher.innerHTML = '<option value="">الكل</option>';
+    if (!school.value) {
+      // keep all teachers from server-rendered list on full page; on school clear reload page teachers via empty school
+      return;
+    }
+    const res = await fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value));
+    if (!res.ok) return;
+    const items = await res.json();
+    for (const item of items) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      if (String(current) === String(item.id)) opt.selected = true;
+      teacher.appendChild(opt);
+    }
+  }
+
+  school.addEventListener('change', reloadTeachers);
+})();
+</script>
+}

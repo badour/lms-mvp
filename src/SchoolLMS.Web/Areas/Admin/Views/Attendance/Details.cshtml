@@ -1,0 +1,71 @@
+@model SchoolLMS.Application.DTOs.Attendance.AttendanceSessionDetailDto
+@{
+    ViewData["Title"] = "عرض سجل الحضور";
+}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الحضور</div>
+        <h1 class="h3 page-title mb-1">عرض سجل الحضور</h1>
+        <p class="text-muted mb-0">@Model.SchoolNameAr · @Model.AttendanceDate.ToString("yyyy-MM-dd")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> تعديل</a>
+        <a class="btn btn-outline-primary" asp-action="Index">رجوع للقائمة</a>
+    </div>
+</div>
+
+<section class="section-card mb-3">
+    <h2>بيانات السجل</h2>
+    <div class="row g-3">
+        <div class="col-md-4"><div class="text-muted small">المدرسة</div><div class="fw-semibold">@Model.SchoolNameAr</div></div>
+        <div class="col-md-4"><div class="text-muted small">المعلم</div><div class="fw-semibold">@Model.TeacherNameAr</div></div>
+        <div class="col-md-4"><div class="text-muted small">المرحلة</div><div class="fw-semibold">@Model.StageNameAr</div></div>
+        <div class="col-md-4"><div class="text-muted small">الشعبة</div><div class="fw-semibold">@Model.SectionNameAr</div></div>
+        <div class="col-md-4"><div class="text-muted small">التاريخ</div><div class="fw-semibold">@Model.AttendanceDate.ToString("yyyy-MM-dd")</div></div>
+        <div class="col-md-4">
+            <div class="text-muted small">الملخص</div>
+            <div>
+                <span class="pill pill-green">حاضر @Model.PresentCount</span>
+                <span class="pill pill-orange">غائب @Model.AbsentCount</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-card">
+    <h2>قائمة الطلاب</h2>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+            <tr>
+                <th>رقم الطالب</th>
+                <th>اسم الطالب</th>
+                <th>الحضور</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Students.Any())
+            {
+                <tr><td colspan="3" class="text-center text-muted py-4">لا يوجد طلاب في هذا السجل.</td></tr>
+            }
+            @foreach (var student in Model.Students)
+            {
+                <tr>
+                    <td>@student.StudentNumber</td>
+                    <td class="fw-semibold">@student.FullNameAr</td>
+                    <td>
+                        @if (student.IsPresent)
+                        {
+                            <span class="pill pill-green">حاضر (داخل)</span>
+                        }
+                        else
+                        {
+                            <span class="pill pill-orange">غائب (خارج)</span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

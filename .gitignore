@@ -1,0 +1,54 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.DotSettings.user
+
+## Build
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Secrets / local
+appsettings.*.local.json
+**/secrets.json
+.env
+.env.*
+
+## OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+## EF / tooling
+**/Migrations/*.Designer.cs.bak
+TestResults/
+coverage/
+
+## Uploads / runtime
+src/SchoolLMS.Web/wwwroot/uploads/
+App_Data/
+*.db
+*.db-shm
+*.db-wal

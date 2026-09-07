@@ -1,0 +1,162 @@
+@model SchoolLMS.Web.Models.CreateQimamCertificateForm
+@{
+    ViewData["Title"] = "إضافة شهادة قمم";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+    <h1 class="h3 page-title mb-1">إضافة شهادة تطبيق قمم</h1>
+    <p class="text-muted mb-0">اختر المدرسة أولاً لعرض الصفوف والطلبة المرتبطين بها، ثم أكمل بيانات الشهادة</p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="student-create-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>بيانات الشهادة</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+                <span asp-validation-for="SchoolId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="StudentId" class="form-label"></label>
+                <select asp-for="StudentId" class="form-select" asp-items="ViewBag.Students" id="StudentId">
+                    <option value="">اختر الطالب</option>
+                </select>
+                <span asp-validation-for="StudentId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CertificateName" class="form-label"></label>
+                <input asp-for="CertificateName" class="form-control" placeholder="مثال: شهادة مشاركة في مسابقة قمم" />
+                <span asp-validation-for="CertificateName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CertificateDate" class="form-label"></label>
+                <input asp-for="CertificateDate" class="form-control" type="date" />
+                <span asp-validation-for="CertificateDate" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="GradeLevelId" class="form-label"></label>
+                <select asp-for="GradeLevelId" class="form-select" asp-items="ViewBag.Grades" id="GradeLevelId">
+                    <option value="">اختر الصف / المرحلة</option>
+                </select>
+                <span asp-validation-for="GradeLevelId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionId">
+                    <option value="">اختر الشعبة (أ / ب / ت)</option>
+                </select>
+                <span asp-validation-for="ClassSectionId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Image" class="form-label"></label>
+                <input asp-for="Image" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,image/*" />
+                <div class="form-text">صورة الشهادة (حتى 5 ميجابايت)</div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Document" class="form-label"></label>
+                <input asp-for="Document" class="form-control" type="file" accept=".pdf,.doc,.docx,application/pdf" />
+                <div class="form-text">مستند الشهادة PDF أو Word (حتى 10 ميجابايت)</div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="ملاحظات قصيرة عن الشهادة"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="وصف تفصيلي للشهادة"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> حفظ الشهادة</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع للقائمة</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const schoolSelect = document.getElementById('SchoolId');
+  const studentSelect = document.getElementById('StudentId');
+  const gradeSelect = document.getElementById('GradeLevelId');
+  const sectionSelect = document.getElementById('ClassSectionId');
+  if (!schoolSelect || !studentSelect || !gradeSelect || !sectionSelect) return;
+
+  const studentsUrl = '@Url.Action("StudentsBySchool", "QimamCertificates", new { area = "Admin" })';
+  const gradesUrl = '@Url.Action("GradesBySchool", "QimamCertificates", new { area = "Admin" })';
+  const sectionsUrl = '@Url.Action("SectionsByGrade", "QimamCertificates", new { area = "Admin" })';
+
+  function clearSelect(select, placeholder) {
+    select.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = placeholder;
+    select.appendChild(opt);
+  }
+
+  function fillSelect(select, items, placeholder, selectedId) {
+    clearSelect(select, placeholder);
+    (items || []).forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      if (selectedId && String(selectedId) === String(item.id)) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+  }
+
+  async function loadStudents(schoolId, selectedStudentId) {
+    clearSelect(studentSelect, 'اختر الطالب');
+    if (!schoolId) return;
+
+    const res = await fetch(`${studentsUrl}?schoolId=${encodeURIComponent(schoolId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(studentSelect, items, 'اختر الطالب', selectedStudentId);
+  }
+
+  async function loadGrades(schoolId, selectedGradeId) {
+    clearSelect(gradeSelect, 'اختر الصف / المرحلة');
+    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
+    if (!schoolId) return;
+
+    const res = await fetch(`${gradesUrl}?schoolId=${encodeURIComponent(schoolId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(gradeSelect, items, 'اختر الصف / المرحلة', selectedGradeId);
+  }
+
+  async function loadSections(gradeLevelId, selectedSectionId) {
+    clearSelect(sectionSelect, 'اختر الشعبة (أ / ب / ت)');
+    if (!gradeLevelId) return;
+
+    const res = await fetch(`${sectionsUrl}?gradeLevelId=${encodeURIComponent(gradeLevelId)}`);
+    if (!res.ok) return;
+    const items = await res.json();
+    fillSelect(sectionSelect, items, 'اختر الشعبة (أ / ب / ت)', selectedSectionId);
+  }
+
+  async function onSchoolChanged() {
+    const schoolId = schoolSelect.value;
+    await Promise.all([
+      loadStudents(schoolId),
+      loadGrades(schoolId)
+    ]);
+  }
+
+  schoolSelect.addEventListener('change', onSchoolChanged);
+  gradeSelect.addEventListener('change', () => loadSections(gradeSelect.value));
+})();
+</script>
+}

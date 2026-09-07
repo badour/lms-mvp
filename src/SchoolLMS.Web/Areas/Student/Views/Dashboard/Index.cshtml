@@ -1,0 +1,111 @@
+@model SchoolLMS.Application.DTOs.Dashboards.StudentDashboardDto?
+@if (Model is null)
+{
+    <div class="alert alert-info">لا توجد بيانات طالب مرتبطة.</div>
+}
+else
+{
+    <div class="mb-4">
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الرئيسية</div>
+        <h1 class="h3 page-title mb-1">مرحباً @Model.StudentNameAr</h1>
+        <p class="text-muted mb-0">@Model.SchoolNameAr · @Model.GradeNameAr / @Model.SectionNameAr · @Model.StudentNumber</p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <a class="card stat-card p-3 text-decoration-none d-block" asp-area="Student" asp-controller="Homework" asp-action="Index">
+                <div class="stat-label">واجبات معلقة</div>
+                <div class="stat-value">@Model.PendingHomework</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card stat-card p-3 text-decoration-none d-block" asp-area="Student" asp-controller="Exams" asp-action="Index">
+                <div class="stat-label">امتحانات قادمة</div>
+                <div class="stat-value">@Model.UpcomingExams.Count</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card stat-card p-3 text-decoration-none d-block" asp-area="Student" asp-controller="Attendance" asp-action="Index">
+                <div class="stat-label">نسبة الحضور</div>
+                <div class="stat-value">@Model.AttendancePercent%</div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card stat-card p-3 text-decoration-none d-block" asp-area="Student" asp-controller="Badges" asp-action="Index">
+                <div class="stat-label">واجبات مسلّمة</div>
+                <div class="stat-value">@Model.SubmittedHomework</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <section class="section-card">
+                <h2>إعلانات وفعاليات</h2>
+                @if (!Model.Announcements.Any())
+                {
+                    <div class="text-muted">لا توجد إعلانات حالياً.</div>
+                }
+                @foreach (var a in Model.Announcements)
+                {
+                    <div class="mini-card">
+                        <div>
+                            <strong>@a.TitleAr</strong>
+                            <div class="small text-muted">@a.PublishAt.ToLocalTime().ToString("yyyy/MM/dd")</div>
+                        </div>
+                        <span class="pill pill-orange">@a.Priority</span>
+                    </div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-4">
+            <section class="section-card">
+                <h2>أقسام الطالب</h2>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Homework" asp-action="Index"><div><strong>الواجبات البيتية</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Exams" asp-action="Index"><div><strong>الامتحانات</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Attendance" asp-action="Index"><div><strong>الحضور والغياب</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Subjects" asp-action="Index"><div><strong>المواد الدراسية</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Classroom" asp-action="Index"><div><strong>القاعة الإلكترونية</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Schedule" asp-action="Index"><div><strong>الجدول الأسبوعي</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Profile" asp-action="Index"><div><strong>ملف الطالب</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Payment" asp-action="Index"><div><strong>الدفع الإلكتروني</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Messages" asp-action="Index"><div><strong>صندوق الرسائل</strong></div><i class="bi bi-arrow-left"></i></a>
+                <a class="mini-card text-decoration-none text-dark" asp-controller="Badges" asp-action="Index"><div><strong>الأوسمة والإنجازات</strong></div><i class="bi bi-arrow-left"></i></a>
+            </section>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <section class="section-card">
+                <h2>الامتحانات القادمة</h2>
+                @foreach (var e in Model.UpcomingExams)
+                {
+                    <div class="mini-card">
+                        <div>
+                            <strong>@e.Title</strong>
+                            <div class="small text-muted">@e.Subtitle</div>
+                            @if (e.Date.HasValue)
+                            {
+                                <div class="small text-muted">@e.Date.Value.ToString("yyyy/MM/dd HH:mm")</div>
+                            }
+                        </div>
+                        <span class="pill pill-red">قادم</span>
+                    </div>
+                }
+                @if (!Model.UpcomingExams.Any())
+                {
+                    <div class="text-muted">لا توجد امتحانات قادمة.</div>
+                }
+            </section>
+        </div>
+        <div class="col-md-6">
+            <section class="section-card">
+                <h2>ملخص الحضور</h2>
+                <div class="mini-card"><div><strong>حضور</strong></div><span class="pill pill-green">@Model.DaysPresent</span></div>
+                <div class="mini-card"><div><strong>غياب</strong></div><span class="pill pill-red">@Model.DaysAbsent</span></div>
+                <div class="mini-card"><div><strong>تأخير</strong></div><span class="pill pill-orange">@Model.DaysLate</span></div>
+            </section>
+        </div>
+    </div>
+}

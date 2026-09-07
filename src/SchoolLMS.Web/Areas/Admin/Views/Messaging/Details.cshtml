@@ -1,0 +1,147 @@
+@model SchoolLMS.Application.DTOs.Messages.AdminMessageDetailsDto
+@{
+    ViewData["Title"] = "عرض الرسالة";
+    var replyForm = ViewBag.ReplyForm as SchoolLMS.Web.Models.AdminReplyMessageForm
+        ?? new SchoolLMS.Web.Models.AdminReplyMessageForm { ParentMessageId = Model.Id };
+}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">التواصل والمراسلات</div>
+        <h1 class="h3 page-title mb-1">@Model.Subject</h1>
+        <p class="text-muted mb-0">
+            @Model.SchoolNameAr · @Model.SourceLabelAr · @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+        </p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <section class="section-card mb-3">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-3 flex-wrap">
+                <div>
+                    <div class="small text-muted">المرسل</div>
+                    <div class="fw-semibold">@Model.SenderDisplayName</div>
+                </div>
+                <div>
+                    <div class="small text-muted">المستلم</div>
+                    <div class="fw-semibold">@Model.TargetDisplayName</div>
+                </div>
+                <div>
+                    <div class="small text-muted">حالة القراءة</div>
+                    @if (Model.IsReadByRecipient)
+                    {
+                        <span class="pill pill-green">مقروءة @(Model.RecipientReadAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))</span>
+                    }
+                    else
+                    {
+                        <span class="pill pill-orange">غير مقروءة</span>
+                    }
+                </div>
+            </div>
+            <h2>نص الرسالة</h2>
+            <p class="mb-0 inbox-body">@Model.Body</p>
+        </section>
+
+        @if (Model.Attachments.Any())
+        {
+            <section class="section-card mb-3">
+                <h2>المرفقات</h2>
+                <div class="list-group list-group-flush">
+                    @foreach (var file in Model.Attachments)
+                    {
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <div class="fw-semibold">@file.Title</div>
+                                <div class="small text-muted">@file.OriginalFileName</div>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@Url.Action("MessageAttachment", "Files", new { area = "", id = file.Id })">
+                                <i class="bi bi-download"></i> تحميل
+                            </a>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.Thread.Any() || !string.IsNullOrWhiteSpace(Model.LegacyReplyBody))
+        {
+            <section class="section-card mb-3">
+                <h2>المحادثة</h2>
+                @if (!string.IsNullOrWhiteSpace(Model.LegacyReplyBody) && !Model.Thread.Any())
+                {
+                    <div class="message-thread-item mb-3">
+                        <div class="small text-muted mb-1">رد · @(Model.LegacyRepliedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))</div>
+                        <p class="mb-0 inbox-body">@Model.LegacyReplyBody</p>
+                    </div>
+                }
+                @foreach (var item in Model.Thread)
+                {
+                    <div class="message-thread-item mb-3 @(item.IsFromCurrentUser ? "message-thread-item--mine" : "")">
+                        <div class="d-flex justify-content-between gap-2 mb-1">
+                            <div class="fw-semibold">@item.SenderDisplayName</div>
+                            <div class="small text-muted">@item.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                        </div>
+                        <p class="mb-2 inbox-body">@item.Body</p>
+                        @if (item.Attachments.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var file in item.Attachments)
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="@Url.Action("MessageAttachment", "Files", new { area = "", id = file.Id })">
+                                        <i class="bi bi-paperclip"></i> @file.OriginalFileName
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
+        <section class="section-card mb-3">
+            <h2>رد جديد</h2>
+            <form method="post" asp-action="Reply" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ParentMessageId" value="@Model.Id" />
+                <div class="mb-3">
+                    <label class="form-label" for="ReplyBody">نص الرد</label>
+                    <textarea class="form-control" id="ReplyBody" name="Body" rows="5" required maxlength="4000">@replyForm.Body</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="ReplyAttachments">مرفقات</label>
+                    <input class="form-control" id="ReplyAttachments" name="Attachments" type="file" multiple
+                           accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.xls,.xlsx" />
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-reply"></i> إرسال الرد</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-lg-4">
+        <section class="section-card">
+            <h2>ملخص</h2>
+            <div class="mb-3">
+                <div class="small text-muted">المدرسة</div>
+                <div class="fw-semibold">@Model.SchoolNameAr</div>
+            </div>
+            <div class="mb-3">
+                <div class="small text-muted">التصنيف</div>
+                <div class="fw-semibold">@Model.SourceLabelAr</div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.StudentNameAr))
+            {
+                <div class="mb-3">
+                    <div class="small text-muted">الطالب المرتبط</div>
+                    <div class="fw-semibold">@Model.StudentNameAr</div>
+                </div>
+            }
+            <div>
+                <div class="small text-muted">عدد الردود</div>
+                <div class="fw-semibold">@Model.Thread.Count</div>
+            </div>
+        </section>
+    </div>
+</div>

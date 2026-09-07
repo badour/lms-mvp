@@ -1,0 +1,24 @@
+@model SchoolLMS.Application.DTOs.Dashboards.ParentDashboardDto?
+@if (Model is null)
+{
+    <div class="alert alert-info">لا توجد بيانات ولي أمر مرتبطة.</div>
+}
+else
+{
+    <h1 class="h3 page-title mb-3">لوحة ولي الأمر</h1>
+    <div class="mb-3">
+    @foreach (var child in Model.Children)
+    {
+        <a class="btn btn-sm @(Model.SelectedChild?.StudentId == child.StudentId ? "btn-primary" : "btn-outline-primary")" asp-action="Index" asp-route-childId="@child.StudentId">@child.FullNameAr</a>
+    }
+    </div>
+    @if (Model.SelectedChild is not null)
+    {
+        <div class="row g-3 mb-3">
+            <div class="col-md-4"><div class="card stat-card p-3"><div class="stat-label">الطالب</div><div class="stat-value fs-5">@Model.SelectedChild.FullNameAr</div><div class="small">@Model.SelectedChild.GradeNameAr</div></div></div>
+            <div class="col-md-4"><div class="card stat-card p-3"><div class="stat-label">واجبات معلقة</div><div class="stat-value">@Model.SelectedChild.PendingHomework</div></div></div>
+            <div class="col-md-4"><div class="card stat-card p-3"><div class="stat-label">الرصيد المتبقي</div><div class="stat-value">@Model.FeeBalance.ToString("N0")</div></div></div>
+        </div>
+    }
+    <div class="card stat-card p-3"><h5>الإعلانات</h5>@foreach (var a in Model.Announcements){<div class="py-2 border-bottom">@a.TitleAr</div>}</div>
+}

@@ -1,0 +1,118 @@
+@model SchoolLMS.Application.Common.PagedResult<SchoolLMS.Application.DTOs.Lessons.LessonListItemDto>
+@{
+    ViewData["Title"] = "الدروس الإلكترونية";
+}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">التعليم الإلكتروني</div>
+        <h1 class="h3 page-title mb-1">الدروس الإلكترونية</h1>
+        <p class="text-muted mb-0">إدارة دروس الفيديو والمواد التعليمية والصفوف المشمولة</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> إضافة درس جديد</a>
+</div>
+
+<form method="get" class="card stat-card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">بحث</label>
+            <input name="Search" value="@Context.Request.Query["Search"]" class="form-control" placeholder="اسم الدرس / الوصف" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">المدرسة</label>
+            <select name="SchoolId" class="form-select" asp-items="ViewBag.Schools">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">الحالة</label>
+            <select name="Status" class="form-select" asp-items="ViewBag.Statuses">
+                <option value="">الكل</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-primary w-100" type="submit">تصفية</button>
+        </div>
+    </div>
+</form>
+
+<div class="card stat-card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+                <th>اسم الدرس</th>
+                <th>المدرسة</th>
+                <th>المعلم</th>
+                <th>الشعب</th>
+                <th>التاريخ والوقت</th>
+                <th>الحالة</th>
+                <th>منشور</th>
+                <th>المحتوى</th>
+                <th style="width:150px">إجراءات</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">لا توجد دروس بعد. ابدأ بإضافة درس جديد.</td>
+                </tr>
+            }
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@item.TitleAr</div>
+                        <div class="small text-muted">@item.SubjectNameAr</div>
+                    </td>
+                    <td>@item.SchoolNameAr</td>
+                    <td>@(item.TeacherNameAr ?? "—")</td>
+                    <td>@item.IncludedClassesText</td>
+                    <td>@(item.LessonDateTime?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                    <td>
+                        @switch (item.Status)
+                        {
+                            case SchoolLMS.Domain.Enums.PublicationStatus.Published:
+                                <span class="pill pill-green">منشور</span>
+                                break;
+                            case SchoolLMS.Domain.Enums.PublicationStatus.Archived:
+                                <span class="pill pill-orange">مؤرشف</span>
+                                break;
+                            case SchoolLMS.Domain.Enums.PublicationStatus.Cancelled:
+                                <span class="pill pill-red">ملغى</span>
+                                break;
+                            default:
+                                <span class="pill pill-blue">مسودة</span>
+                                break;
+                        }
+                    </td>
+                    <td>@(item.IsPosted ? "نعم" : "لا")</td>
+                    <td>
+                        <span class="small">@(item.HasVideo ? "فيديو" : "بدون فيديو")</span>
+                        <span class="small text-muted">· @item.MaterialCount ملفات</span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="Delete" method="post" class="d-inline"
+                                  onsubmit="return confirm('حذف هذا الدرس مع الفيديو وجميع المواد من قاعدة البيانات والمجلدات؟');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="small text-muted">صفحة @Model.Page من @Model.TotalPages · الإجمالي @Model.TotalCount</div>
+</div>

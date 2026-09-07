@@ -1,0 +1,115 @@
+@model SchoolLMS.Web.Models.ExamCreateForm
+@{
+    ViewData["Title"] = "إنشاء امتحان";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
+    <h1 class="h3 page-title mb-1">إنشاء امتحان</h1>
+    <p class="text-muted mb-0">اختر المدرسة ثم المعلم واسم الدرس والشعبة، وحدد تاريخ ووقت الامتحان. عند التفعيل يظهر للطلاب والمعلم المرتبطين.</p>
+</div>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>بيانات الامتحان</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+                <span asp-validation-for="SchoolId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="TeacherId" class="form-label"></label>
+                <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.Teachers" id="TeacherId">
+                    <option value="">اختر المعلم</option>
+                </select>
+                <span asp-validation-for="TeacherId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="SubjectId" class="form-label"></label>
+                <select asp-for="SubjectId" class="form-select" asp-items="ViewBag.Subjects" id="SubjectId">
+                    <option value="">اختر اسم الدرس</option>
+                </select>
+                <span asp-validation-for="SubjectId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" asp-items="ViewBag.Sections" id="ClassSectionId">
+                    <option value="">اختر الشعبة</option>
+                </select>
+                <span asp-validation-for="ClassSectionId" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ExamDateTime" class="form-label"></label>
+                <input asp-for="ExamDateTime" class="form-control" type="datetime-local" />
+                <span asp-validation-for="ExamDateTime" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Status" class="form-label"></label>
+                <select asp-for="Status" class="form-select">
+                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Published)">منشور (مفعّل)</option>
+                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Draft)">مسودة</option>
+                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Archived)">مؤرشف</option>
+                    <option value="@((int)SchoolLMS.Domain.Enums.PublicationStatus.Cancelled)">ملغى</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="ملاحظات الامتحان"></textarea>
+            </div>
+            <div class="col-12">
+                <label asp-for="Instructions" class="form-label"></label>
+                <textarea asp-for="Instructions" class="form-control" rows="3" placeholder="تعليمات الامتحان للطلاب (اختياري)"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> حفظ الامتحان</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const school = document.getElementById('SchoolId');
+  const subject = document.getElementById('SubjectId');
+  const teacher = document.getElementById('TeacherId');
+  const section = document.getElementById('ClassSectionId');
+
+  function fill(select, items, placeholder) {
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    for (const item of items || []) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      select.appendChild(opt);
+    }
+  }
+
+  async function onSchoolChanged() {
+    fill(subject, [], 'اختر اسم الدرس');
+    fill(teacher, [], 'اختر المعلم');
+    fill(section, [], 'اختر الشعبة');
+    if (!school.value) return;
+
+    const [subjectsRes, teachersRes, sectionsRes] = await Promise.all([
+      fetch('@Url.Action("Subjects")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value)),
+      fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value))
+    ]);
+
+    if (subjectsRes.ok) fill(subject, await subjectsRes.json(), 'اختر اسم الدرس');
+    if (teachersRes.ok) fill(teacher, await teachersRes.json(), 'اختر المعلم');
+    if (sectionsRes.ok) fill(section, await sectionsRes.json(), 'اختر الشعبة');
+  }
+
+  school.addEventListener('change', onSchoolChanged);
+})();
+</script>
+}

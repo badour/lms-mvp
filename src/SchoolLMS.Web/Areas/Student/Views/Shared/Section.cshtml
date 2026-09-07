@@ -1,0 +1,49 @@
+@{
+    var title = ViewData["Title"]?.ToString() ?? "";
+    var description = ViewData["Description"]?.ToString() ?? "";
+    var eyebrow = ViewData["Eyebrow"]?.ToString() ?? "بوابة الطالب";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">@eyebrow</div>
+    <h1 class="h3 page-title mb-1">@title</h1>
+    <p class="text-muted mb-0">@description</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <section class="section-card">
+            <h2>ملخص سريع</h2>
+            <div class="mini-card">
+                <div>
+                    <strong>القسم جاهز للربط بالبيانات</strong>
+                    <div class="small text-muted">سيتم عرض السجلات الحية من قاعدة البيانات عبر خدمات التطبيق.</div>
+                </div>
+                <span class="pill pill-blue">قريباً</span>
+            </div>
+            <div class="mini-card">
+                <div>
+                    <strong>واجهة عربية واتجاه يمين-يسار</strong>
+                    <div class="small text-muted">تم تصميم الصفحة ضمن بوابة الطالب بنفس هيكل المنصات المدرسية.</div>
+                </div>
+                <span class="pill pill-green">RTL</span>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-4">
+        <section class="section-card">
+            <h2>روابط سريعة</h2>
+            <a class="mini-card text-decoration-none text-dark" asp-area="Student" asp-controller="Dashboard" asp-action="Index">
+                <div><strong>الرئيسية</strong><div class="small text-muted">العودة للوحة الطالب</div></div>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <a class="mini-card text-decoration-none text-dark" asp-area="Student" asp-controller="Homework" asp-action="Index">
+                <div><strong>الواجبات البيتية</strong><div class="small text-muted">متابعة التسليم</div></div>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <a class="mini-card text-decoration-none text-dark" asp-area="Student" asp-controller="Exams" asp-action="Index">
+                <div><strong>الامتحانات</strong><div class="small text-muted">الجداول والنتائج</div></div>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </section>
+    </div>
+</div>

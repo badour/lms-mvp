@@ -1,0 +1,23 @@
+@model SchoolLMS.Application.DTOs.Students.UpdateStudentRequest
+@{
+    ViewData["Title"] = "تعديل طالب";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+    <h1 class="h3 page-title mb-1">تعديل طالب</h1>
+    <p class="text-muted mb-0">@Model.FullNameAr · @Model.StudentNumber</p>
+</div>
+
+<form method="post" class="student-create-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_StudentForm" model="Model" />
+    <div class="d-flex gap-2 justify-content-end">
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">رجوع</a>
+        <button class="btn btn-primary px-4" type="submit">حفظ التعديلات</button>
+    </div>
+</form>
+
+@section Scripts {
+<script src="~/js/student-form.js"></script>
+}

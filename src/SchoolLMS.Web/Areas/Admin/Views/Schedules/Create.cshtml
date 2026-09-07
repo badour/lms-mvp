@@ -1,0 +1,168 @@
+@model SchoolLMS.Application.DTOs.Schedules.SaveScheduleRequest
+@{
+    ViewData["Title"] = "إضافة جدول مدرسي";
+    ViewBag.DayNames = SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">الروتينات</div>
+    <h1 class="h3 page-title mb-1">إضافة جدول مدرسي</h1>
+    <p class="text-muted mb-0">7 أيام × 8 حصص — لكل حصة: الفترة الزمنية واسم الدرس واسم المعلم</p>
+</div>
+
+<form method="post" id="scheduleForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <section class="section-card mb-3">
+        <h2>اختيار الصف</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="SchoolId" class="form-label"></label>
+                <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                    <option value="">اختر المدرسة</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="AcademicStageId" class="form-label"></label>
+                <select asp-for="AcademicStageId" class="form-select" id="AcademicStageId">
+                    <option value="">اختر المرحلة</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="ClassSectionId" class="form-label"></label>
+                <select asp-for="ClassSectionId" class="form-select" id="ClassSectionId">
+                    <option value="">اختر الشعبة</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card mb-3">
+        <h2>جدول الأسبوع</h2>
+        <div id="gridWrap">
+            <partial name="_ScheduleGrid" model="null" />
+        </div>
+    </section>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> حفظ الجدول</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const school = document.getElementById('SchoolId');
+  const stage = document.getElementById('AcademicStageId');
+  const section = document.getElementById('ClassSectionId');
+
+  function fill(select, items, placeholder) {
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    for (const item of items) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      select.appendChild(opt);
+    }
+  }
+
+  function fillTeacherSelects(teachers) {
+    document.querySelectorAll('.schedule-teacher-select').forEach((select) => {
+      const current = select.value;
+      select.innerHTML = '<option value="">اسم المعلم</option>';
+      (teachers || []).forEach((t) => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        if (String(current) === String(t.id)) opt.selected = true;
+        select.appendChild(opt);
+      });
+    });
+  }
+
+  function fillLessonSelects(lessons) {
+    document.querySelectorAll('.schedule-lesson-select').forEach((select) => {
+      const current = select.value;
+      select.innerHTML = '<option value="">اسم الدرس</option>';
+      (lessons || []).forEach((l) => {
+        const opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = l.name;
+        if (String(current) === String(l.id)) opt.selected = true;
+        select.appendChild(opt);
+      });
+      if (current && ![...(select.options)].some(o => o.value === current)) {
+        const opt = document.createElement('option');
+        opt.value = current;
+        opt.textContent = current;
+        opt.selected = true;
+        select.appendChild(opt);
+      }
+    });
+  }
+
+  async function loadTeachers() {
+    if (!school.value) {
+      fillTeacherSelects([]);
+      return;
+    }
+    const res = await fetch('@Url.Action("Teachers")?schoolId=' + encodeURIComponent(school.value));
+    if (!res.ok) return;
+    fillTeacherSelects(await res.json());
+  }
+
+  async function loadLessons() {
+    if (!school.value) {
+      fillLessonSelects([]);
+      return;
+    }
+    let url = '@Url.Action("Lessons")?schoolId=' + encodeURIComponent(school.value);
+    if (section.value) url += '&classSectionId=' + encodeURIComponent(section.value);
+    const res = await fetch(url);
+    if (!res.ok) return;
+    fillLessonSelects(await res.json());
+  }
+
+  async function loadPeriods() {
+    if (!school.value) return;
+    const res = await fetch('@Url.Action("Periods")?schoolId=' + encodeURIComponent(school.value));
+    if (!res.ok) return;
+    const periods = await res.json();
+    const headers = document.querySelectorAll('#gridWrap thead th');
+    periods.forEach((p, i) => {
+      const th = headers[i + 1];
+      if (!th) return;
+      th.innerHTML = `<div>${p.name}</div><div class="small text-muted fw-normal">${p.timeSlot || ''}</div>`;
+    });
+    document.querySelectorAll('#gridWrap .schedule-time-slot').forEach((el, idx) => {
+      const period = periods[idx % 8];
+      if (period) el.textContent = period.timeSlot || 'الفترة الزمنية';
+    });
+  }
+
+  async function loadStages() {
+    stage.innerHTML = '<option value="">اختر المرحلة</option>';
+    section.innerHTML = '<option value="">اختر الشعبة</option>';
+    if (!school.value) return;
+    const res = await fetch('@Url.Action("Stages")?schoolId=' + encodeURIComponent(school.value));
+    if (!res.ok) return;
+    fill(stage, await res.json(), 'اختر المرحلة');
+    await Promise.all([loadTeachers(), loadPeriods(), loadLessons()]);
+  }
+
+  async function loadSections() {
+    section.innerHTML = '<option value="">اختر الشعبة</option>';
+    if (!school.value || !stage.value) return;
+    const res = await fetch('@Url.Action("Sections")?schoolId=' + encodeURIComponent(school.value) + '&stageId=' + encodeURIComponent(stage.value));
+    if (!res.ok) return;
+    fill(section, await res.json(), 'اختر الشعبة');
+    await loadLessons();
+  }
+
+  school.addEventListener('change', loadStages);
+  stage.addEventListener('change', loadSections);
+  section.addEventListener('change', loadLessons);
+})();
+</script>
+}

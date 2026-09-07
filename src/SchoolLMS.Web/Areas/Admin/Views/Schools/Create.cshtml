@@ -1,0 +1,22 @@
+@model SchoolLMS.Application.DTOs.Schools.CreateSchoolRequest
+@{
+    ViewData["Title"] = "إضافة مدرسة جديدة";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">المدارس</div>
+    <h1 class="h3 page-title mb-1">إضافة مدرسة جديدة</h1>
+    <p class="text-muted mb-0">بيانات المدرسة مع قائمة المراحل والصفوف وحالة كل مرحلة</p>
+</div>
+
+<form method="post" id="schoolForm">
+    @Html.AntiForgeryToken()
+    <partial name="_SchoolForm" model="Model" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> حفظ</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+<script src="~/js/school-stages.js"></script>
+}

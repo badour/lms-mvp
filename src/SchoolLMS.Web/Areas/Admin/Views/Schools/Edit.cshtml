@@ -1,0 +1,23 @@
+@model SchoolLMS.Application.DTOs.Schools.UpdateSchoolRequest
+@{
+    ViewData["Title"] = "تعديل مدرسة";
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">المدارس</div>
+    <h1 class="h3 page-title mb-1">تعديل مدرسة</h1>
+    <p class="text-muted mb-0">@Model.NameAr</p>
+</div>
+
+<form method="post" id="schoolForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_SchoolForm" model="Model" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> حفظ التعديلات</button>
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">رجوع</a>
+    </div>
+</form>
+
+@section Scripts {
+<script src="~/js/school-stages.js"></script>
+}

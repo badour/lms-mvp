@@ -1,0 +1,90 @@
+@model SchoolLMS.Application.DTOs.Schedules.ScheduleDetailsDto?
+@{
+    var dayNames = ViewBag.DayNames as string[] ?? SchoolLMS.Application.Services.Schedules.ScheduleAdminService.DayNamesAr;
+    var periods = Model?.Periods?.Count == 8
+        ? Model.Periods
+        : Enumerable.Range(1, 8).Select(i => new SchoolLMS.Application.DTOs.Schedules.SchedulePeriodDto
+        {
+            SortOrder = i,
+            NameAr = $"الحصة {i}",
+            TimeSlot = ""
+        }).ToList();
+    var cellMap = (Model?.Cells ?? [])
+        .GroupBy(c => (c.DayOfWeek, c.PeriodSortOrder))
+        .ToDictionary(g => g.Key, g => g.First());
+    var teachers = (ViewBag.Teachers as IEnumerable<SelectListItem>)?.ToList() ?? [];
+    var lessons = (ViewBag.Lessons as IEnumerable<SelectListItem>)?.ToList() ?? [];
+    var idx = 0;
+}
+<div class="table-responsive">
+    <table class="table table-bordered align-middle schedule-grid text-center">
+        <thead>
+        <tr>
+            <th style="min-width:90px">اليوم / الحصة</th>
+            @foreach (var period in periods)
+            {
+                <th style="min-width:140px">
+                    <div>@period.NameAr</div>
+                    @if (!string.IsNullOrWhiteSpace(period.TimeSlot))
+                    {
+                        <div class="small text-muted fw-normal">@period.TimeSlot</div>
+                    }
+                </th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        @for (byte day = 0; day < 7; day++)
+        {
+            <tr>
+                <th class="text-start">@dayNames[day]</th>
+                @for (var p = 1; p <= 8; p++)
+                {
+                    cellMap.TryGetValue((day, p), out var cell);
+                    var lesson = cell?.LessonName ?? cell?.EntryText ?? string.Empty;
+                    var teacherId = cell?.TeacherId?.ToString() ?? string.Empty;
+                    var timeSlot = periods.FirstOrDefault(x => x.SortOrder == p)?.TimeSlot ?? cell?.TimeSlot ?? string.Empty;
+                    <td class="schedule-cell">
+                        <input type="hidden" name="Cells[@idx].DayOfWeek" value="@day" />
+                        <input type="hidden" name="Cells[@idx].PeriodSortOrder" value="@p" />
+                        <div class="small text-muted mb-1 schedule-time-slot">@(string.IsNullOrWhiteSpace(timeSlot) ? "الفترة الزمنية" : timeSlot)</div>
+                        <select class="form-select form-select-sm mb-1 schedule-lesson-select" name="Cells[@idx].LessonName">
+                            <option value="">اسم الدرس</option>
+                            @foreach (var l in lessons)
+                            {
+                                if (!string.IsNullOrWhiteSpace(lesson) && string.Equals(lesson, l.Value, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <option value="@l.Value" selected>@l.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@l.Value">@l.Text</option>
+                                }
+                            }
+                            @if (!string.IsNullOrWhiteSpace(lesson) && lessons.All(x => !string.Equals(x.Value, lesson, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                <option value="@lesson" selected>@lesson</option>
+                            }
+                        </select>
+                        <select class="form-select form-select-sm schedule-teacher-select" name="Cells[@idx].TeacherId">
+                            <option value="">اسم المعلم</option>
+                            @foreach (var t in teachers)
+                            {
+                                if (teacherId == t.Value)
+                                {
+                                    <option value="@t.Value" selected>@t.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@t.Value">@t.Text</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    idx++;
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

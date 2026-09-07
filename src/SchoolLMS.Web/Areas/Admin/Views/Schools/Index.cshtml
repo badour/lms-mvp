@@ -1,0 +1,73 @@
+@model IReadOnlyList<SchoolLMS.Application.DTOs.Schools.SchoolListItemDto>
+@{
+    ViewData["Title"] = "قائمة المدارس";
+}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">المدارس</div>
+        <h1 class="h3 page-title mb-1">قائمة المدارس</h1>
+        <p class="text-muted mb-0">عرض وتعديل وحذف المدارس ومراحلها</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> إضافة مدرسة</a>
+</div>
+
+<div class="card stat-card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="schoolsTable">
+            <thead>
+            <tr>
+                <th>المدرسة</th>
+                <th>البريد</th>
+                <th>النوع</th>
+                <th>السنة</th>
+                <th>المراحل</th>
+                <th>الطلاب</th>
+                <th>الحالة</th>
+                <th style="width:150px">إجراءات</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="8" class="text-center text-muted py-4">لا توجد مدارس بعد.</td></tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@item.NameAr</div>
+                        <div class="small text-muted">@item.NameEn</div>
+                    </td>
+                    <td>@(item.Email ?? "—")</td>
+                    <td>@item.SchoolType</td>
+                    <td>@(item.YearName ?? "—")</td>
+                    <td>@item.ActiveStageCount / @item.StageCount</td>
+                    <td>@item.StudentCount</td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="pill pill-green">نشطة</span>
+                        }
+                        else
+                        {
+                            <span class="pill pill-orange">موقوفة</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id" title="عرض"><i class="bi bi-eye"></i></a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" title="تعديل"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Delete" method="post" class="d-inline"
+                                  onsubmit="return confirm('حذف هذه المدرسة مع جميع مراحلها المرتبطة؟');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

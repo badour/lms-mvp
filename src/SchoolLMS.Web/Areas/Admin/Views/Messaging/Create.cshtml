@@ -1,0 +1,123 @@
+@model SchoolLMS.Web.Models.AdminSendMessageForm
+@{
+    ViewData["Title"] = "رسالة جديدة";
+    var hasSchool = Model.SchoolId > 0;
+}
+<div class="mb-4">
+    <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">التواصل والمراسلات</div>
+    <h1 class="h3 page-title mb-1">رسالة جديدة</h1>
+    <p class="text-muted mb-0">أرسل رسالة إلى طالب أو حساب إدارة مدرسة مع مرفقات اختيارية</p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="section-card" id="adminMessageForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="SchoolId" class="form-label"></label>
+            <select asp-for="SchoolId" class="form-select" asp-items="ViewBag.Schools" id="SchoolId">
+                <option value="">اختر المدرسة</option>
+            </select>
+            <span asp-validation-for="SchoolId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="RecipientKind" class="form-label"></label>
+            <select asp-for="RecipientKind" class="form-select" id="RecipientKind">
+                <option value="@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.Student)">طالب</option>
+                <option value="@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.SchoolManagement)">إدارة المدرسة</option>
+            </select>
+        </div>
+
+        <div class="col-md-6" id="studentRecipientBlock">
+            <label asp-for="StudentId" class="form-label"></label>
+            @if (hasSchool)
+            {
+                <select asp-for="StudentId" class="form-select" id="StudentId" asp-items="ViewBag.Students">
+                    <option value="">اختر الطالب</option>
+                </select>
+            }
+            else
+            {
+                <select class="form-select" id="StudentId" disabled>
+                    <option value="">اختر المدرسة أولاً</option>
+                </select>
+            }
+            <div class="small text-muted mt-1">
+                القائمة المنسدلة تعرض الرقم — الاسم (مثل عمود «الرقم» في صفحة الطلاب).
+                اختر صفاً من القائمة؛ لا تستخدم مربع كتابة حر.
+            </div>
+            <span asp-validation-for="StudentId" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6 d-none" id="managementRecipientBlock">
+            <label asp-for="ManagementUserId" class="form-label"></label>
+            @if (hasSchool)
+            {
+                <select asp-for="ManagementUserId" class="form-select" id="ManagementUserId" asp-items="ViewBag.ManagementAccounts">
+                    <option value="">اختر حساب الإدارة</option>
+                </select>
+            }
+            else
+            {
+                <select class="form-select" id="ManagementUserId" disabled>
+                    <option value="">اختر المدرسة أولاً</option>
+                </select>
+            }
+            <span asp-validation-for="ManagementUserId" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Subject" class="form-label"></label>
+            <input asp-for="Subject" class="form-control" />
+            <span asp-validation-for="Subject" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="Body" class="form-label"></label>
+            <textarea asp-for="Body" class="form-control" rows="6"></textarea>
+            <span asp-validation-for="Body" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="Attachments" class="form-label"></label>
+            <input asp-for="Attachments" class="form-control" type="file" multiple
+                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.xls,.xlsx" />
+            <div class="small text-muted mt-1">الحد الأقصى لكل مرفق 20 ميجابايت.</div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> إرسال</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">إلغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+(() => {
+  const schoolSelect = document.getElementById('SchoolId');
+  const kindSelect = document.getElementById('RecipientKind');
+  const studentBlock = document.getElementById('studentRecipientBlock');
+  const managementBlock = document.getElementById('managementRecipientBlock');
+  const studentKind = '@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.Student)';
+  const createUrl = '@Url.Action("Create", "Messaging", new { area = "Admin" })';
+
+  function toggleRecipient() {
+    const isStudent = kindSelect.value === studentKind;
+    studentBlock.classList.toggle('d-none', !isStudent);
+    managementBlock.classList.toggle('d-none', isStudent);
+  }
+
+  // Full page reload loads students/management from the server (no JS cache / empty StudentId).
+  schoolSelect.addEventListener('change', () => {
+    const schoolId = schoolSelect.value;
+    const kind = kindSelect.value;
+    const url = new URL(createUrl, window.location.origin);
+    if (schoolId) url.searchParams.set('schoolId', schoolId);
+    if (kind) url.searchParams.set('recipientKind', kind);
+    window.location.href = url.pathname + url.search;
+  });
+  kindSelect.addEventListener('change', toggleRecipient);
+  toggleRecipient();
+})();
+</script>
+}

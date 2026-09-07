@@ -1,0 +1,104 @@
+@model SchoolLMS.Application.DTOs.Students.StudentDetailsDto
+@{
+    ViewData["Title"] = "عرض الطالب";
+    string GenderText(SchoolLMS.Domain.Enums.Gender g) => g == SchoolLMS.Domain.Enums.Gender.Female ? "أنثى" : "ذكر";
+    string StatusText(SchoolLMS.Domain.Enums.StudentStatus s) => s switch
+    {
+        SchoolLMS.Domain.Enums.StudentStatus.Inactive => "Inactive",
+        SchoolLMS.Domain.Enums.StudentStatus.Graduated => "Graduated",
+        SchoolLMS.Domain.Enums.StudentStatus.Withdrawn => "Withdrawn",
+        SchoolLMS.Domain.Enums.StudentStatus.Suspended => "Suspended",
+        _ => "Active"
+    };
+}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <div class="badge-soft d-inline-block px-3 py-1 rounded-pill mb-2">قسم الطلاب</div>
+        <h1 class="h3 page-title mb-1">@Model.FullNameAr</h1>
+        <p class="text-muted mb-0">@Model.StudentNumber · @Model.SchoolNameAr</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> تعديل</a>
+        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('حذف هذا الطالب؟');">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> حذف</button>
+        </form>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="section-card mb-3">
+            <h2>البيانات الأساسية</h2>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="small text-muted">اسم الأب</div><div class="fw-semibold">@(Model.FatherName ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">اسم الأم</div><div class="fw-semibold">@(Model.MotherName ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">الجنس</div><div class="fw-semibold">@GenderText(Model.Gender)</div></div>
+                <div class="col-md-4"><div class="small text-muted">تاريخ الميلاد</div><div class="fw-semibold">@(Model.DateOfBirth?.ToString("yyyy-MM-dd") ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">تاريخ القبول</div><div class="fw-semibold">@(Model.AdmissionDate?.ToString("yyyy-MM-dd") ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">رقم البطاقة / الجواز</div><div class="fw-semibold">@(Model.PassportOrCardId ?? Model.NationalId ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">الحالة</div><div class="fw-semibold">@StatusText(Model.Status)</div></div>
+                <div class="col-md-4"><div class="small text-muted">الصف</div><div class="fw-semibold">@(Model.GradeNameAr ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">الشعبة</div><div class="fw-semibold">@(Model.SectionNameAr ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">تصنيف الصف</div><div class="fw-semibold">@(Model.ClassClassification ?? "—")</div></div>
+            </div>
+        </section>
+
+        <section class="section-card mb-3">
+            <h2>التواصل والعنوان</h2>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="small text-muted">الهاتف 1</div><div class="fw-semibold">@(Model.Phone1 ?? "—")</div></div>
+                <div class="col-md-6"><div class="small text-muted">الهاتف 2</div><div class="fw-semibold">@(Model.Phone2 ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">المدينة</div><div class="fw-semibold">@(Model.City ?? "—")</div></div>
+                <div class="col-md-4"><div class="small text-muted">المنطقة</div><div class="fw-semibold">@(Model.Region ?? "—")</div></div>
+                <div class="col-12"><div class="small text-muted">العنوان</div><div class="fw-semibold">@(Model.Address ?? "—")</div></div>
+                <div class="col-12"><div class="small text-muted">ملاحظات</div><p class="mb-0">@(string.IsNullOrWhiteSpace(Model.Notes) ? "—" : Model.Notes)</p></div>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <section class="section-card mb-3">
+            <h2>الطوارئ والصحة</h2>
+            <div class="mb-2"><div class="small text-muted">جهة الطوارئ</div><div class="fw-semibold">@(Model.EmergencyContactName ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">هاتف الطوارئ</div><div class="fw-semibold">@(Model.EmergencyContactPhone ?? "—")</div></div>
+            <div class="mb-2"><div class="small text-muted">فصيلة الدم</div><div class="fw-semibold">@(Model.BloodType ?? "—")</div></div>
+            <div><div class="small text-muted">التاريخ المرضي</div><p class="mb-0">@(string.IsNullOrWhiteSpace(Model.DiseaseHistory) ? "—" : Model.DiseaseHistory)</p></div>
+        </section>
+
+        <section class="section-card mb-3">
+            <h2>الهوايات</h2>
+            @if (Model.Hobbies.Count == 0)
+            {
+                <p class="text-muted mb-0">لا توجد هوايات.</p>
+            }
+            else
+            {
+                <ul class="mb-0">
+                    @foreach (var hobby in Model.Hobbies)
+                    {
+                        <li>@hobby</li>
+                    }
+                </ul>
+            }
+        </section>
+
+        <section class="section-card mb-3">
+            <h2>الملاحظات</h2>
+            @if (Model.NotesList.Count == 0)
+            {
+                <p class="text-muted mb-0">لا توجد ملاحظات إضافية.</p>
+            }
+            else
+            {
+                <ul class="mb-0">
+                    @foreach (var note in Model.NotesList)
+                    {
+                        <li>@note</li>
+                    }
+                </ul>
+            }
+        </section>
+    </div>
+</div>
