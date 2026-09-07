@@ -17,9 +17,6 @@ public class AdminSendMessageForm
     [Display(Name = "الطالب")]
     public int? StudentId { get; set; }
 
-    [Display(Name = "اسم الطالب")]
-    public string? StudentSearch { get; set; }
-
     [Display(Name = "حساب الإدارة")]
     public string? ManagementUserId { get; set; }
 

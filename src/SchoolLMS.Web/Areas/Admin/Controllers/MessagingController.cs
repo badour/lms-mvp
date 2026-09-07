@@ -181,12 +181,22 @@ public class MessagingController : Controller
 
         if (schoolId is > 0)
         {
+            var students = await _messagingService.SearchStudentsAsync(schoolId.Value, null, cancellationToken);
+            ViewBag.Students = new SelectList(
+                students.Select(x => new
+                {
+                    x.Id,
+                    Name = string.IsNullOrWhiteSpace(x.Extra) ? x.Name : $"{x.Name} — {x.Extra}"
+                }),
+                "Id", "Name");
+
             ViewBag.ManagementAccounts = new SelectList(
                 await _messagingService.GetManagementAccountsAsync(schoolId.Value, cancellationToken),
                 "Id", "Name");
         }
         else
         {
+            ViewBag.Students = new SelectList(Enumerable.Empty<SelectListItem>());
             ViewBag.ManagementAccounts = new SelectList(Enumerable.Empty<SelectListItem>());
         }
     }

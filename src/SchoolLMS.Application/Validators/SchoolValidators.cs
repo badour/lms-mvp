@@ -137,7 +137,9 @@ public class AdminSendMessageRequestValidator : AbstractValidator<AdminSendMessa
 
         When(x => x.RecipientKind == StudentMessageTargetType.Student, () =>
         {
-            RuleFor(x => x.StudentId).NotNull().GreaterThan(0).WithMessage("اختر الطالب.");
+            RuleFor(x => x.StudentId)
+                .NotNull().WithMessage("اختر الطالب.")
+                .GreaterThan(0).WithMessage("اختر الطالب.");
         });
 
         When(x => x.RecipientKind == StudentMessageTargetType.SchoolManagement, () =>

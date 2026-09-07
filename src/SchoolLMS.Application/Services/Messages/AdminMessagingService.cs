@@ -497,7 +497,7 @@ public class AdminMessagingService : IAdminMessagingService
 
         return await query
             .OrderBy(x => x.FullNameAr)
-            .Take(30)
+            .Take(string.IsNullOrWhiteSpace(term) ? 500 : 30)
             .Select(x => new MessagingLookupItemDto
             {
                 Id = x.Id.ToString(),

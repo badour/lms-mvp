@@ -29,11 +29,11 @@
         </div>
 
         <div class="col-md-6" id="studentRecipientBlock">
-            <label class="form-label">الطالب</label>
-            <input type="hidden" asp-for="StudentId" id="StudentId" />
-            <input asp-for="StudentSearch" class="form-control" id="StudentSearch" placeholder="اكتب اسم الطالب للاقتراح…" autocomplete="off" list="studentSuggestions" />
-            <datalist id="studentSuggestions"></datalist>
-            <div class="small text-muted mt-1" id="studentHint">اختر المدرسة أولاً ثم اكتب اسم الطالب.</div>
+            <label asp-for="StudentId" class="form-label"></label>
+            <select asp-for="StudentId" class="form-select" id="StudentId" asp-items="ViewBag.Students">
+                <option value="">اختر الطالب</option>
+            </select>
+            <div class="small text-muted mt-1">اختر المدرسة أولاً ثم اختر الطالب من القائمة.</div>
             <span asp-validation-for="StudentId" class="text-danger"></span>
         </div>
 
@@ -76,13 +76,20 @@
   const kindSelect = document.getElementById('RecipientKind');
   const studentBlock = document.getElementById('studentRecipientBlock');
   const managementBlock = document.getElementById('managementRecipientBlock');
-  const studentIdInput = document.getElementById('StudentId');
-  const studentSearch = document.getElementById('StudentSearch');
-  const suggestions = document.getElementById('studentSuggestions');
+  const studentSelect = document.getElementById('StudentId');
   const managementSelect = document.getElementById('ManagementUserId');
-  const studentCache = new Map();
-
   const studentKind = '@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.Student)';
+
+  function fillSelect(select, items, placeholder, selectedId) {
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    for (const item of items || []) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name + (item.extra ? ` — ${item.extra}` : '');
+      if (selectedId && String(selectedId) === String(item.id)) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
 
   function toggleRecipient() {
     const isStudent = kindSelect.value === studentKind;
@@ -90,63 +97,36 @@
     managementBlock.classList.toggle('d-none', isStudent);
   }
 
+  async function loadStudents() {
+    const schoolId = schoolSelect.value;
+    const selected = studentSelect.value;
+    fillSelect(studentSelect, [], 'اختر الطالب', null);
+    if (!schoolId) return;
+    const res = await fetch('@Url.Action("SearchStudents")?schoolId=' + encodeURIComponent(schoolId) + '&term=');
+    if (!res.ok) return;
+    fillSelect(studentSelect, await res.json(), 'اختر الطالب', selected);
+  }
+
   async function loadManagement() {
     const schoolId = schoolSelect.value;
-    managementSelect.innerHTML = '<option value="">اختر حساب الإدارة</option>';
+    const selected = managementSelect.value;
+    fillSelect(managementSelect, [], 'اختر حساب الإدارة', null);
     if (!schoolId) return;
     const res = await fetch('@Url.Action("ManagementAccounts")?schoolId=' + encodeURIComponent(schoolId));
     if (!res.ok) return;
-    const items = await res.json();
-    for (const item of items) {
-      const opt = document.createElement('option');
-      opt.value = item.id;
-      opt.textContent = item.name + (item.extra ? ` (${item.extra})` : '');
-      managementSelect.appendChild(opt);
-    }
-  }
-
-  async function searchStudents() {
-    const schoolId = schoolSelect.value;
-    const term = studentSearch.value.trim();
-    suggestions.innerHTML = '';
-    studentCache.clear();
-    if (!schoolId) return;
-    const res = await fetch('@Url.Action("SearchStudents")?schoolId=' + encodeURIComponent(schoolId) + '&term=' + encodeURIComponent(term));
-    if (!res.ok) return;
-    const items = await res.json();
-    for (const item of items) {
-      const label = item.name + (item.extra ? ` — ${item.extra}` : '');
-      studentCache.set(label, item.id);
-      const opt = document.createElement('option');
-      opt.value = label;
-      suggestions.appendChild(opt);
-    }
-  }
-
-  function syncSelectedStudent() {
-    const label = studentSearch.value.trim();
-    studentIdInput.value = studentCache.get(label) || studentIdInput.value || '';
+    fillSelect(managementSelect, await res.json(), 'اختر حساب الإدارة', selected);
   }
 
   schoolSelect.addEventListener('change', () => {
-    studentIdInput.value = '';
-    studentSearch.value = '';
-    suggestions.innerHTML = '';
+    loadStudents();
     loadManagement();
-    searchStudents();
   });
   kindSelect.addEventListener('change', toggleRecipient);
-  studentSearch.addEventListener('input', () => {
-    searchStudents();
-    syncSelectedStudent();
-  });
-  studentSearch.addEventListener('change', syncSelectedStudent);
-  document.getElementById('adminMessageForm').addEventListener('submit', syncSelectedStudent);
 
   toggleRecipient();
   if (schoolSelect.value) {
+    loadStudents();
     loadManagement();
-    searchStudents();
   }
 })();
 </script>
