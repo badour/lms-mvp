@@ -33,7 +33,10 @@
             <select asp-for="StudentId" class="form-select" id="StudentId" asp-items="ViewBag.Students">
                 <option value="">اختر الطالب</option>
             </select>
-            <div class="small text-muted mt-1">اختر المدرسة أولاً ثم اختر الطالب من القائمة.</div>
+            <div class="small text-muted mt-1">
+                اختر المدرسة أولاً، ثم اختر الطالب من القائمة (الشكل: الرقم — الاسم، مثل عمود «الرقم» في صفحة الطلاب).
+                لا تكتب الرقم يدوياً في حقل حر — يجب اختيار صف من القائمة المنسدلة.
+            </div>
             <span asp-validation-for="StudentId" class="text-danger"></span>
         </div>
 
@@ -79,14 +82,25 @@
   const studentSelect = document.getElementById('StudentId');
   const managementSelect = document.getElementById('ManagementUserId');
   const studentKind = '@((int)SchoolLMS.Domain.Enums.StudentMessageTargetType.Student)';
+  const studentsUrl = '@Url.Action("SearchStudents", "Messaging", new { area = "Admin" })';
+  const managementUrl = '@Url.Action("ManagementAccounts", "Messaging", new { area = "Admin" })';
+
+  function itemId(item) { return item.id ?? item.Id; }
+  function itemName(item) { return item.name ?? item.Name ?? ''; }
+  function itemExtra(item) { return item.extra ?? item.Extra; }
 
   function fillSelect(select, items, placeholder, selectedId) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
     for (const item of items || []) {
+      const id = itemId(item);
+      if (id == null || id === '') continue;
+      const name = itemName(item);
+      const extra = itemExtra(item);
       const opt = document.createElement('option');
-      opt.value = item.id;
-      opt.textContent = item.name + (item.extra ? ` — ${item.extra}` : '');
-      if (selectedId && String(selectedId) === String(item.id)) opt.selected = true;
+      opt.value = String(id);
+      // الرقم — الاسم (same order as Students grid)
+      opt.textContent = extra ? `${extra} — ${name}` : name;
+      if (selectedId && String(selectedId) === String(id)) opt.selected = true;
       select.appendChild(opt);
     }
   }
@@ -100,19 +114,23 @@
   async function loadStudents() {
     const schoolId = schoolSelect.value;
     const selected = studentSelect.value;
-    fillSelect(studentSelect, [], 'اختر الطالب', null);
-    if (!schoolId) return;
-    const res = await fetch('@Url.Action("SearchStudents")?schoolId=' + encodeURIComponent(schoolId) + '&term=');
-    if (!res.ok) return;
+    if (!schoolId) {
+      fillSelect(studentSelect, [], 'اختر الطالب', null);
+      return;
+    }
+    const res = await fetch(studentsUrl + '?schoolId=' + encodeURIComponent(schoolId) + '&term=');
+    if (!res.ok) return; // keep any server-rendered options
     fillSelect(studentSelect, await res.json(), 'اختر الطالب', selected);
   }
 
   async function loadManagement() {
     const schoolId = schoolSelect.value;
     const selected = managementSelect.value;
-    fillSelect(managementSelect, [], 'اختر حساب الإدارة', null);
-    if (!schoolId) return;
-    const res = await fetch('@Url.Action("ManagementAccounts")?schoolId=' + encodeURIComponent(schoolId));
+    if (!schoolId) {
+      fillSelect(managementSelect, [], 'اختر حساب الإدارة', null);
+      return;
+    }
+    const res = await fetch(managementUrl + '?schoolId=' + encodeURIComponent(schoolId));
     if (!res.ok) return;
     fillSelect(managementSelect, await res.json(), 'اختر حساب الإدارة', selected);
   }
@@ -124,6 +142,7 @@
   kindSelect.addEventListener('change', toggleRecipient);
 
   toggleRecipient();
+  // Only refresh when school is already chosen (e.g. validation redisplay); do not wipe on empty school.
   if (schoolSelect.value) {
     loadStudents();
     loadManagement();

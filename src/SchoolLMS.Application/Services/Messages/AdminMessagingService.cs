@@ -274,8 +274,16 @@ public class AdminMessagingService : IAdminMessagingService
                 return ServiceResult<int>.Failure("اختر الطالب المستلم.");
             }
 
+            // Prefer DB primary key; also accept الرقم (StudentNumber) from the Students grid first column.
             var student = await _db.Students.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == request.StudentId.Value && x.SchoolId == request.SchoolId && !x.IsDeleted, cancellationToken);
+            if (student is null)
+            {
+                var studentNumber = request.StudentId.Value.ToString();
+                student = await _db.Students.AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.StudentNumber == studentNumber && x.SchoolId == request.SchoolId && !x.IsDeleted, cancellationToken);
+            }
+
             if (student is null)
             {
                 return ServiceResult<int>.Failure("الطالب غير موجود في هذه المدرسة.");
@@ -489,14 +497,17 @@ public class AdminMessagingService : IAdminMessagingService
         if (!string.IsNullOrWhiteSpace(term))
         {
             var t = term.Trim();
+            var parsedId = int.TryParse(t, out var id) ? id : (int?)null;
             query = query.Where(x =>
                 x.FullNameAr.Contains(t) ||
                 x.StudentNumber.Contains(t) ||
+                (parsedId.HasValue && x.Id == parsedId.Value) ||
                 (x.FullNameEn != null && x.FullNameEn.Contains(t)));
         }
 
         return await query
-            .OrderBy(x => x.FullNameAr)
+            .OrderBy(x => x.StudentNumber)
+            .ThenBy(x => x.FullNameAr)
             .Take(string.IsNullOrWhiteSpace(term) ? 500 : 30)
             .Select(x => new MessagingLookupItemDto
             {

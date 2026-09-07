@@ -186,7 +186,8 @@ public class MessagingController : Controller
                 students.Select(x => new
                 {
                     x.Id,
-                    Name = string.IsNullOrWhiteSpace(x.Extra) ? x.Name : $"{x.Name} — {x.Extra}"
+                    // Match Students Index first column: الرقم ثم الاسم
+                    Name = string.IsNullOrWhiteSpace(x.Extra) ? x.Name : $"{x.Extra} — {x.Name}"
                 }),
                 "Id", "Name");
 
